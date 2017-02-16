@@ -1,0 +1,57 @@
+## YAML Template.
+---
+package:
+    author: Erik Pearson
+    name: auth2-test
+    description: Auth2 test plugin
+    date: Feb 14, 2017
+    version: 0.0.1
+source:
+    modules:        
+install:
+    widgets:
+        -
+            module: panel
+            id: auth2TestPanel
+            type: factory
+        -
+            module: login
+            id: auth2Login
+            type: factory
+        -
+            module: loginSuccess 
+            id: auth2LoginSuccess
+            type: factory
+        -
+            module: loginContinue 
+            id: auth2LoginContinue
+            type: factory
+    routes:
+        -
+            path: ['auth2']
+            widget: auth2TestPanel
+            queryParams:
+                nextrequest: {}
+        -
+            path: ['auth2', 'login']
+            widget: auth2Login
+            queryParams:
+                nextrequest: {}
+        -
+            path: ['auth2', 'login', 'continue']
+            widget: auth2LoginContinue
+            queryParams:
+                nextrequest: {}
+        -
+            path: ['auth2', 'login', 'success']
+            widget: auth2LoginSuccess
+            queryParams:
+                nextrequest: {}
+    menu:
+        -
+            name: auth2
+            menus: ['authenticated', 'unauthenticated']
+            definition:
+                path: ['auth2']
+                label: Auth2
+                icon: flask                
