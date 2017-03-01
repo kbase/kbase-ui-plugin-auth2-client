@@ -105,16 +105,16 @@ define([
                                         th('Authorized?'),
                                         td(runtime.service('session').isLoggedIn() ? 'yes' : 'no')
                                     ])
-                                ]),
-                            div({
-                                style: {
-                                    border: '2px red solid'
-                                }
-                            }, [
-                                iframe({
-                                    srcdoc: iframeContent
-                                })
-                            ])
+                                ])
+                            // div({
+                            //     style: {
+                            //         border: '2px red solid'
+                            //     }
+                            // }, [
+                            //     iframe({
+                            //         srcdoc: iframeContent
+                            //     })
+                            // ])
                             ])
                         ])
                     ]);
