@@ -1,0 +1,26 @@
+{
+    "name": "kbase-ui-plugin-auth2-client",
+    "description": "UI client components to provide auth2 services for the ui - login, logout, signup, account editing, id linking",
+    "keywords": [
+        "kbase", "widget"
+    ],
+    "author": [
+        "eapearson@lbl.gov"
+    ],
+    "moduleType": "kbase-ui-plugin",
+    "main": "src/plugin/config.yml",
+    "ignore": [
+        ".gitignore"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/kbase/kbase-ui-plugin-auth2-client"
+    },
+    "dependencies": {
+        "bluebird": "^3.4.7",
+        "bootstrap": "^3.3.0"
+    },
+    "devDependencies": {
+    },
+    "license": "SEE LICENSE IN LICENSE"
+}
