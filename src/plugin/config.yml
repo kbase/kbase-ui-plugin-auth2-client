@@ -48,14 +48,6 @@ install:
                 nextrequest: {}
                 in-process-login-token: {}
                 test: {}
-        -
-            path: ['auth2', 'login', 'success']
-            widget: auth2LoginSuccess
-            queryParams:
-                nextrequest: {}
-        - 
-            path: ['auth2', 'test']
-            widget: auth2Test
     menu:
         -
             name: auth2info

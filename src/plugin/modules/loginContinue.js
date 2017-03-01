@@ -3,7 +3,6 @@ define([
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/ui',
-    'kb_common/auth2',
     'kb_common_ts/Cookie',
     'kb_plugin_login',
     'kb_common/bootstrapUtils'
@@ -12,7 +11,6 @@ define([
     html,
     DomEvent,
     UI,
-    Auth2Client,
     M_Cookie,
     Plugin,
     BS
