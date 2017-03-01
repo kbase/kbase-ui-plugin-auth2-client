@@ -11,8 +11,8 @@ source:
 install:
     widgets:
         -
-            module: panel
-            id: auth2TestPanel
+            module: info
+            id: auth2Info
             type: factory
         -
             module: login
@@ -26,10 +26,14 @@ install:
             module: loginContinue 
             id: auth2LoginContinue
             type: factory
+        -
+            module: test
+            id: auth2Test
+            type: factory
     routes:
         -
-            path: ['auth2']
-            widget: auth2TestPanel
+            path: ['auth2', 'info']
+            widget: auth2Info
             queryParams:
                 nextrequest: {}
         -
@@ -42,16 +46,28 @@ install:
             widget: auth2LoginContinue
             queryParams:
                 nextrequest: {}
+                in-process-login-token: {}
+                test: {}
         -
             path: ['auth2', 'login', 'success']
             widget: auth2LoginSuccess
             queryParams:
                 nextrequest: {}
+        - 
+            path: ['auth2', 'test']
+            widget: auth2Test
     menu:
         -
-            name: auth2
+            name: auth2info
             menus: ['authenticated', 'unauthenticated']
             definition:
-                path: ['auth2']
-                label: Auth2
+                path: ['auth2', 'info']
+                label: Auth2 Info
+                icon: flask                
+        -
+            name: auth2login
+            menus: ['authenticated', 'unauthenticated']
+            definition:
+                path: ['auth2', 'login']
+                label: Auth2 Login
                 icon: flask                

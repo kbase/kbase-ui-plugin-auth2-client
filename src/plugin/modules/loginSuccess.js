@@ -18,7 +18,7 @@ function (html, domEvent, $, Promise, Plugin, Auth2) {
 
 
     function widget(config) {
-        var mount, container, runtime = config.runtime,
+        var hostNode, container, runtime = config.runtime,
             nextRequest,
             events;
 
@@ -26,35 +26,36 @@ function (html, domEvent, $, Promise, Plugin, Auth2) {
 
         function attach(node) {
             return Promise.try(function () {
-                mount = node;
+                hostNode = node;
                 container = document.createElement('div');
-                // $container = $(container);
                 events = domEvent.make(container);
-                mount.appendChild(container);
+                hostNode.appendChild(container);
             });
         }
 
         function start(params) {
-            return Promise.try(function () {
-                var auth2 = Auth2.make({
-                    cookieName: runtime.config('services.auth2.cookieName'),
-                    authBaseUrl: runtime.config('services.auth2.url')
-                });
-               container.innerHTML = "log in success!";
+            var auth2 = Auth2.make({
+                cookieName: runtime.config('services.auth2.cookieName'),
+                authBaseUrl: runtime.config('services.auth2.url')
             });
+            container.innerHTML = "log in success!";
+        }
+
+        function stop() {
+            return null;
         }
 
         function detach() {
-            events.detachEvents();
-            if (container) {
-                mount.removeChild(container);
+            if (hostNode && container) {
+                hostNode.removeChild(container);
             }
         }
 
         return {
             attach: attach,
-            detach: detach,
-            start: start
+            start: start,
+            stop: stop,
+            detach: detach
         };
     }
 
