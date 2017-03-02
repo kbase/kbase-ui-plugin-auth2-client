@@ -12,6 +12,8 @@ define([
 ) {
     var t = html.tag,
         div = t('div'),
+        span = t('span'),
+        img = t('img'),
         h2 = t('h2'),
         ul = t('ul'),
         li = t('li'),
@@ -72,33 +74,170 @@ define([
             ]);
         }
 
+        function doStaySignedIn(e) {
+            var checked = e.target.checked;
+            var auth2Client = runtime.service('session').getClient();
+            auth2Client.setSessionPersistent(checked);
+        }
+
+        function buildProviderLabel(provider) {
+             return div({
+                    style: {
+                        display: 'inline',
+                        whiteSPace: 'nowrap',
+                        height: '54px'
+                    }
+                }, [
+                    div({
+                        style: {
+                            display: 'inline-block',
+                            width: '54px',
+                            height: '40px',
+                            marginRight: '4px'
+                        }
+                    }, 
+                    img({                        
+                        src: '/images/signin/' + provider.id.toLowerCase() + '_logo.png',
+                        style: {
+                            height: '40px'
+                        }
+                    })),
+                    provider.label
+                ]);
+        }
+
         function buildLoginControl(events) {
             if (runtime.service('session').isAuthorized()) {
                 return;
             }
-            var selectedProvider = runtime.service('session').getLastProvider();
             var providers = runtime.service('session').getProviders();
+            var selectedProviderId = runtime.service('session').getLastProvider() || 'Globus';
+            var selectedProvider = providers.filter(function (provider) {
+                return (provider.id === selectedProviderId);
+            })[0];
+            var providerControlId = html.genId();
+            var providerMenuId = html.genId();
+            var providerMenuLabelId = html.genId();
 
             return form({
-                class: 'form-inline',
-                dataElement: 'login-form',
-            }, [                
-                button({
-                    class: 'btn btn-primary',
-                    type: 'button',
-                    id: events.addEvent('click', doLogin)
-                }, 'Login'),
-                ' with ',
-                select({
-                    class: 'form-control',
-                    name: 'provider'
-                }, providers.map(function (provider) {
-                    return option({
-                        value: provider.id,
-                        selected: (provider.id === selectedProvider)
-                    }, provider.label);
-                }))
-            ]);
+                    class: 'form-inline',
+                    dataElement: 'login-form',
+                }, div({}, [
+                    div({}, [
+                        button({
+                            class: 'btn btn-primary',
+                            type: 'button',
+                            id: events.addEvent('click', doLogin)
+                        }, 'Login'),
+                        span({
+                            style: {
+                                margin: '0 0.7em'
+                            }
+                        }, 'with'),
+                        div({
+                            xclass: 'kb-dropdown',
+                            style: {
+                                position: 'relative',
+                                display: 'inline-block'
+                            }
+                        }, [
+                            input({
+                                id: providerControlId,
+                                name: 'provider',
+                                type: 'hidden',
+                                value: selectedProviderId
+                            }),
+                            button({
+                                class: 'btn btn-default dropdown-toggle',
+                                type: 'button',
+                                id: events.addEvent('click', function () {
+                                    var n = document.getElementById(providerMenuId);
+                                    if (n.style.display === 'none') {
+                                        n.style.display = 'block';
+                                    } else {
+                                        n.style.display = 'none';
+                                    }
+                                }),
+                                xid: providerMenuId,
+                                ariaHaspopup: 'true',
+                                ariaExpanded: 'true'
+                            }, [
+                                span({
+                                    id: providerMenuLabelId
+                                }, buildProviderLabel(selectedProvider)),
+                                span({
+                                    class: 'caret',
+                                    style: {
+                                        marginLeft: '10px'
+                                    }
+                                })
+                            ]),
+                            ul({
+                                style: {
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: '0',                                    
+                                    float: 'left',
+                                    listStyle: 'none',
+                                    display: 'none',
+                                    border: '1px silver solid',
+                                    padding: '0',
+                                    backgroundColor: 'white'
+                                },
+                                id: providerMenuId,
+                                xariaLabelledby: providerMenuId
+                            }, providers.map(function (provider) {
+                                return li({
+                                    style: {
+                                        textAlign: 'left',
+                                        cursor: 'pointer',
+                                        margin: '8px 12px',
+                                        display: 'block',
+                                        whiteSpace: 'nowrap'
+                                    }
+                                }, div({                                    
+                                    id: events.addEvent('click', function () {
+                                        // var controlNode = document.getElementById(providerControlId);
+                                        var providerInput = document.querySelector('[data-element="login-form"] [name="provider"]')
+                                        providerInput.value = provider.id;
+                                        var menuLabelNode = document.getElementById(providerMenuLabelId);
+                                        menuLabelNode.innerHTML = buildProviderLabel(provider);
+                                        var n = document.getElementById(providerMenuId);
+                                        n.style.display = 'none';
+                                        runtime.service('session').getClient().setLastProvider(provider.id);
+                                    })
+                                },  buildProviderLabel(provider)))
+                            })
+                            )
+                        ])
+                        
+                    ]),
+                    div({
+                        style: {
+                            marginTop: '1em'
+                        }
+                    }, [
+                        input({
+                            type: 'checkbox',
+                            checked: (function () {
+                                return runtime.service('session').getClient().isSessionPersistent()
+                            }()),
+                            id: events.addEvent('change', doStaySignedIn)
+                        }),
+                        ' Stay signed in'
+                    ]),
+                    div({
+                        style: {
+                            marginTop: '2em'
+                        }
+                    }, [
+                        a({
+                            href: runtime.config('resources.documentation.troubleshooting.signin')
+                        }, 'Trouble signing in?')
+                    ])
+                ])
+
+            );
         }
 
         function buildLogoutControl(events) {
@@ -106,7 +245,6 @@ define([
                 return;
             }
             var auth = runtime.service('session');
-            console.log('AUTH', auth);
             return div(button({
                 class: 'btn btn-primary',
                 id: events.addEvent('click', doLogout)
@@ -159,11 +297,8 @@ define([
 
         function doLogin() {
             var providerSelect = document.querySelector('[data-element="login-form"] [name="provider"]');
-            var providerId = providerSelect.item(providerSelect.selectedIndex).value;
+            var providerId = providerSelect.value;
             var fakeUrl = window.location.origin + '?nextrequest=' + encodeURIComponent(JSON.stringify(nextRequest));
-
-            //  console.log('next request?', nextRequest, fakeUrl);
-            //  return;
 
             runtime.service('session').login({
                 // TODO: this should be either the redirect url passed in 
@@ -270,7 +405,7 @@ define([
                 container.innerHTML = buildForm(events);
                 events.attachEvents();
             } catch (ex) {
-                console.log('ERROR rendering login stuff', ex);
+                console.error('ERROR rendering login stuff', ex);
                 showErrorMessage(ex);
             }
         }
@@ -278,7 +413,6 @@ define([
         function doRedirect(params) {
             if (nextRequest) {
                 try {
-                    // console.log('nextrequest', nextRequest);
                     if (nextRequest) {
                         runtime.send('app', 'navigate', nextRequest);
                     } else {

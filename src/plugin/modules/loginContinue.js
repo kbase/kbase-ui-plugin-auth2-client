@@ -169,10 +169,8 @@ define([
         function handleLoginClick(identityId) {
             runtime.service('session').getClient().loginPick(inProcessToken, identityId)
                 .then(function (result) {
-                    // console.log('picked successfully', result, redirectUrl);                    
                     if (result.status === 'ok') {
                         doRedirect(redirectUrl);
-                        // window.location.href = result.data.redirect_url;
                     } else if (result.error) {
                         showError({
                             title: 'Error',
@@ -180,7 +178,6 @@ define([
                             detail: BS.buildPresentableJson(result.data)
                         });
                     }
-                    // console.log('response', result);
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
