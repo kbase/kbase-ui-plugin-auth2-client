@@ -14,6 +14,7 @@ define([
         }
         function start(params) {
             return Promise.try(function () {
+                runtime.send('ui', 'setTitle', 'Account Manager');
                 container.innerHTML = 'this will be the account manager';
             });
         }
