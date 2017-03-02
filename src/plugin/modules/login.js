@@ -3,12 +3,14 @@ define([
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
+    'kb_plugin_auth2-client',
     'bootstrap'
 ], function (
     Promise,
     html,
     DomEvents,
-    BS
+    BS,
+    Plugin
 ) {
     var t = html.tag,
         div = t('div'),
@@ -97,7 +99,7 @@ define([
                         }
                     }, 
                     img({                        
-                        src: '/images/signin/' + provider.id.toLowerCase() + '_logo.png',
+                        src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
                         style: {
                             height: '40px'
                         }
