@@ -30,6 +30,10 @@ install:
             module: test
             id: auth2Test
             type: factory
+        -
+            module: account
+            id: auth2Account
+            type: factory
     routes:
         -
             path: ['auth2', 'info']
@@ -48,6 +52,10 @@ install:
                 nextrequest: {}
                 in-process-login-token: {}
                 test: {}
+        -
+            path: ['auth2', 'account']
+            widget: auth2Account
+            authorization: true              
     menu:
         -
             name: auth2info
@@ -62,4 +70,11 @@ install:
             definition:
                 path: ['auth2', 'login']
                 label: Auth2 Login
-                icon: flask                
+                icon: flask
+        -
+            name: auth2account
+            menus: ['authenticated', 'unathenticated']
+            definition: 
+                path: ['auth2', 'account']
+                label: Auth2 Account
+                icon: user-circle-o

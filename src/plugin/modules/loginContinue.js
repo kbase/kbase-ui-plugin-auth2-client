@@ -413,7 +413,7 @@ define([
                         div(
                             h1({
                                 dataElement: 'main-title'
-                            }, 'KBase Login - further action required')
+                            }, 'KBase Login')
                         ),
                         div({
                             dataElement: 'introduction'
@@ -522,10 +522,10 @@ define([
                                     // just log them in, but we should never see this case.
                                     intro = div([
                                         p([
-                                            'This ' + b(choice.provider) + ' identity account is associated with a KBase account.'
+                                            'This ' + b(choice.provider) + ' account is associated with a KBase account.'
                                         ]), 
                                         p([
-                                            'Click the login button for the associated account to continue using KBase as that user.'
+                                            'Click the login button to continue using KBase with the indicated account.'
                                         ])
                                     ]);
                                     ui.setContent('main-title', 'KBase Login - Ready')
