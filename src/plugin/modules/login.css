@@ -1,0 +1,6 @@
+.login-provider {
+    background-color: silver;
+}
+.login-provider#hover {
+    background: gray;
+}

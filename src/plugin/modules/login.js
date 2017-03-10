@@ -94,14 +94,14 @@ define([
                         style: {
                             display: 'inline-block',
                             width: '54px',
-                            height: '40px',
+                            height: '24px',
                             marginRight: '4px'
                         }
                     }, 
                     img({                        
                         src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
                         style: {
-                            height: '40px'
+                            height: '24px'
                         }
                     })),
                     provider.label
@@ -190,6 +190,7 @@ define([
                                 xariaLabelledby: providerMenuId
                             }, providers.map(function (provider) {
                                 return li({
+                                    class: 'login-provider',
                                     style: {
                                         textAlign: 'left',
                                         cursor: 'pointer',
@@ -197,7 +198,7 @@ define([
                                         display: 'block',
                                         whiteSpace: 'nowrap'
                                     }
-                                }, div({                                    
+                                }, div({
                                     id: events.addEvent('click', function () {
                                         // var controlNode = document.getElementById(providerControlId);
                                         var providerInput = document.querySelector('[data-element="login-form"] [name="provider"]')
@@ -441,7 +442,6 @@ define([
                 }
 
                 if (runtime.service('session').isLoggedIn()) {
-                    console.log(params);
                     doRedirect(params);
                 } else {
                     return renderLoginStuff(params)

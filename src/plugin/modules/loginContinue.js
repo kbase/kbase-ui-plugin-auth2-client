@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent2',
     'kb_common/ui',
     'kb_common_ts/Cookie',
-    'kb_plugin_login',
+    'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils'
 ], function (
     Promise,
@@ -33,6 +33,8 @@ define([
         button = t('button'),
         h1 = t('h1');
 
+    var vm = {};
+
     function widget(config) {
         var hostNode, container, runtime = config.runtime,
             nextRequest,
@@ -54,7 +56,9 @@ define([
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 events = DomEvent.make(container);
-                ui = UI.make({ node: container });
+                ui = UI.make({
+                    node: container
+                });
             });
         }
 
@@ -67,13 +71,16 @@ define([
             node.classList.add('hidden');
         }
 
+        function setContent(id, selector, content) {
+            document.getElementById(id).querySelector(selector).innerHTML = content;
+        }
+
         function showError(error) {
             var node = ui.getElement('error');
-            // console.log('error node', node);
             node.classList.remove('hidden');
-            ui.setContent('error.title', error.title);
-            ui.setContent('error.message.body', error.message);
-            ui.setContent('error.detail.body', error.detail || '');
+            setContent(vm.error.id, '[data-element="title"]', error.title);
+            setContent(vm.error.message.id, '[data-element="body"]', error.message);
+            setContent(vm.error.detail.id, '[data-element="body"]', error.detail);
         }
 
         function hideResponse(response) {
@@ -107,24 +114,24 @@ define([
             runtime.service('session').getClient().loginCreate(data)
                 .then(function (response) {
                     switch (response.status) {
-                    case 'ok':
-                        hideError();
-                        renderSignupSuccess(response);
-                        break;
-                    case 'error':
-                        hideResponse();
-                        showError({
-                            title: 'Error creating account',
-                            message: response.data.message,
-                            detail: response.data
-                        });
-                        break;
-                    default:
-                        hideResponse();
-                        showError({
-                            message: 'Unknown response',
-                            data: response
-                        })
+                        case 'ok':
+                            hideError();
+                            renderSignupSuccess(response);
+                            break;
+                        case 'error':
+                            hideResponse();
+                            showError({
+                                title: 'Error creating account',
+                                message: response.data.message,
+                                detail: response.data
+                            });
+                            break;
+                        default:
+                            hideResponse();
+                            showError({
+                                message: 'Unknown response',
+                                data: response
+                            })
                     }
                 })
                 .catch(function (err) {
@@ -139,7 +146,6 @@ define([
         function extractNextRequest(url) {
             var re = /.*?\?nextrequest=(.*)/;
             var match = re.exec(url);
-            // console.log('extract', url, match);
             if (!match) {
                 return null;
             }
@@ -148,11 +154,8 @@ define([
 
         function doRedirect(redirectUrl) {
             var nextRequest = extractNextRequest(redirectUrl);
-            // console.log('nextRequest', nextRequest);
-            // return;
             if (nextRequest) {
                 try {
-                    // console.log('nextrequest', nextRequest);
                     if (nextRequest) {
                         runtime.send('app', 'navigate', nextRequest);
                     } else {
@@ -164,7 +167,6 @@ define([
             } else {
                 runtime.send('app', 'navigate', '');
             }
-            // container.innerHTML = BS.buildPresentableJson(params);
         }
 
         function handleLoginClick(identityId) {
@@ -207,16 +209,16 @@ define([
                                 }, [
                                     td([
                                         button({
-                                        class: 'btn btn-primary',
-                                        id: events.addEvent({
-                                            type: 'click',
-                                            handler: function () {
-                                                handleLoginClick(login.id);
-                                            }
-                                        })
-                                    }, 'Continue to KBase with account <u>' + login.username + '</u>'),
-                                    ' using your ' + choiceResponse.provider + ' account linked identity ',
-                                    i(login.prov_usernames[0]) +'.'
+                                            class: 'btn btn-primary',
+                                            id: events.addEvent({
+                                                type: 'click',
+                                                handler: function () {
+                                                    handleLoginClick(login.id);
+                                                }
+                                            })
+                                        }, 'Continue to KBase using account <u>' + login.username + '</u>'),
+                                        ' via ' + choiceResponse.provider + ' account linked identity ',
+                                        i(login.prov_usernames[0]) + '.'
                                     ])
                                 ]))
                             })
@@ -229,7 +231,9 @@ define([
 
         function renderSignupSuccess(response) {
             ui.setContent('main-title', 'KBase Login - Signed Up and Signed In')
-            var events = DomEvent.make({ node: container });
+            var events = DomEvent.make({
+                node: container
+            });
             var content = BS.buildPanel({
                 type: 'success',
                 title: 'KBase Account Successfuly Created',
@@ -260,7 +264,7 @@ define([
             }
             var content = choiceResponse.create.map(function (create, index) {
                 var numberPrefix = '';
-                if (showNumber) {                    
+                if (showNumber) {
                     numberPrefix = String(index + 1) + '. ';
                 }
                 return BS.buildPanel({
@@ -275,10 +279,10 @@ define([
                                 p([
                                     'Signing up is easy. Just fill out the form below and click ',
                                     b('Create KBase Account')
-                                 ]),
-                                 p([
-                                     'Field values are pre-filled from your ',
-                                     b(choiceResponse.provider),
+                                ]),
+                                p([
+                                    'Field values are pre-filled from your ',
+                                    b(choiceResponse.provider),
                                     ' account.'
                                 ])
                             ])
@@ -351,56 +355,81 @@ define([
                                     button({
                                         class: 'btn btn-primary',
                                         type: 'submit',
-                                        id: events.addEvent({ type: 'click', handler: doSubmitSignup })
+                                        id: events.addEvent({
+                                            type: 'click',
+                                            handler: doSubmitSignup
+                                        })
                                     }, 'Create KBase Account')
-                                ])]),
+                                ])
+                            ]),
                             div({
                                 class: 'col-md-6'
                             }, [
-                                    BS.buildPanel({
-                                        title: 'Linking This Identity Account',
-                                        body: div({ class: 'container-fluid' }, [
-                                            div({ class: 'row' }, [
-                                                div({
-                                                    class: 'col-md-12'
-                                                }, [
-                                                    p('The new KBase account account will be <i>linked</i> to this ' + span({ style: { fontWeight: 'bold' } }, choiceResponse.provider) + ' account.')
-                                                ]),
+                                BS.buildPanel({
+                                    title: 'Linking This Identity Account',
+                                    body: div({
+                                        class: 'container-fluid'
+                                    }, [
+                                        div({
+                                            class: 'row'
+                                        }, [
+                                            div({
+                                                class: 'col-md-12'
+                                            }, [
+                                                p('The new KBase account account will be <i>linked</i> to this ' + span({
+                                                    style: {
+                                                        fontWeight: 'bold'
+                                                    }
+                                                }, choiceResponse.provider) + ' account.')
                                             ]),
-                                            div({ class: 'row'}, [
+                                        ]),
+                                        div({
+                                            class: 'row'
+                                        }, [
 
-                                                div({
-                                                    class: 'col-md-12'
+                                            div({
+                                                class: 'col-md-12'
+                                            }, [
+                                                table({
+                                                    class: 'table table-striped'
                                                 }, [
-                                                    table({
-                                                        class: 'table table-striped'
-                                                    }, [
-                                                        tr([
-                                                            th('Name on account'),
-                                                            td(create.prov_fullname)
-                                                        ]),
-                                                        tr([
-                                                            th('Username'),
-                                                            td(create.prov_username)
-                                                        ]),
-                                                        tr([
-                                                            th('E-Mail Address'),
-                                                            td(create.prov_email)
-                                                        ])
+                                                    tr([
+                                                        th('Name on account'),
+                                                        td(create.prov_fullname)
+                                                    ]),
+                                                    tr([
+                                                        th('Username'),
+                                                        td(create.prov_username)
+                                                    ]),
+                                                    tr([
+                                                        th('E-Mail Address'),
+                                                        td(create.prov_email)
                                                     ])
                                                 ])
                                             ])
                                         ])
-                                    })
-                                ])
+                                    ])
+                                })
                             ])
                         ])
+                    ])
                 })
             }).join('\n');
             getElement(container, 'create').innerHTML = content;
         }
 
         function renderLayout() {
+            vm = {
+                error: {
+                    id: html.genId(),
+                    message: {
+                        id: html.genId()
+                    },
+                    detail: {
+                        id: html.genId()
+                    }
+                }
+            }
             container.innerHTML = div({
                 class: 'container-fluid'
             }, [
@@ -430,7 +459,10 @@ define([
                         div({
                             dataElement: 'response'
                         }),
-                        BS.buildPanel({
+                        div({
+                            id: vm.error.id,
+                        }, BS.buildPanel({
+
                             name: 'error',
                             hidden: true,
                             title: 'Error',
@@ -439,15 +471,18 @@ define([
                                 div({
                                     dataElement: 'title'
                                 }),
-
-                                ui.buildPanel({
+                                div({
+                                    id: vm.error.message.id,
+                                }, ui.buildPanel({
                                     name: 'message',
                                     title: 'Message',
                                     body: div({
                                         dataElement: 'body'
                                     })
-                                }),
-                                ui.buildCollapsiblePanel({
+                                })),
+                                div({
+                                    id: vm.error.detail.id,
+                                }, ui.buildCollapsiblePanel({
                                     name: 'detail',
                                     title: 'Detail',
                                     collapsed: true,
@@ -455,31 +490,26 @@ define([
                                     body: div({
                                         dataElement: 'body'
                                     })
-                                })
+                                }))
                             ])
-                        })
+                        }))
                     ])
                 ])
             ]);
         }
 
         function start(params) {
-            // inProcessToken = params['in-process-login-token'];
-            var cookieManager = new M_Cookie.CookieManager();
-            inProcessToken = cookieManager.getItem('in-process-login-token');
-            // console.log('cookie?', inProcessToken);
-
             // Clean up window 
-           if(window.history != undefined && 
-              window.history.pushState != undefined &&
-              window.location.search &&
-              window.location.search.length > 0) {
+            if (window.history != undefined &&
+                window.history.pushState != undefined &&
+                window.location.search &&
+                window.location.search.length > 0) {
                 // if pushstate exists, add a new state the the history, this changes the url without 
                 // reloading the page
                 var newUrl = new URL(window.location.href);
                 var oldQuery = newUrl.search;
                 var newHash = newUrl.hash + oldQuery;
-                newUrl.search = '';                
+                newUrl.search = '';
                 newUrl.hash = newHash;
                 window.history.pushState({}, document.title, newUrl.toString());
             }
@@ -488,10 +518,9 @@ define([
             return Promise.try(function () {
                 var events = DomEvent.make({
                     node: container
-                });                
+                });
                 renderLayout();
-                // console.log('params', params, params['in-process-login-token']);
-                runtime.service('session').getClient().getClient().getLoginChoice(inProcessToken)
+                runtime.service('session').getClient().getClient().getLoginChoice()
                     .then(function (result) {
                         // Two possible outcomes here:
 
@@ -523,21 +552,21 @@ define([
                                     intro = div([
                                         p([
                                             'This ' + b(choice.provider) + ' account is associated with a KBase account.'
-                                        ]), 
+                                        ]),
                                         p([
                                             'Click the login button to continue using KBase with the indicated account.'
                                         ])
                                     ]);
-                                    ui.setContent('main-title', 'KBase Login - Ready')
+                                    ui.setContent('main-title', 'KBase Login - Ready to Sign In')
                                     renderLogin(events, result.data);
                                 } else {
                                     ui.setContent('main-title', 'KBase Login - Sign In')
-                                     intro = div([
+                                    intro = div([
                                         p([
                                             'This ' + b(choice.provider) + ' identity account is associated with ',
-                                            String(result.data.login.length), 
+                                            String(result.data.login.length),
                                             ' KBase accounts.'
-                                        ]), 
+                                        ]),
                                         p([
                                             'Click the login button for the associated account to continue using KBase as that user.'
                                         ])
@@ -577,8 +606,18 @@ define([
                                     renderSignup(events, result.data);
                                     // should not occur
                                 } else {
-                                    intro = 'um, should not be able to sign up and log in at the same time.';
-                                    // should not occur
+                                    intro = div([
+                                        p([
+                                            'This ' + choice.provider + ' identity account may be used to log into ',
+                                            'the following KBase accounts, or to create a new KBase account.'
+                                        ]),
+                                        p([
+                                            'To avoid this screen in the future, you may link this identity account to ',
+                                            'your KBase account in order to log in directly with it.'
+                                        ])
+                                    ]);
+                                    renderLogin(events, result.data);
+                                    renderSignup(events, result.data);
                                 }
                             } else {
                                 if (result.data.login.length === 0) {
@@ -586,7 +625,7 @@ define([
                                     ui.setContent('main-title', 'KBase Login - Sign Up')
                                     intro = div([
                                         p([
-                                            'Your  ',                                            
+                                            'Your  ',
                                             b(choice.provider),
                                             ' account contains  ',
                                             String(result.data.create.length),
@@ -609,7 +648,7 @@ define([
                                     ui.setContent('main-title', 'KBase Login - Sign Up or Sign In')
                                     intro = div([
                                         p([
-                                            'Your  ',                                            
+                                            'Your  ',
                                             b(choice.provider),
                                             ' account contains  ',
                                             String(result.data.create.length),
@@ -642,11 +681,28 @@ define([
                             container.querySelector('[data-element="debug"]').innerHTML = debug;
                         } else if (result.status === 'error') {
                             console.error(result);
-                            showError({
-                                title: 'Error fetching login choices',
-                                message: result.data.error.message,
-                                detail: BS.buildPresentableJson(result.data.error)
-                            });
+                            // appCode is the specific error code from auth2
+                            switch (result.data.error.appCode) {
+                            case 10010:
+                                showError({
+                                    title: 'Error',
+                                    message: 'No authentication token or token has expired',
+                                    detail: div([
+                                        p([
+                                            'This error can occur when visiting this page without logging in first, ',
+                                            'or if the previous login page was unattended for more than 30 minutes'
+                                        ])
+                                    ])
+                                });
+                                break;
+                            default:
+                                showError({
+                                    title: 'Error fetching login choices',
+                                    message: result.data.error.message,
+                                    detail: BS.buildPresentableJson(result.data.error)
+                                });
+                            }
+
                         } else {
                             console.error(result);
                             showError({
@@ -660,7 +716,7 @@ define([
                     .catch(function (err) {
                         container.innerHTML = err.message;
                         console.log('ERROR', err);
-                    })
+                    });
             });
         }
 

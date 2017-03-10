@@ -7,7 +7,7 @@ package:
     date: Feb 14, 2017
     version: 0.0.1
 source:
-    modules:        
+    modules:
 install:
     widgets:
         -
@@ -17,6 +17,7 @@ install:
         -
             module: login
             id: auth2Login
+            css: true
             type: factory
         -
             module: loginSuccess 
@@ -31,8 +32,16 @@ install:
             id: auth2Test
             type: factory
         -
-            module: account
+            module: account/panel
             id: auth2Account
+            type: factory  
+        -
+            module: loginWidget
+            id: auth2_login
+            type: factory
+        -
+            module: linkContinue
+            id: auth2_linkContinue
             type: factory
     routes:
         -
@@ -55,7 +64,14 @@ install:
         -
             path: ['auth2', 'account']
             widget: auth2Account
-            authorization: true              
+            authorization: true
+            queryParams:
+                tab: {}
+        - 
+            path: ['auth2', 'link', 'continue']
+            widget: auth2_linkContinue
+            queryParams:
+                in-process-link-token: {}
     menu:
         -
             name: auth2info
