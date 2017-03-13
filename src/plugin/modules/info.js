@@ -344,7 +344,7 @@ define([
                 };
 
                 Promise.all([                    
-                    auth2.getIntrospection(),
+                    auth2.getTokenInfo(),
                     auth2.getAccount(),
                     'n/a'
                 ])
