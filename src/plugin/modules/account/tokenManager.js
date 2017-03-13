@@ -42,6 +42,11 @@ define([
                 enabled: false,
                 value: null
             },
+            currentToken: {
+                id: html.genId(),
+                enabled: true,
+                value: null
+            },
             allTokens: {
                 id: html.genId(),
                 enabled: true,
@@ -57,6 +62,7 @@ define([
             bindVmNode(vm.serverTokens);
             bindVmNode(vm.developerTokens);
             bindVmNode(vm.allTokens);
+            bindVmNode(vm.currentToken);
         }
 
         function renderLayout() {
@@ -70,6 +76,9 @@ define([
                     class: 'row'
                 }, [
                     div({ class: 'col-md-12' }, [
+                        div({
+                            id: vm.currentToken.id
+                        }),
                         div({
                             id: vm.allTokens.id
                         }),
@@ -90,29 +99,39 @@ define([
             return date.toUTCString()
         }
 
+        function renderTokens(node, tokens) {
+            node.innerHTML = table({
+                class: 'table table-striped'
+            }, [
+                tr([
+                    th('Created'),
+                    th('Expires'),
+                    th('Type'),
+                    th('User'),
+                    th('Id')
+                ])
+            ].concat(tokens.map(function (token) {
+                return tr([
+                    td(niceDate(token.created)),
+                    td(niceDate(token.expires) + '<br>' + token.expires),
+                    td(token.type),
+                    td(token.user),
+                    td(token.id)
+                ]);
+            })));
+        }
+
         function renderAllTokens() {
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
                     .then(function (result) {
-                        vm.allTokens.node.innerHTML = table({
-                            class: 'table table-striped'
-                        }, [
-                            tr([
-                                th('Created'),
-                                th('Expires'),
-                                th('Type'),
-                                th('User'),
-                                th('Id')
-                            ])
-                        ].concat(result.tokens.map(function (token) {
-                            return tr([
-                                td(niceDate(token.created)),
-                                td(niceDate(token.expires) + '<br>' + token.expires),
-                                td(token.type),
-                                td(token.user),
-                                td(token.id)
-                            ]);
-                        })));
+
+                        // Render "current" token.
+                        renderTokens(vm.currentToken.node, [result.current]);
+
+                        // Render "other" tokens
+                        renderTokens(vm.allTokens.node, result.tokens);
+                       
                     })
                     .catch(function (err) {
                         vm.serverTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
