@@ -177,7 +177,10 @@ server {
   }
   # Proxy all non-services to the local kbase-ui running in the vm
   location / {
-    proxy_pass http://127.0.0.1:8080;
+    # next line for node testing server.
+    # proxy_pass http://127.0.0.1:8080;
+    root /vagrant/kbase-ui/build/build/client;
+    index index.html;
   }
 }
 ```
