@@ -275,7 +275,7 @@ define([
                     },
                     {
                         name: 'links',
-                        label: 'Auth Links',
+                        label: 'Authorization',
                         panel: {
                             factory: LinksManager
                         }
