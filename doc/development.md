@@ -167,8 +167,8 @@ server {
 server {
   listen 443 ssl;
   server_name ci.kbase.us;
-  ssl_certificate /vagrant/test.crt;
-  ssl_certificate_key /vagrant/test.key;
+  ssl_certificate /vagrant/auth2/test.crt;
+  ssl_certificate_key /vagrant/auth2/test.key;
   # Proxy all service calls, including auth2, to the real CI
   location /services {
     proxy_cookie_path /login /services/auth/login;
@@ -177,7 +177,10 @@ server {
   }
   # Proxy all non-services to the local kbase-ui running in the vm
   location / {
-    proxy_pass http://127.0.0.1:8080;
+    # next line for node testing server.
+    # proxy_pass http://127.0.0.1:8080;
+    root /vagrant/kbase-ui/build/build/client;
+    index index.html;
   }
 }
 ```
