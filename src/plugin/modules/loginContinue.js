@@ -114,24 +114,24 @@ define([
             runtime.service('session').getClient().loginCreate(data)
                 .then(function (response) {
                     switch (response.status) {
-                        case 'ok':
-                            hideError();
-                            renderSignupSuccess(response);
-                            break;
-                        case 'error':
-                            hideResponse();
-                            showError({
-                                title: 'Error creating account',
-                                message: response.data.message,
-                                detail: response.data
-                            });
-                            break;
-                        default:
-                            hideResponse();
-                            showError({
-                                message: 'Unknown response',
-                                data: response
-                            })
+                    case 'ok':
+                        hideError();
+                        renderSignupSuccess(response);
+                        break;
+                    case 'error':
+                        hideResponse();
+                        showError({
+                            title: 'Error creating account',
+                            message: response.data.message,
+                            detail: response.data
+                        });
+                        break;
+                    default:
+                        hideResponse();
+                        showError({
+                            message: 'Unknown response',
+                            data: response
+                        });
                     }
                 })
                 .catch(function (err) {
@@ -298,11 +298,11 @@ define([
                                 //     ' and and then click the Create KBase Account button.'
                                 // ]),
                                 form({
-                                    dataElement: 'signup-form',
-                                    id: events.addEvent({
-                                        type: 'submit',
-                                        handler: doSubmitSignup
-                                    })
+                                    dataElement: 'signup-form'
+                                    // id: events.addEvent({
+                                    //     type: 'submit',
+                                    //     handler: doSubmitSignup
+                                    // })
                                 }, [
                                     input({
                                         name: 'id',
@@ -354,7 +354,7 @@ define([
 
                                     button({
                                         class: 'btn btn-primary',
-                                        type: 'submit',
+                                        type: 'button',
                                         id: events.addEvent({
                                             type: 'click',
                                             handler: doSubmitSignup
@@ -521,7 +521,7 @@ define([
                 });
                 renderLayout();
                 runtime.service('session').getClient().getClient().getLoginChoice()
-                    .then(function (result) {
+                    .then(function (choice) {
                         // Two possible outcomes here:
 
                         // 1. user does not have an account yet, signalled by the 
@@ -539,150 +539,151 @@ define([
                         // 3. usser is using an  identity which is linked to more then one
                         // account, in which case there are 2 or more login items and no 
                         // create.
-                        var choice = result.data;
                         redirectUrl = choice.redirecturl;
-                        if (result.status === 'ok') {
-                            var intro;
-                            if (result.data.create.length === 0) {
-                                if (result.data.login.length === 0) {
-                                    // should not be possible!
-                                    intro = 'no choices -- should not occur!';
-                                } else if (result.data.login.length === 1) {
-                                    // just log them in, but we should never see this case.
-                                    intro = div([
-                                        p([
-                                            'This ' + b(choice.provider) + ' account is associated with a KBase account.'
-                                        ]),
-                                        p([
-                                            'Click the login button to continue using KBase with the indicated account.'
-                                        ])
-                                    ]);
-                                    ui.setContent('main-title', 'KBase Login - Ready to Sign In')
-                                    renderLogin(events, result.data);
-                                } else {
-                                    ui.setContent('main-title', 'KBase Login - Sign In')
-                                    intro = div([
-                                        p([
-                                            'This ' + b(choice.provider) + ' identity account is associated with ',
-                                            String(result.data.login.length),
-                                            ' KBase accounts.'
-                                        ]),
-                                        p([
-                                            'Click the login button for the associated account to continue using KBase as that user.'
-                                        ])
-                                    ]);
-                                    renderLogin(events, result.data);
-                                }
-                            } else if (result.data.create.length === 1) {
-                                if (result.data.login.length === 0) {
-                                    ui.setContent('main-title', 'KBase Login - Sign Up')
-                                    intro = div([
-                                        p([
-                                            'This ' + b(choice.provider) + ' identity account (shown below in <b>Linking This Identity Account</b>) is not currently associated ',
-                                            'with a KBase account. You may create a new KBase account below and have this ',
-                                            b(choice.provider),
-                                            ' identity account linked to it.'
-                                        ]),
-                                        p([
-                                            'After creating this new KBase account, you will be automatically logged in.',
-                                        ]),
-                                        p([
-                                            'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
-                                        ])
-                                    ]);
-                                    renderSignup(events, result.data);
-                                } else if (result.data.login.length === 1) {
-                                    intro = div([
-                                        p([
-                                            'This ' + choice.provider + ' identity account may be used to log into ',
-                                            'the following KBase account, or to create a new KBase account.'
-                                        ]),
-                                        p([
-                                            'To avoid this screen in the future, you may link this identity account to ',
-                                            'your KBase account in order to log in directly with it.'
-                                        ])
-                                    ]);
-                                    renderLogin(events, result.data);
-                                    renderSignup(events, result.data);
-                                    // should not occur
-                                } else {
-                                    intro = div([
-                                        p([
-                                            'This ' + choice.provider + ' identity account may be used to log into ',
-                                            'the following KBase accounts, or to create a new KBase account.'
-                                        ]),
-                                        p([
-                                            'To avoid this screen in the future, you may link this identity account to ',
-                                            'your KBase account in order to log in directly with it.'
-                                        ])
-                                    ]);
-                                    renderLogin(events, result.data);
-                                    renderSignup(events, result.data);
-                                }
+                        var intro;
+                        if (choice.create.length === 0) {
+                            if (choice.login.length === 0) {
+                                // should not be possible!
+                                intro = 'no choices -- should not occur!';
+                            } else if (choice.login.length === 1) {
+                                // just log them in, but we should never see this case.
+                                intro = div([
+                                    p([
+                                        'This ' + b(choice.provider) + ' account is associated with a KBase account.'
+                                    ]),
+                                    p([
+                                        'Click the login button to continue using KBase with the indicated account.'
+                                    ])
+                                ]);
+                                ui.setContent('main-title', 'KBase Login - Ready to Sign In')
+                                renderLogin(events, choice);
                             } else {
-                                if (result.data.login.length === 0) {
-                                    // should not be possible!
-                                    ui.setContent('main-title', 'KBase Login - Sign Up')
-                                    intro = div([
-                                        p([
-                                            'Your  ',
-                                            b(choice.provider),
-                                            ' account contains  ',
-                                            String(result.data.create.length),
-                                            ' linked identity accounts which ',
-                                            'are not currently associated ',
-                                            'with a KBase account.'
-                                        ]),
-                                        p([
-                                            'You may create a new KBase account for each linked identity account.'
-                                        ]),
-                                        p([
-                                            'After creating this new KBase account, you will be automatically logged in.',
-                                        ]),
-                                        p([
-                                            'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
-                                        ])
-                                    ]);
-                                } else {
-                                    // just log them in, but we should never see this case.
-                                    ui.setContent('main-title', 'KBase Login - Sign Up or Sign In')
-                                    intro = div([
-                                        p([
-                                            'Your  ',
-                                            b(choice.provider),
-                                            ' account contains  ',
-                                            String(result.data.create.length),
-                                            ' linked identity accounts which ',
-                                            'are not currently associated ',
-                                            'with a KBase account.'
-                                        ]),
-                                        p([
-                                            'You may create a new KBase account for each linked identity account.'
-                                        ]),
-                                        p([
-                                            'After creating this new KBase account, you will be automatically logged in.',
-                                        ]),
-                                        p([
-                                            'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
-                                        ])
-                                    ]);
-                                }
-
-                                renderLogin(events, result.data);
-                                renderSignup(events, result.data);
+                                ui.setContent('main-title', 'KBase Login - Sign In')
+                                intro = div([
+                                    p([
+                                        'This ' + b(choice.provider) + ' identity account is associated with ',
+                                        String(choice.login.length),
+                                        ' KBase accounts.'
+                                    ]),
+                                    p([
+                                        'Click the login button for the associated account to continue using KBase as that user.'
+                                    ])
+                                ]);
+                                renderLogin(events, choice);
                             }
-                            // ui.setContent('title', h1('KBase Login - further action required'));
-                            ui.setContent('introduction', intro);
-                            var debug = BS.buildCollapsiblePanel({
-                                title: 'debug',
-                                collapsed: true,
-                                body: BS.buildPresentableJson(result.data)
-                            });
-                            container.querySelector('[data-element="debug"]').innerHTML = debug;
-                        } else if (result.status === 'error') {
-                            console.error(result);
+                        } else if (choice.create.length === 1) {
+                            if (choice.login.length === 0) {
+                                ui.setContent('main-title', 'KBase Login - Sign Up')
+                                intro = div([
+                                    p([
+                                        'This ' + b(choice.provider) + ' identity account (shown below in <b>Linking This Identity Account</b>) is not currently associated ',
+                                        'with a KBase account. You may create a new KBase account below and have this ',
+                                        b(choice.provider),
+                                        ' identity account linked to it.'
+                                    ]),
+                                    p([
+                                        'After creating this new KBase account, you will be automatically logged in.',
+                                    ]),
+                                    p([
+                                        'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
+                                    ])
+                                ]);
+                                renderSignup(events, choice);
+                            } else if (choice.login.length === 1) {
+                                intro = div([
+                                    p([
+                                        'This ' + choice.provider + ' identity account may be used to log into ',
+                                        'the following KBase account, or to create a new KBase account.'
+                                    ]),
+                                    p([
+                                        'To avoid this screen in the future, you may link this identity account to ',
+                                        'your KBase account in order to log in directly with it.'
+                                    ])
+                                ]);
+                                renderLogin(events, choice);
+                                renderSignup(events, choice);
+                                // should not occur
+                            } else {
+                                intro = div([
+                                    p([
+                                        'This ' + choice.provider + ' identity account may be used to log into ',
+                                        'the following KBase accounts, or to create a new KBase account.'
+                                    ]),
+                                    p([
+                                        'To avoid this screen in the future, you may link this identity account to ',
+                                        'your KBase account in order to log in directly with it.'
+                                    ])
+                                ]);
+                                renderLogin(events, choice);
+                                renderSignup(events, choice);
+                            }
+                        } else {
+                            if (choice.login.length === 0) {
+                                // should not be possible!
+                                ui.setContent('main-title', 'KBase Login - Sign Up')
+                                intro = div([
+                                    p([
+                                        'Your  ',
+                                        b(choice.provider),
+                                        ' account contains  ',
+                                        String(choice.create.length),
+                                        ' linked identity accounts which ',
+                                        'are not currently associated ',
+                                        'with a KBase account.'
+                                    ]),
+                                    p([
+                                        'You may create a new KBase account for each linked identity account.'
+                                    ]),
+                                    p([
+                                        'After creating this new KBase account, you will be automatically logged in.',
+                                    ]),
+                                    p([
+                                        'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
+                                    ])
+                                ]);
+                            } else {
+                                // just log them in, but we should never see this case.
+                                ui.setContent('main-title', 'KBase Login - Sign Up or Sign In')
+                                intro = div([
+                                    p([
+                                        'Your  ',
+                                        b(choice.provider),
+                                        ' account contains  ',
+                                        String(choice.create.length),
+                                        ' linked identity accounts which ',
+                                        'are not currently associated ',
+                                        'with a KBase account.'
+                                    ]),
+                                    p([
+                                        'You may create a new KBase account for each linked identity account.'
+                                    ]),
+                                    p([
+                                        'After creating this new KBase account, you will be automatically logged in.',
+                                    ]),
+                                    p([
+                                        'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
+                                    ])
+                                ]);
+                            }
+
+                            renderLogin(events, choice);
+                            renderSignup(events, choice);
+                        }
+                        events.attachEvents();
+                        // ui.setContent('title', h1('KBase Login - further action required'));
+                        ui.setContent('introduction', intro);
+                        var debug = BS.buildCollapsiblePanel({
+                            title: 'debug',
+                            collapsed: true,
+                            body: BS.buildPresentableJson(choice)
+                        });
+                        container.querySelector('[data-element="debug"]').innerHTML = debug;
+                    })
+                    .catch(function (err) {
+                        if (err.code) {
+                            console.error('ERROR', err);
                             // appCode is the specific error code from auth2
-                            switch (result.data.error.appCode) {
+                            switch (err.code) {
                             case 10010:
                                 showError({
                                     title: 'Error',
@@ -698,24 +699,20 @@ define([
                             default:
                                 showError({
                                     title: 'Error fetching login choices',
-                                    message: result.data.error.message,
-                                    detail: BS.buildPresentableJson(result.data.error)
+                                    message: err.message,
+                                    detail: BS.buildPresentableJson(err)
                                 });
                             }
 
                         } else {
-                            console.error(result);
+                            console.error(err);
                             showError({
                                 title: 'Error processing login choice',
                                 message: 'Unexpected response',
-                                detail: BS.buildPresentableJson(result)
-                            })
+                                detail: BS.buildPresentableJson(err)
+                            });
                         }
-                        events.attachEvents();
-                    })
-                    .catch(function (err) {
-                        container.innerHTML = err.message;
-                        console.log('ERROR', err);
+                        
                     });
             });
         }

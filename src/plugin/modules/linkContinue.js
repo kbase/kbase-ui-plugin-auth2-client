@@ -246,7 +246,6 @@ define([
             // inProcessToken = params['in-process-login-token'];
             // var cookieManager = new M_Cookie.CookieManager();
             // inProcessToken = cookieManager.getItem('in-process-login-token');
-            // console.log('cookie?', inProcessToken);
 
             // Clean up window 
             // if (window.history != undefined &&
