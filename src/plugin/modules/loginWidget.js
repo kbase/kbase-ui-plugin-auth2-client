@@ -62,6 +62,10 @@ define([
             return img({ src: defaultAvatarUrl, style: 'width: 40px;', class: 'login-button-avatar', 'data-element': 'avatar' });
         }
 
+        function handleAccount() {
+            runtime.send('ui', 'navigate', ['auth2', 'account']);
+        }
+
         function renderLogin(events) {
             return Promise.try(function () {
                 if (runtime.service('session').isLoggedIn()) {
@@ -85,15 +89,36 @@ define([
                                 ]),
                                 ul({ class: 'dropdown-menu', role: 'menu' }, [
                                     li({}, [
+                                        div({ 
+                                            display: 'inline-block',
+                                            dataElement: 'user-label',
+                                            style: {
+                                                textAlign: 'center'
+                                            }
+                                        }, [
+                                            realname,
+                                            br(),
+                                            i({}, username)
+                                        ])
+                                    ]),
+                                    li({ class: 'divider' }),
+                                    li({}, [
                                         a({ href: '#people/' + username, 'data-menu-item': 'userlabel' }, [
                                             div({ style: 'display:inline-block; width: 34px; vertical-align: top;' }, [
+                                                span({ class: 'fa fa-address-card-o', style: 'font-size: 150%; margin-right: 10px;' })
+                                            ]),
+                                            div({ style: 'display: inline-block', 'data-element': 'user-label' }, 'Profile')
+                                        ])
+                                    ]),
+                                    li({}, [
+                                        a({ 
+                                            href: '#auth2/account', 
+                                            'data-menu-item': 'account'
+                                        }, [
+                                            div({ style: 'display: inline-block; width: 34px;' }, [
                                                 span({ class: 'fa fa-user', style: 'font-size: 150%; margin-right: 10px;' })
                                             ]),
-                                            div({ style: 'display: inline-block', 'data-element': 'user-label' }, [
-                                                realname,
-                                                br(),
-                                                i({}, username)
-                                            ])
+                                            'Account'
                                         ])
                                     ]),
                                     li({ class: 'divider' }),
