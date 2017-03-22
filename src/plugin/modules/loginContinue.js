@@ -34,6 +34,8 @@ define([
         input = t('input'),
         button = t('button'),
         h1 = t('h1'),
+        h2 = t('h2'),
+        h3 = t('h3'),
         ul = t('ul'),
         li = t('li');
 
@@ -120,8 +122,7 @@ define([
                 // agreementsToSubmit.push([policy.id, policy.version].join('.'));
                 agreementsToSubmit.push({
                     id: policy.id,
-                    version: policy.version,
-                    date: new Date()
+                    version: policy.version
                 });
             });
             // outdated policies.
@@ -132,8 +133,7 @@ define([
                 // agreementsToSubmit.push([policy.id, policy.version].join('.'));
                 agreementsToSubmit.push({
                     id: policy.id,
-                    version: policy.version,
-                    date: new Date()
+                    version: policy.version
                 });
             });
 
@@ -208,8 +208,7 @@ define([
                 // agreementsToSubmit.push([policy.id, policy.version].join('.'));
                 agreementsToSubmit.push({
                     id: policy.id,
-                    version: policy.version,
-                    date: new Date()
+                    version: policy.version
                 });
             });
             // outdated policies.
@@ -258,7 +257,7 @@ define([
                 var agreement = {
                     id: id[0],
                     version: id[1],
-                    date: new Date(policyId.agreed)
+                    date: new Date(policyId.agreed_on)
                 };
                 userAgreementMap[agreement.id] = agreement;
                 userAgreementVersionMap[agreement.id + '.' + agreement.version] = agreement;
@@ -367,11 +366,15 @@ define([
         }
 
         function renderPolicies(node, policiesToResolve) {
-            var content = [];
+            var content = [
+                
+            ];
             var events = DomEvent.make({
                 node: node
             });
+            console.log('POLICIES TO RESOLVE', policiesToResolve);
             if (policiesToResolve.missing.length > 0) {
+                content.push(h3('Agree to KBase User Policies'));
                 content.push(div({
                     style: {
                         marginTop: '20px'
@@ -423,7 +426,8 @@ define([
                                             height: '400px',
                                             overflowY: 'scroll',
                                             border: '1px silver solid',
-                                            padding: '4px'
+                                            padding: '4px',
+                                            backgroundColor: '#EEE'
                                         },
                                         dataElement: 'policyViewer',
                                         dataMinMax: 'max',
@@ -678,7 +682,8 @@ define([
                                                                     }
                                                                 }, 'Link The Following Identities ')
                                                             ]),
-                                                            ul({}, choiceResponse.create.map(function (create) {
+                                                            ul({}, choiceResponse.create                                                            
+                                                            .map(function (create) {
                                                                 return li(create.prov_username);
                                                             }).join('\n'))
                                                         ]);
@@ -956,12 +961,16 @@ define([
                         ]),
 
                         (function () {
-                            if (choiceResponse.create.length > 0) {
+                            var additionalCreates = choiceResponse.create.filter(function (create2) {
+                                return (create2.prov_username !== create.prov_username);
+                            });
+                            if (additionalCreates.length > 0) {
                                 return div({
                                     style: {
                                         marginTop: '10px'
                                     }
                                 }, [
+                                    h3('Link Additional Identities'),
                                     p({}, [
                                         'The following ',
                                         choiceResponse.provider,
@@ -981,9 +990,10 @@ define([
                                             style: {
                                                 margin: '0 0 0 6px'
                                             }
-                                        }, 'Link The Following Identities ')
+                                        }, 'Link The Following Additional Identities ')
                                     ]),
-                                    ul({}, choiceResponse.create.map(function (create) {
+                                    ul({}, additionalCreates
+                                    .map(function (create) {
                                         return li(create.prov_username);
                                     }).join('\n'))
                                 ]);
