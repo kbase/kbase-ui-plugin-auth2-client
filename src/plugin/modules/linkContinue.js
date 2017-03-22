@@ -188,11 +188,22 @@ define([
                 });
         }
 
+        function cancelLink() {
+            runtime.send('app', 'navigate', {
+                path: 'auth2/account',
+                params: {
+                    tab: 'links'
+                }
+            });
+        }   
+
         function renderLinkChoice(choiceData) {
             var node = ui.getElement('link');
             var events = DomEvent.make({
                 node: container
             });
+
+            console.log('rendering link choice', choiceData);
 
             var content = div({}, [
                 choiceData.ids.map(function (id) {
@@ -202,7 +213,12 @@ define([
                         canLink = false;
                         message =  'I\'m sorry, this ' + choiceData.provider + ' account may not be linked - it is already linked to another KBase account';
                     } else {
-                        message = 'You may continue to link the following ' + choiceData.provider + ' account to your KBase account'; 
+                        message = div([
+                            p([
+                                'You have requested to link the ' + b(choiceData.provider) + ' account ' + b(id.prov_username),
+                                ' to your KBase account ' + b(choiceData.user)
+                            ])
+                        ]);
                     }
                     return div({
                         class: 'row'
@@ -222,17 +238,21 @@ define([
                                             doLink(id.id);
                                         }
                                     })
-                                }, 'Link to ' + id.prov_username),
-                                (function () {
-                                    if (canLink) {
-                                        return;
+                                }, 'Link ' + b(id.prov_username)),
+                                button({                                
+                                    class: 'btn btn-default',
+                                    type: 'button',
+                                    disabled: !canLink,
+                                    id: events.addEvent({
+                                        type: 'click', 
+                                        handler: function () {
+                                            cancelLink(id.id);
+                                        }
+                                    }),
+                                    style: {
+                                        marginLeft: '10px'
                                     }
-                                    return div([
-                                        p([
-                                        
-                                        ])
-                                    ]);
-                                }())
+                                }, 'Cancel &amp; Return to Links Page')
                             ])
                         ])
                     ]);

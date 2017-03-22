@@ -1,0 +1,20 @@
+{
+    "kbase-user": {
+        "title": "KBase User Agreement",
+        "versions": {
+            "1": {
+                "file": "v1.md",
+                "date": "2017-03-14"
+            }
+        }
+    },
+    "data-policy": {
+        "title": "KBase Data Policy",
+        "versions": {
+            "1": {
+                "file": "v1.md",
+                "date": "2017-03-15"
+            }
+        }
+    }
+}

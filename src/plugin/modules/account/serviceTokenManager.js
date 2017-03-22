@@ -38,16 +38,6 @@ define([
                 enabled: false,
                 value: null
             },
-            serverTokens: {
-                id: html.genId(),
-                enabled: false,
-                value: null
-            },
-            developerTokens: {
-                id: html.genId(),
-                enabled: false,
-                value: null
-            },
             addTokenForm: {
                 id: html.genId(),
                 enabled: true,
@@ -70,8 +60,6 @@ define([
         }
 
         function bindVm() {
-            bindVmNode(vm.serverTokens);
-            bindVmNode(vm.developerTokens);
             bindVmNode(vm.addTokenForm);
             bindVmNode(vm.newToken);
             bindVmNode(vm.allTokens);
@@ -94,7 +82,7 @@ define([
                         }),
                       
                         BS.buildPanel({
-                            title: 'Developer and Server Tokens',
+                            title: 'Service Tokens',
                             body: div([
                                 div({
                                     id: vm.addTokenForm.id
@@ -106,12 +94,6 @@ define([
                                     id: vm.allTokens.id
                                 })
                             ])
-                        }),                        
-                        div({
-                            id: vm.serverTokens.id
-                        }),
-                        div({
-                            id: vm.developerTokens.id
                         })
                     ])
                 ])
@@ -130,17 +112,6 @@ define([
                 .then(function () {
                     render();
                     return null;
-                })
-                .catch(function (err) {
-                    console.error('ERROR', err);
-                });
-        }
-
-        function doLogoutToken(tokenId) {
-            // Revoke
-            return runtime.service('session').getClient().logout(tokenId)
-                .then(function () {
-                    runtime.send('session', 'loggedout');
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -214,11 +185,10 @@ define([
 
         function handleSubmitAddToken() {
             var name = vm.addTokenForm.node.querySelector('[name="name"]');
-            var type = vm.addTokenForm.node.querySelector('[name="type"]');
 
             runtime.service('session').getClient().createToken({
                 name: name.value,
-                type: type.value
+                type: 'service'
             })
             .then(function (result) {
                 renderAllTokens();
@@ -237,10 +207,13 @@ define([
                 node: vm.addTokenForm.node
             });
             vm.addTokenForm.node.innerHTML = form({
-                id: events.addEvent('submit', function (e) {
-                    e.preventDefault();
-                    handleSubmitAddToken();
-                    return false;
+                id: events.addEvent({
+                    type: 'submit', 
+                    handler: function (e) {
+                        e.preventDefault();
+                        handleSubmitAddToken();
+                        return false;
+                    }
                 })
             }, div([
                 div([
@@ -250,28 +223,9 @@ define([
                     })
                 ]),
                 div([
-                    label('Token type:'),
-                    select({
-                        name: 'type'
-                    }, [
-                        option({
-                            value: 'dev'
-                        }, 'Developer'),
-                        option({
-                            value: 'server'
-                        }, 'Server')
-                    ])
-                ]),
-                div([
                     button({
                         class: 'btn btn-primary',
-                        type: 'button',
-                        id: events.addEvent({
-                            type: 'click', 
-                            handler: function (e) {
-                                handleSubmitAddToken();
-                            }
-                        })
+                        type: 'submit'
                     }, 'Create Token')
                 ])
             ]));
@@ -320,11 +274,6 @@ define([
                         style: {
                             width: '25%'
                         }
-                    }, 'Type'),
-                    th({
-                        style: {
-                            width: '25%'
-                        }
                     }, 'Name'),
                     th({
                         style: {
@@ -337,7 +286,6 @@ define([
                 return tr([
                     td(niceDate(token.created)),
                     td(niceDate(token.expires) + '<br>' + token.expires),
-                    td(token.type),
                     td(token.name),
                     td({
                         style: {
@@ -404,56 +352,39 @@ define([
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
                     .then(function (result) {
-                        console.log('tokens', result);
-
                         renderToolbar();
-
-
-                        // Render "other" tokens
 
                         vm.allTokens.value = result.tokens
                             .filter(function (token) {
-                                return (token.type !== 'Login');
+                                return (token.type === 'Service');
                             });
 
                         renderTokens();
                         renderAddTokenForm();
-
                     })
                     .catch(function (err) {
-                        vm.serverTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
+                        vm.allTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
                     });
-            }
-        }
-
-        function renderServerTokens() {
-            if (vm.serverTokens.enabled) {
-                vm.serverTokens.node.innerHTML = 'enabled';
-            }
-        }
-
-        function renderDeveloperTokens() {
-            if (vm.developerTokens.enabled) {
-                vm.developerTokens.node.innerHTML = 'enabled';
             }
         }
 
         function render() {
-            return runtime.service('session').getClient().getMe()
-                .then(function (account) {
-                    vm.roles.value = account.roles;
-                    vm.roles.value.forEach(function (role) {
-                        switch (role.id) {
-                        case 'ServToken':
-                            vm.serverTokens.enabled = true;
-                            break;
-                        case 'DevToken':
-                            vm.developerTokens.enabled = true;
-                            break;
-                        }
-                    });
-                    return Promise.all([renderAllTokens(), renderServerTokens(), renderDeveloperTokens()]);
-                });
+            renderAllTokens();
+            // return runtime.service('session').getClient().getMe()
+            //     .then(function (account) {
+            //         vm.roles.value = account.roles;
+            //         vm.roles.value.forEach(function (role) {
+            //             switch (role.id) {
+            //             case 'ServToken':
+            //                 vm.serverTokens.enabled = true;
+            //                 break;
+            //             case 'DevToken':
+            //                 vm.developerTokens.enabled = true;
+            //                 break;
+            //             }
+            //         });
+            //         return Promise.all([renderAllTokens(), renderServerTokens(), renderDeveloperTokens()]);
+            //     });
         }
 
         function attach(node) {

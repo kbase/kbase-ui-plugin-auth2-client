@@ -345,7 +345,7 @@ define([
 
                 Promise.all([                    
                     auth2.getTokenInfo(),
-                    auth2.getAccount(),
+                    auth2.getMe(),
                     'n/a'
                 ])
                 .spread(function (tokenInfo, accountInfo, wsInfo) {

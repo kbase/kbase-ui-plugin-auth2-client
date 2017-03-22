@@ -66,7 +66,7 @@ define([
 
         function start(params) {
             return Promise.try(function () {
-                return runtime.service('session').getClient().getAccount()
+                return runtime.service('session').getClient().getMe()
                     .then(function (account) {
                         vm.roles.value = account.roles;
                         container.innerHTML = render();

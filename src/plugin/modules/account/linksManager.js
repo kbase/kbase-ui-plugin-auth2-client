@@ -23,7 +23,8 @@ define([
         td = t('td'),
         button = t('button'),
         form = t('form'),
-        input = t('input');
+        input = t('input'),
+        blockquote = t('blockquote');
 
     function factory(config) {
         var runtime = config.runtime;
@@ -254,7 +255,24 @@ define([
                         }
                     }, (function () {
                         if (canUnlink) {
-                            return;
+                            return [
+                                p([
+                                    'Listed below are all of the external accounts with which you may sign in to your KBase account.',
+                                ]),
+                                p([
+                                    'You should be able to recognize the account from the "Provider" and "Username". The Provider is the ',
+                                    'service with which you authenticate (e.g. username and password). '
+                                ]),
+                                p([
+                                    'You may unlink any linked sign-in account from your KBase Account at any time. The unlinked account will ',
+                                    'not be affected, but you will not be able to use it to access your KBase Account unless you re-link it.'
+                                ]),
+                                div({
+                                    class: 'alert alert-warning'
+                                }, [
+                                    'Note: You may only link a sign-in account to one KBase account.'
+                                ])
+                            ];
                         }
                         return [
                             p([
@@ -274,7 +292,7 @@ define([
                         }, [
                             tr([
                                 th('Provider'),
-                                th('Id'),
+                                // th('Id'),
                                 th('Username'),
                                 th('Action')
                             ])
@@ -282,7 +300,7 @@ define([
                             vm.identities.value.map(function (identity) {
                                 return tr([
                                     td(buildProviderLabel(runtime.service('session').getClient().getClient().getProvider(identity.provider))),
-                                    td(identity.id),
+                                    // td(identity.id),
                                     td(identity.username),
                                     td(button({
                                         class: 'btn btn-danger',
@@ -329,7 +347,7 @@ define([
         }
 
         function reload() {
-            return runtime.service('session').getClient().getAccount()
+            return runtime.service('session').getClient().getMe()
                 .then(function (account) {
                     vm.identities.value = account.idents;
                     render();
