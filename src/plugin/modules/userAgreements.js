@@ -1,7 +1,7 @@
 /*global Promise*/
 define([
     'marked',
-    'kb_common_ts/httpClient',
+    'kb_common_ts/HttpClient',
     'kb_plugin_auth2-client',
     './utils'
 ], function (
