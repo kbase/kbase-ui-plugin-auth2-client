@@ -122,7 +122,6 @@ define([
                     return runtime.service('session').getClient().getMe();
                 })
                 .then(function (account) {
-                    console.log('account', account);
                     userAgreements = utils.parsePolicyAgreements(account.policy_ids);
                 });
         }

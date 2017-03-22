@@ -100,7 +100,7 @@ define([
                     vm.agreement.node.innerHTML = result;
                 })
                 .catch(function (err) {
-                    console.log('Boo', err);
+                    console.error('Boo', err);
                     vm.agreement.node.innerHTML = 'ERROR: ' + err.message;
                 });
         }
@@ -150,7 +150,6 @@ define([
                 // var agreement = vm.agreements.value[name];
                 //var policy = userAgreements.getPolicy(agreement.id); //vm.index.value[agreement.id];
                 //var policyVersion = userAgreements.getPolicyVersion(agreement.id, agreement.version); // policy.versions[agreement.version];
-                console.log('vesion?', agreement);
             
                 return div({
                     class: 'btn btn-default agreement',
