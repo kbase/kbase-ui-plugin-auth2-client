@@ -188,7 +188,7 @@ define([
 
             runtime.service('session').getClient().createToken({
                 name: name.value,
-                type: 'service'
+                type: 'server'
             })
             .then(function (result) {
                 renderAllTokens();
