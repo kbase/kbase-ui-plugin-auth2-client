@@ -43,6 +43,14 @@ install:
             module: linkContinue
             id: auth2_linkContinue
             type: factory
+        -
+            module: legacyLogin
+            id: auth2_legacyLogin
+            type: factory
+        -
+            module: signup
+            id: auth2_signup
+            type: factory
     routes:
         -
             path: ['auth2', 'info']
@@ -54,6 +62,9 @@ install:
             widget: auth2Login
             queryParams:
                 nextrequest: {}
+        -
+            path: ['auth2', 'login', 'legacy']
+            widget: auth2_legacyLogin
         -
             path: ['auth2', 'login', 'continue']
             widget: auth2LoginContinue
@@ -72,6 +83,11 @@ install:
             widget: auth2_linkContinue
             queryParams:
                 in-process-link-token: {}
+        -
+            path: ['auth2', 'signup']
+            widget: auth2_signup
+            queryParams: 
+                nextrequest: {}
     menu:
         -
             name: auth2info

@@ -140,7 +140,7 @@ define([
         function start(params) {
             return Promise.try(function () {
                 renderLayout();
-                return runtime.service('session').getClient().getAccount()
+                return runtime.service('session').getClient().getMe()
                     .then(function (account) {
                         vm.roles.value = account.roles;
                         vm.roles.value.forEach(function (role) {

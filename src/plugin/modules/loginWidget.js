@@ -73,7 +73,7 @@ define([
                     profile is loaded, which happens asynchronously.            
                     */
                     /// ar profile = widget.get('userProfile'), realname;
-                    return runtime.service('session').getAccount()
+                    return runtime.service('session').getMe()
                         .then(function (account) {
                             if (!account) {
                                 // Don't bother rendering yet if the profile is not ready 

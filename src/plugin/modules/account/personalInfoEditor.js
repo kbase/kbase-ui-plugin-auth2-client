@@ -1,3 +1,4 @@
+/*global Promise*/
 define([
     'kb_common/html',
 ], function (
@@ -6,28 +7,42 @@ define([
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
-        h2 = t('h2'),
-        ul = t('ul'),
-        li = t('li'),
-        a = t('a'),
-        table = t('table'),
-        tr = t('tr'),
-        th = t('th'),
-        td = t('td'),
         button = t('button'),
+        span = t('span'),
         form = t('form'),
         input = t('input'),
         label = t('label'),
         select = t('select'),
         option = t('option'),
-        p = t('p'),
-        iframe = t('iframe');
+        p = t('p');
+
+    function more(content) {
+        var id = html.genId();
+        return div({
+            dataElement: 'more'
+        }, [
+            div([
+                button({
+                    type: 'button',
+                    class: 'btn btn-text',
+                    dataElement: 'button'
+                }, span({
+                    dataElement: 'label'
+                }, 'more'))
+            ]),
+            div({
+                class: 'hidden',
+                dataElement: 'content'
+            }, content)
+        ]);
+    }
 
     function factory(config) {
         var runtime = config.runtime;
         var hostNode, container;
         var vm = {
             realname: {
+                id: html.genId(),
                 label: 'Name',
                 type: 'text',
                 placeholder: 'Your Name',
@@ -35,7 +50,9 @@ define([
                     p([
                         'This field contains your name as you wish it to be displayed to other KBase users ',
                         ' as well as KBase staff.'
-                    ]),
+                    ])
+                ]),
+                more: div([
                     p([
                         'This name will be displayed to other KBase users until you create your profile. ',
                         'When you create your profile, a new display name will be created which contains ',
@@ -50,13 +67,19 @@ define([
                 ])
             },
             email: {
+                id: html.genId(),
                 label: 'E-Mail',
                 type: 'text',
                 placeholder: 'Your E-Mail Address',
                 description: div([
                     p([
-                        'Your email address is displayed to other users as well as KBase staff.',
-                        'It is never publicly displayed.'
+                        'Your email address may be used by KBase staff to contact you. ',
+                        'It will not be displayed to other users.'
+                    ])
+                ]),
+                more: div([
+                    p([
+                        'This email address is'
                     ])
                 ])
             }
@@ -65,7 +88,8 @@ define([
         function buildInput(vm) {
             var id = html.genId();
             return div({
-                class: 'form-group'
+                class: 'form-group',
+                id: vm.id
             }, [
                 div({
                     class: 'row'
@@ -80,8 +104,8 @@ define([
                     class: 'row'
                 }, [
                     div({
-                            class: 'col-md-6'
-                        },
+                        class: 'col-md-6'
+                    },
                         input({
                             type: vm.type | 'text',
                             class: 'form-control',
@@ -91,9 +115,12 @@ define([
                         })
                     ),
                     div({
-                            class: 'col-md-6'
-                        },
-                        vm.description
+                        class: 'col-md-6'
+                    },
+                        [
+                            vm.description,
+                            more(vm.more)
+                        ]
                     )
                 ])
             ]);
@@ -106,7 +133,7 @@ define([
                 button({
                     class: 'btn btn-primary',
                     type: 'button'
-                }, 'Submit')
+                }, 'Save')
             ]);
             return content;
         }
@@ -130,11 +157,40 @@ define([
                     class: 'row'
                 }, [
                     div({ class: 'col-md-12' }, [
-
                         buildForm(vm)
                     ])
                 ])
-            ])
+            ]);
+        }
+
+        function bindMoreControl(vm) {
+            var moreControl = vm.node.querySelector('[data-element="more"]');
+            var moreLabel = moreControl.querySelector('[data-element="label"]');
+            var moreButton = moreControl.querySelector('[data-element="button"]');
+            var moreContent= moreControl.querySelector('[data-element="content"]');
+            moreButton.addEventListener('click', function () {
+                if (moreContent.classList.contains('hidden')) {
+                    moreContent.classList.remove('hidden');
+                    moreLabel.innerHTML = 'less';
+                } else {
+                    moreContent.classList.add('hidden');
+                    moreLabel.innerHTML = 'more';
+                }
+            });
+        }
+
+        function bindVm() {
+            // bind the nodes
+            vm.realname.node = document.getElementById(vm.realname.id);
+            vm.email.node = document.getElementById(vm.email.id);
+
+            // bind the more buttons
+            bindMoreControl(vm.realname);
+            bindMoreControl(vm.email);
+
+            // bind the controls to validators
+
+            // bind the form to the updater
         }
 
         function attach(node) {
@@ -146,7 +202,7 @@ define([
 
         function start(params) {
             return Promise.try(function () {
-                return runtime.service('session').getClient().getAccount()
+                return runtime.service('session').getClient().getMe()
                     .then(function (account) {
                         vm.realname.value = account.display;
                         vm.email.value = account.email;
@@ -162,6 +218,7 @@ define([
                         //     email: runtime.service('session').getClient().getEmail()
                         // };
                         container.innerHTML = render();
+                        bindVm();
                     });
             });
         }

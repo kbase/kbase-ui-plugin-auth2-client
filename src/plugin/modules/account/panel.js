@@ -8,7 +8,11 @@ define([
     './linksManager',
     './rolesManager',
     './developerManager',
-    './tokenManager'
+    './tokenManager',
+    './developerTokenManager',
+    './serviceTokenManager',
+    './agreementsManager',
+    './signinManager'
 ], function (
     $,
     M_Html,
@@ -18,7 +22,11 @@ define([
     LinksManager,
     RolesManager,
     DeveloperManager,
-    TokenManager
+    TokenManager,
+    DeveloperTokenManager,
+    ServiceTokenManager,
+    AgreementsManager,
+    SigninManager
 ) {
     // var html = new M_Html.Html();
     var // t = html.tagMaker(),
@@ -37,6 +45,17 @@ define([
     function factory(config) {
         var hostNode, container,
             runtime = config.runtime;
+
+        var vm = {
+            developerTokens: {
+                enabled: null,
+                value: null
+            },
+            serviceTokens: {
+                enabled: null,
+                value: null
+            }
+        };
 
         // RENDERING
 
@@ -160,7 +179,7 @@ define([
                             var panel = document.getElementById(tab.panelId);
                             // close any active panels.
                             Promise.all(arg.tabs.map(function (tab) {
-                                    if (tab.panel && tab.panel.instance) {
+                                    if (tab && tab.panel && tab.panel.instance) {
                                         return tab.panel.instance.stop()
                                             .then(function () {
                                                 return tab.panel.instance.detach();
@@ -247,6 +266,7 @@ define([
                         return div(attribs, tab.content);
                     }))
             ]);
+
             function showTab(name) {
                 if (!tabMap[name]) {
                     console.warn('Tab ' + name + ' not found');
@@ -275,7 +295,7 @@ define([
                     },
                     {
                         name: 'links',
-                        label: 'Authorization',
+                        label: 'Linked Sign-In Accounts',
                         panel: {
                             factory: LinksManager
                         }
@@ -287,18 +307,41 @@ define([
                             factory: RolesManager
                         }
                     },
+                    (function () {
+                        if (vm.developerTokens.enabled) {
+                            return {
+                                name: 'developer-tokens',
+                                label: 'Developer Tokens',
+                                panel: {
+                                    factory: DeveloperTokenManager
+                                }
+                            };
+                        }
+                    }()),
+                    (function () {
+                        if (vm.serviceTokens.enabled) {
+                            return {
+                                name: 'service-tokens',
+                                label: 'Service Tokens',
+                                panel: {
+                                    factory: ServiceTokenManager
+                                }
+                            };
+                        }
+                    }()),
+
                     {
-                        name: 'developer',
-                        label: 'Developer',
+                        name: 'signins',
+                        label: 'Sign-Ins',
                         panel: {
-                            factory: DeveloperManager
+                            factory: SigninManager
                         }
                     },
                     {
-                        name: 'tokens',
-                        label: 'Tokens',
+                        name: 'agreements',
+                        label: 'Agreements',
                         panel: {
-                            factory: TokenManager
+                            factory: AgreementsManager
                         }
                     },
                     {
@@ -343,10 +386,23 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function () {
-                runtime.send('ui', 'setTitle', 'Account Manager');
-                renderLayout(container, params);
-            });
+            return runtime.service('session').getClient().getMe()
+                .then(function (account) {
+                    // vm.roles.value = account.roles;
+                    account.roles.forEach(function (role) {
+                        switch (role.id) {
+                        case 'ServToken':
+                            vm.serviceTokens.enabled = true;
+                            break;
+                        case 'DevToken':
+                            vm.developerTokens.enabled = true;
+                            break;
+                        }
+                    });
+
+                    runtime.send('ui', 'setTitle', 'Account Manager');
+                    renderLayout(container, params);
+                });
         }
 
         function stop() {
