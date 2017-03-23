@@ -51,7 +51,7 @@ define([
                 div({
                     style: {
                         display: 'inline-block',
-                        width: '54px',
+                        width: '44px',
                         height: '24px',
                         marginRight: '4px'
                     }
@@ -70,12 +70,13 @@ define([
             return button({
                 class: 'btn btn-default',
                 style: {
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    margin: '8px 12px',
-                    display: 'block',
-                    whiteSpace: 'nowrap',
-                    width: '100%'
+                    xtextAlign: 'left',
+                    xcursor: 'pointer',
+                    margin: '8px 0',
+                    xdisplay: 'block',
+                    xwhiteSpace: 'nowrap',
+                    xwidth: '100%',
+                    height: '44px'
                 },
                 id: events.addEvent('click', function () {
                     runtime.service('session').getClient().setLastProvider(provider.id);

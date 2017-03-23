@@ -2,11 +2,13 @@
 define([
     'kb_common/html',
     'kb_common/domEvent2',
-    'kb_common/bootstrapUtils'
+    'kb_common/bootstrapUtils',
+    'kb_common/format'
 ], function (
     html,
     DomEvent,
-    BS
+    BS,
+    Format
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
@@ -85,7 +87,10 @@ define([
                             title: 'Developer Tokens',
                             body: div([
                                 div({
-                                    id: vm.addTokenForm.id
+                                    id: vm.addTokenForm.id,
+                                    style: {
+                                        marginBottom: '10px'
+                                    }
                                 }),
                                 div({
                                     id: vm.newToken.id
@@ -103,7 +108,12 @@ define([
 
         function niceDate(epoch) {
             var date = new Date(epoch);
-            return date.toUTCString();
+            return Format.niceTime(date);
+        }
+
+        function niceDuration(epoch) {
+            var date = new Date(epoch);
+            return Format.niceElapsedTime(date);
         }
 
         function doRevokeToken(tokenId) {
@@ -218,6 +228,7 @@ define([
                 node: vm.addTokenForm.node
             });
             vm.addTokenForm.node.innerHTML = form({
+                class: 'form-inline',
                 id: events.addEvent({
                     type: 'submit', 
                     handler: function (e) {
@@ -226,19 +237,23 @@ define([
                         return false;
                     }
                 })
-            }, div([
-                div([
-                    label('Token name:'),
-                    input({
-                        name: 'name',
-                    })
-                ]),
-                div([
-                    button({
-                        class: 'btn btn-primary',
-                        type: 'submit'
-                    }, 'Create Token')
-                ])
+            }, div({
+                class: 'form-group'
+            }, [
+                label({
+                    style: {
+                        marginRight: '4px'
+                    }
+                }, 'Token name'),
+                input({
+                    name: 'name',
+                    class: 'form-control'
+                }),
+                ' ',
+                button({
+                    class: 'btn btn-primary',
+                    type: 'submit'
+                }, 'Create Token')
             ]));
             events.attachEvents();
         }
@@ -296,7 +311,7 @@ define([
             ].concat(vm.allTokens.value.map(function (token) {
                 return tr([
                     td(niceDate(token.created)),
-                    td(niceDate(token.expires) + '<br>' + token.expires),
+                    td(niceDuration(token.expires)),
                     td(token.name),
                     td({
                         style: {
@@ -346,14 +361,14 @@ define([
                     class: 'btn-group pull-right',
                     role: 'group'
                 }, [
-                    button({
-                        type: 'button',
-                        class: 'btn btn-danger',
-                        // id: events.addEvent({
-                        //     type: 'click',
-                        //     handler: 
-                        // })
-                    }, 'NOOP')
+                    // button({
+                    //     type: 'button',
+                    //     class: 'btn btn-danger',
+                    //     // id: events.addEvent({
+                    //     //     type: 'click',
+                    //     //     handler: 
+                    //     // })
+                    // }, 'NOOP')
                 ])
             ]);
             events.attachEvents();
@@ -363,10 +378,8 @@ define([
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
                     .then(function (result) {
-                        console.log('tokens', result);
 
                         renderToolbar();
-
 
                         // Render "other" tokens
 

@@ -1,8 +1,12 @@
 /*global Promise*/
 define([
     'kb_common/html',
+    'kb_common/DomEvent2',
+    'kb_common/bootstrapUtils'
 ], function (
-    html
+    html,
+    DomEvent,
+    BS
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
@@ -18,10 +22,51 @@ define([
         var runtime = config.runtime;
         var vm = {
             roles: {
+                id: html.genId(),
+                node: null,
                 label: 'Roles',
                 value: null
             }
         };
+
+        function bindVmNode(vmNode) {
+            vmNode.node = document.getElementById(vmNode.id);
+        }
+
+        function bindVm() {
+            bindVmNode(vm.roles);
+        }
+        function renderRoles() {
+            var events = DomEvent.make({
+                node: vm.roles.node
+            });
+            var content;
+            if (vm.roles.value.length === 0) {
+                content =vm.roles.node.innerHTML = 'No roles assigned';
+            } else {
+                content = table({
+                    class: 'table table-striped'
+                }, [tr([
+                    th('Id'),
+                    td('Desc'),
+                    td()
+                ])].concat(vm.roles.value.map(function (role) {
+                    return tr([
+                        th(role.id),
+                        td(role.desc),
+                        td(button({
+                            class: 'btn btn-danger'                            
+                        }, 'Remove'))
+                    ]);
+                })));
+            }
+            vm.roles.node.innerHTML = BS.buildPanel({
+                title: 'Your Roles',
+                body: content
+            });
+
+            events.attachEvents();
+        }
 
         function render() {
             return div({
@@ -33,26 +78,10 @@ define([
                 div({
                     class: 'row'
                 }, [
-                    div({ class: 'col-md-12' }, (function () {
-                        if (vm.roles.value.length === 0) {
-                            return 'No roles assigned';
-                        }
-                        return table({
-                            class: 'table table-striped'
-                        }, [tr([
-                            th('Id'),
-                            td('Desc'),
-                            td()
-                        ])].concat(vm.roles.value.map(function (role) {
-                            return tr([
-                                th(role.id),
-                                td(role.desc),
-                                td(button({
-                                    class: 'btn btn-danger'                            
-                                }, 'Remove'))
-                            ]);
-                        })));
-                    }()))
+                    div({ 
+                        class: 'col-md-12',
+                        id: vm.roles.id
+                    })
                 ])
             ]);
         }
@@ -70,6 +99,8 @@ define([
                     .then(function (account) {
                         vm.roles.value = account.roles;
                         container.innerHTML = render();
+                        bindVm();
+                        renderRoles();
                     });
             });
         }

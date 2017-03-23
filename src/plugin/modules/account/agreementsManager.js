@@ -10,7 +10,8 @@ define([
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
-        div = t('div');
+        div = t('div'),
+        p = t('p');
 
     function factory(config) {
         var hostNode, container;
@@ -20,6 +21,11 @@ define([
         });
 
         var vm = {
+            intro: {
+                id: html.genId(),
+                enabled: false,
+                value: null
+            },
             latestPolicies: {
                 id: html.genId(),
                 enabled: false,
@@ -44,6 +50,7 @@ define([
         function bindVm() {
             bindVmNode(vm.agreements);
             bindVmNode(vm.agreement);
+            bindVmNode(vm.intro);
         }
 
         function renderLayout() {
@@ -53,6 +60,15 @@ define([
                     marginTop: '10px'
                 }
             }, [
+                div({
+                    class: 'row'
+                }, [
+                    div({
+                        class: 'col-md-12'
+                    }, div({
+                        id: vm.intro.id
+                    }))
+                ]),
                 div({
                     class: 'row'
                 }, [
@@ -79,6 +95,7 @@ define([
 
         function render() {
             renderAgreements();
+            renderIntro();
             // renderCurrentAgreement();
         }
 
@@ -103,6 +120,18 @@ define([
                     console.error('Boo', err);
                     vm.agreement.node.innerHTML = 'ERROR: ' + err.message;
                 });
+        }
+
+        function renderIntro() {
+            var events = DomEvents.make({
+                node: container
+            });
+            vm.intro.node.innerHTML = div([
+                p([
+                    'Below are the User Policies you have agreed to during signup or signin to KBase'
+                ])
+            ]);
+            events.attachEvents();
         }
 
 

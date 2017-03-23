@@ -203,7 +203,6 @@ define([
                 node: container
             });
 
-            console.log('rendering link choice', choiceData);
 
             var content = div({}, [
                 choiceData.ids.map(function (id) {
