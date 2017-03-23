@@ -187,7 +187,7 @@ define([
                     var navigateRequest = JSON.parse(nextRequest);
                     runtime.send('app', 'navigate', navigateRequest);
                 } catch (ex) {
-                    console.error('ERROR parsing next request', ex);
+                    console.error('ERROR parsing next request', nextRequest, ex);
                     runtime.send('app', 'navigate', '');
                 }
             } else {
@@ -1342,12 +1342,12 @@ define([
                         events.attachEvents();
                         // ui.setContent('title', h1('KBase Login - further action required'));
                         ui.setContent('introduction', intro);
-                        var debug = BS.buildCollapsiblePanel({
-                            title: 'debug',
-                            collapsed: true,
-                            body: BS.buildPresentableJson(choice)
-                        });
-                        container.querySelector('[data-element="debug"]').innerHTML = debug;
+                        // var debug = BS.buildCollapsiblePanel({
+                        //     title: 'debug',
+                        //     collapsed: true,
+                        //     body: BS.buildPresentableJson(choice)
+                        // });
+                        // container.querySelector('[data-element="debug"]').innerHTML = debug;
                     })
                     .catch(function (err) {
                         if (err.code) {

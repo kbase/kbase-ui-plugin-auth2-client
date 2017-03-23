@@ -48,6 +48,11 @@ define([
                 enabled: false,
                 value: null
             },
+            currentToken: {
+                id: html.genId(),
+                enabled: true,
+                value: null
+            },
             addTokenForm: {
                 id: html.genId(),
                 enabled: true,
@@ -75,6 +80,7 @@ define([
             bindVmNode(vm.addTokenForm);
             bindVmNode(vm.newToken);
             bindVmNode(vm.allTokens);
+            bindVmNode(vm.currentToken);
             bindVmNode(vm.toolbar);
         }
 
@@ -390,11 +396,11 @@ define([
                     button({
                         type: 'button',
                         class: 'btn btn-danger',
-                        // id: events.addEvent({
-                        //     type: 'click',
-                        //     handler: 
-                        // })
-                    }, 'NOOP')
+                        id: events.addEvent({
+                            type: 'click',
+                            handler: doRevokeAllAndLogout
+                        })
+                    }, 'Revoke All and Logout')
                 ])
             ]);
             events.attachEvents();
@@ -404,10 +410,11 @@ define([
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
                     .then(function (result) {
-                        console.log('tokens', result);
 
                         renderToolbar();
 
+                        // Render "current" token.
+                        renderCurrentTokens(vm.currentToken.node, [result.current]);
 
                         // Render "other" tokens
 

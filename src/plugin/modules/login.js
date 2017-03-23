@@ -57,16 +57,19 @@ define([
                         display: 'inline-block'
                     }
                 }, [
-                    div({}, [
+                    div({
+                        class: 'btn-group-vertical'
+                    }, [
                         button({
                             class: 'btn btn-default',
                             style: {
-                                textAlign: 'cener',
-                                cursor: 'pointer',
-                                margin: '8px 12px',
-                                display: 'block',
-                                whiteSpace: 'nowrap',
-                                width: '100%'
+                                xtextAlign: 'center',
+                                xcursor: 'pointer',
+                                margin: '8px 0',
+                                xdisplay: 'block',
+                                xwhiteSpace: 'nowrap',
+                                xwidth: '100%',
+                                height: '44px'
                             },
                             type: 'button',
                             id: events.addEvent('click', function () {
@@ -75,15 +78,13 @@ define([
                                 });
                             })
                         }, 'Legacy Login')
-                    ]),
-                    div({},
-                        providers.map(function (provider) {
+                    ].concat(providers.map(function (provider) {
                             return utils.buildLoginButton(events, provider, {
                                 nextrequest: JSON.stringify(nextRequest),
                                 origin: 'login'
                             });
                         })
-                    ),
+                    )),
                     div({
                         style: {
                             marginTop: '1em'
@@ -254,7 +255,6 @@ define([
             return Promise.try(function () {
                 // if is logged in, just redirect to the nextrequest,
                 // or the nexturl, or dashboard.
-
                 if (params.nextrequest) {
                     nextRequest = JSON.parse(params.nextrequest);
                 } else {
