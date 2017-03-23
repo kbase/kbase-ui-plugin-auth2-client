@@ -1,7 +1,7 @@
 /*global Promise*/
 define([
     'kb_common/html',
-    'kb_common/DomEvent2',
+    'kb_common/domEvent2',
     'kb_common/bootstrapUtils'
 ], function (
     html,
