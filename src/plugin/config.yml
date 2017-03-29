@@ -51,12 +51,20 @@ install:
             module: signup
             id: auth2_signup
             type: factory
-    routes:
         -
-            path: ['auth2', 'info']
-            widget: auth2Info
-            queryParams:
-                nextrequest: {}
+            module: admin/panel
+            id: auth2_admin
+            type: factory
+        -
+            module: admin/user/panel
+            id: auth2_adminUser
+            type: factory
+    routes:
+        # -
+        #     path: ['auth2', 'info']
+        #     widget: auth2Info
+        #     queryParams:
+        #         nextrequest: {}
         -
             path: ['auth2', 'login']
             widget: auth2Login
@@ -84,29 +92,38 @@ install:
             queryParams:
                 in-process-link-token: {}
         -
-            path: ['auth2', 'signup']
+            path: ['auth2', 'signup', {type: param, name: step}]
             widget: auth2_signup
             queryParams: 
                 nextrequest: {}
+        -
+            path: ['auth2', 'admin']
+            widget: auth2_admin
+            authorization: true
+        -
+            path: ['auth2', 'admin', 'user', {type: param, name: username}]
+            widget: auth2_adminUser
+            authorization: true
+                
     menu:
-        -
-            name: auth2info
-            menus: ['authenticated', 'unauthenticated']
-            definition:
-                path: ['auth2', 'info']
-                label: Auth2 Info
-                icon: flask                
-        -
-            name: auth2login
-            menus: ['authenticated', 'unauthenticated']
-            definition:
-                path: ['auth2', 'login']
-                label: Auth2 Login
-                icon: flask
-        -
-            name: auth2account
-            menus: ['authenticated', 'unathenticated']
-            definition: 
-                path: ['auth2', 'account']
-                label: Auth2 Account
-                icon: user-circle-o
+        # -
+        #     name: auth2info
+        #     menus: ['authenticated', 'unauthenticated']
+        #     definition:
+        #         path: ['auth2', 'info']
+        #         label: Auth2 Info
+        #         icon: flask                
+        # -
+        #     name: auth2login
+        #     menus: ['authenticated', 'unauthenticated']
+        #     definition:
+        #         path: ['auth2', 'login']
+        #         label: Auth2 Login
+        #         icon: flask
+        # -
+        #     name: auth2account
+        #     menus: ['authenticated', 'unathenticated']
+        #     definition: 
+        #         path: ['auth2', 'account']
+        #         label: Auth2 Account
+        #         icon: user-circle-o

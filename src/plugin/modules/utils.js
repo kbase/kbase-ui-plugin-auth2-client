@@ -20,23 +20,17 @@ define([
     function factory(config) {
         var runtime = config.runtime;
 
-        function doLogin(providerId, redirectParams) {
-            // console.log('dologin', providerId, nextRequest);
-            var query = Object.keys(redirectParams).map(function (key) {
-                return [key, redirectParams[key]].map(encodeURIComponent).join('=');
-            }).join('&');
-            var fakeUrl = window.location.origin + '?' + query;
+        function doLogin(providerId, state) {
 
-            runtime.service('session').login({
+            runtime.service('session').loginStart({
                 // TODO: this should be either the redirect url passed in 
                 // or the dashboard.
                 // We just let the login page do this. When the login page is 
                 // entered with a valid token, redirect to the nextrequest,
                 // and if that is empty, the dashboard.
-                redirectUrl: fakeUrl,
+                state: state,
                 provider: providerId,
-                stayLoggedIn: false,
-                node: document.body
+                stayLoggedIn: false
             });
         }
 
@@ -66,21 +60,16 @@ define([
             ]);
         }
 
-        function buildLoginButton(events, provider, redirectParams) {
+        function buildLoginButton(events, provider, state) {
             return button({
                 class: 'btn btn-default',
                 style: {
-                    xtextAlign: 'left',
-                    xcursor: 'pointer',
                     margin: '8px 0',
-                    xdisplay: 'block',
-                    xwhiteSpace: 'nowrap',
-                    xwidth: '100%',
                     height: '44px'
                 },
                 id: events.addEvent('click', function () {
                     runtime.service('session').getClient().setLastProvider(provider.id);
-                    doLogin(provider.id, redirectParams);
+                    doLogin(provider.id, state);
                 })
             }, buildProviderLabel(provider));
         }
@@ -96,9 +85,103 @@ define([
             });
         }
 
+        function buildTable(arg) {
+            var t = html.tag,
+                table = t('table'),
+                thead = t('thead'),
+                tbody = t('tbody'),
+                tr = t('tr'),
+                th = t('th'),
+                td = t('td'), id, attribs;
+            arg = arg || {};
+            if (arg.id) {
+                id = arg.id;
+            } else {
+                id = html.genId();
+                arg.generated = {id: id};
+            }
+            attribs = {id: id};
+            if (arg.class) {
+                attribs.class = arg.class;
+            } else if (arg.classes) {
+                attribs.class = arg.classes.join(' ');
+            }
+            return table(attribs, [
+                thead(tr(arg.columns.map(function (x) {
+                    return th(x.label);
+                }))),
+                tbody(arg.rows.map(function (row) {
+                    return tr(row.map(function (x, index) {
+                        var col = arg.columns[index];
+                        var value = x;
+                        if (col.format) {
+                            try {
+                                value = col.format(x);
+                            } catch (ex) {
+                                value = 'er: ' + ex.message;
+                            }
+                        }
+                        return td(value);
+                    }));
+                }))
+            ]);
+        }
+
+        function ViewModel(config) {
+            var vm = config.model;
+
+            function get(path) {
+                var l = path.split('.');
+                function getPath(vm, p) {
+                    var vmNode = vm[p[0]];
+                    console.log('getPath', vm, p);
+                    if (vmNode) {
+                        if (p.length > 1) {
+                            if (vmNode.model) {
+                                return getPath(vmNode.model, p.slice(1));
+                            } else {
+                                throw new Error('Path does not exist: ' + p.join('.'));
+                            }
+                        } else {
+                            return vmNode;
+                        }
+                    }
+                }
+                return getPath(vm, l);
+            }
+
+            function bindVmNode(vmNode) {
+                if (vmNode.enabled && (vmNode.node === null || vmNode === undefined)) {
+                    vmNode.node = document.getElementById(vmNode.id);
+                }
+            }
+
+            function bindAll() {
+                Object.keys(vm).forEach(function (key) {
+                    bindVmNode(vm[key]);
+                });
+            }
+
+            function bind(path) {
+                var vmNode = get(path);
+                if (!vmNode) {
+                    return;
+                }
+                vmNode.node = document.getElementById(vmNode.id);
+            }
+
+            return {
+                bindAll: bindAll,
+                bind: bind,
+                get: get
+            };
+        }
+
         return {
             buildLoginButton: buildLoginButton,
-            parsePolicyAgreements: parsePolicyAgreements
+            parsePolicyAgreements: parsePolicyAgreements,
+            buildTable: buildTable,
+            ViewModel: ViewModel
         };
     }
 

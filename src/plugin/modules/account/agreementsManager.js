@@ -2,10 +2,12 @@
 define([
     'kb_common/html',
     'kb_common/domEvent2',
+    'kb_common/bootstrapUtils',
     '../userAgreements'
 ], function (
     html,
     DomEvents,
+    BS,
     UserAgreements
 ) {
     var // t = html.tagMaker(),
@@ -69,20 +71,23 @@ define([
                         id: vm.intro.id
                     }))
                 ]),
-                div({
-                    class: 'row'
-                }, [
-                    div({ class: 'col-md-3' }, [
-                        div({
-                            id: vm.agreements.id
-                        })
-                    ]),
-                    div({ class: 'col-md-9' }, [
-                        div({
-                            id: vm.agreement.id
-                        })
-                    ]),
-                ])
+                BS.buildPanel({
+                    title: 'Your Current Usage Agreements',
+                    body: div({
+                            class: 'row'
+                        }, [
+                            div({ class: 'col-md-3' }, [
+                                div({
+                                    id: vm.agreements.id
+                                })
+                            ]),
+                            div({ class: 'col-md-9' }, [
+                                div({
+                                    id: vm.agreement.id
+                                })
+                            ]),
+                        ])
+                })
             ]);
             bindVm();
         }
@@ -128,7 +133,7 @@ define([
             });
             vm.intro.node.innerHTML = div([
                 p([
-                    'Below are the User Policies you have agreed to during signup or signin to KBase'
+                    'Below are the Usage Policies you have agreed to during signup or signin to KBase.'
                 ])
             ]);
             events.attachEvents();

@@ -4,29 +4,19 @@ define([
     'kb_common_ts/Html',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    './personalInfoEditorKO',
-    './linksManager',
-    './rolesManagerKO',
-    './developerManager',
+    './roleManager',
     './tokenManager',
-    './developerTokenManager',
-    './serviceTokenManager',
-    './agreementsManager',
-    './signinManager'
+    './userManager',
+    '../../utils'
 ], function (
     $,
     M_Html,
     html,
     BS,
-    PersonalInfoEditor,
-    LinksManager,
-    RolesManager,
-    DeveloperManager,
+    RoleManager,
     TokenManager,
-    DeveloperTokenManager,
-    ServiceTokenManager,
-    AgreementsManager,
-    SigninManager
+    UserManager,
+    Utils
 ) {
     // var html = new M_Html.Html();
     var // t = html.tagMaker(),
@@ -35,27 +25,32 @@ define([
         span = t('span'),
         ul = t('ul'),
         li = t('li'),
-        a = t('a'),
-        button = t('button'),
-        form = t('form'),
-        input = t('input'),
-        label = t('label'),
-        p = t('p');
+        a = t('a');
+
+  
 
     function factory(config) {
         var hostNode, container,
-            runtime = config.runtime;
+            runtime = config.runtime,
+            utils = Utils.make({
+                runtime: runtime
+            });
 
-        var vm = {
-            developerTokens: {
-                enabled: null,
-                value: null
-            },
-            serviceTokens: {
-                enabled: null,
-                value: null
+        var vm = utils.ViewModel({
+            model: {
+                userInfo: {
+                    id: html.genId(),
+                    node: null,
+                    value: null
+                },
+                tabs: {
+                    id: html.genId(),
+                    node: null,
+                    value: null
+                }
             }
-        };
+        });
+        
 
         // RENDERING
 
@@ -95,50 +90,7 @@ define([
             ]);
         }
 
-        function buildAbout() {
-            return buildMessage(div([
-                p('This is the account manager'),
-                p('It is designed to allow a user to manage all apsects of their account.'),
-                p('What can they do here?'),
-                ul([
-                    li('Edit their real name or email address'),
-                    li('View their account creation date'),
-                    li('View their last login time'),
-                    li('Manage their linked accounts'),
-                    li('Manage their developer tokens')
-                ])
-            ]));
-        }
-
-        function buildSimpleForm(def) {
-            var content = div([
-                form(def.fields.map(function (field) {
-                    var id = html.genId();
-                    return div({
-                        class: 'form-group'
-                    }, [
-                        label({
-                            for: id
-                        }, field.label),
-                        input({
-                            type: field.type | 'text',
-                            class: 'form-control',
-                            id: id,
-                            placeholder: field.placeholder
-                        })
-                    ])
-                }).concat([
-                    button({
-                        class: 'btn btn-primary',
-                        type: 'button'
-                    }, 'Save')
-                ]))
-
-            ]);
-            return content;
-        }
-
-        function buildTabs(arg) {
+        function buildTabs(arg, params) {
             var tabsId = arg.id,
                 tabsAttribs = {},
                 tabClasses = ['nav', 'nav-tabs'],
@@ -196,7 +148,7 @@ define([
                                     return tab.panel.instance.attach(panel)
                                 })
                                 .then(function () {
-                                    tab.panel.instance.start();
+                                    tab.panel.instance.start(params);
                                 });
                         }
                     });
@@ -284,75 +236,46 @@ define([
             };
         }
 
-        function renderLayout(node, params) {
+        function renderLayout() {
+            container.innerHTML = div({}, [
+                div({
+                    id: vm.get('userInfo').id
+                }),
+                div({
+                    id: vm.get('tabs').id
+                })
+            ]);
+            vm.bindAll();
+        }
+
+        function renderTabs(params) {
             var tabDef = {
-                tabs: [{
-                        name: 'personalInfo',
-                        label: 'Personal',
+                tabs: [
+                    {
+                        name: 'userManager',
+                        label: 'User Manager',
                         panel: {
-                            factory: PersonalInfoEditor
+                            factory: UserManager
                         }
                     },
                     {
-                        name: 'links',
-                        label: 'Linked Sign-In Accounts',
-                        panel: {
-                            factory: LinksManager
-                        }
-                    },
-                    {
-                        name: 'roles',
+                        name: 'roleManager',
                         label: 'Roles',
                         panel: {
-                            factory: RolesManager
-                        }
-                    },
-                    (function () {
-                        if (vm.developerTokens.enabled) {
-                            return {
-                                name: 'developer-tokens',
-                                label: 'Developer Tokens',
-                                panel: {
-                                    factory: DeveloperTokenManager
-                                }
-                            };
-                        }
-                    }()),
-                    (function () {
-                        if (vm.serviceTokens.enabled) {
-                            return {
-                                name: 'service-tokens',
-                                label: 'Service Tokens',
-                                panel: {
-                                    factory: ServiceTokenManager
-                                }
-                            };
-                        }
-                    }()),
-
-                    {
-                        name: 'signins',
-                        label: 'Sign-Ins',
-                        panel: {
-                            factory: SigninManager
+                            factory: RoleManager
                         }
                     },
                     {
-                        name: 'agreements',
-                        label: 'Usage Agreements',
+                        name: 'tokenManager',
+                        label: 'Token Manager',
                         panel: {
-                            factory: AgreementsManager
+                            factory: TokenManager
                         }
                     }
-                    // {
-                    //     name: 'about',
-                    //     label: 'About',
-                    //     content: buildAbout()
-                    // }
                 ]
             };
-            var tabs = buildTabs(tabDef);
-            node.innerHTML = div({
+            var tabs = buildTabs(tabDef, params);
+            vm.get('tabs').node.innerHTML = div({
                 class: 'container-fluid'
             }, [
                 div({
@@ -370,11 +293,50 @@ define([
                     document.getElementById(event.id).addEventListener(event.type, event.handler);
                 }
             });
-            var defaultTab = params.tab || 'personalInfo';
+            var defaultTab = params.tab || 'userManager';
             tabs.showTab(defaultTab);
         }
 
+        
 
+        function renderUserInfo() {
+            var userInfo = vm.get('userInfo');
+            // console.log('userinfo', userInfo);
+            userInfo.node.innerHTML = div({
+                class: 'container-fluid'
+            }, [
+                div({
+                    class: 'row'
+                }, [
+                    div({
+                        class: 'col-md-12'
+                    }, [
+                        utils.buildTable({
+                            columns: [
+                                {
+                                    label: 'Name'
+                                },
+                                {
+                                    label: 'Username'
+                                },
+                                {
+                                    label: 'Sign Up Time',
+                                    format: function (value) {
+                                        return Date(value).toLocaleString();
+                                    }
+                                }
+                            ],
+                            rows: [
+                                [userInfo.value.display, 
+                                    userInfo.value.user, 
+                                    userInfo.value.created]
+                            ],
+                            classes: ['table', 'table-striped', 'table-hover']
+                        })
+                    ])
+                ])
+            ]);
+        }
 
         // API
 
@@ -386,22 +348,27 @@ define([
         }
 
         function start(params) {
-            return runtime.service('session').getClient().getMe()
-                .then(function (account) {
+            
+            return runtime.service('session').getClient().getAdminUser(params.username)
+                .then(function (userInfo) {
+                    console.log('userinfo', userInfo);
+                    vm.get('userInfo').value = userInfo;
                     // vm.roles.value = account.roles;
-                    account.roles.forEach(function (role) {
-                        switch (role.id) {
-                        case 'ServToken':
-                            vm.serviceTokens.enabled = true;
-                            break;
-                        case 'DevToken':
-                            vm.developerTokens.enabled = true;
-                            break;
-                        }
-                    });
+                    // account.roles.forEach(function (role) {
+                    //     switch (role.id) {
+                    //     case 'ServToken':
+                    //         vm.serviceTokens.enabled = true;
+                    //         break;
+                    //     case 'DevToken':
+                    //         vm.developerTokens.enabled = true;
+                    //         break;
+                    //     }
+                    // });
 
-                    runtime.send('ui', 'setTitle', 'Account Manager');
-                    renderLayout(container, params);
+                    runtime.send('ui', 'setTitle', 'User Manager: ' + userInfo.user);
+                    renderLayout();
+                    renderUserInfo();
+                    renderTabs(params);
                 });
         }
 

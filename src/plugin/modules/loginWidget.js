@@ -66,6 +66,15 @@ define([
             runtime.send('ui', 'navigate', ['auth2', 'account']);
         }
 
+        function hasRole(account, role) {
+            for (var i = 0; i < account.roles.length; i += 1) {
+                if (account.roles[i].id === role) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function renderLogin(events) {
             return Promise.try(function () {
                 if (runtime.service('session').isLoggedIn()) {
@@ -121,6 +130,22 @@ define([
                                             'Account'
                                         ])
                                     ]),
+                                    (function () {
+                                        if (!hasRole(account, 'Admin')) {
+                                            return;
+                                        }
+                                        return li({}, [
+                                            a({ 
+                                                href: '#auth2/admin', 
+                                                'data-menu-item': 'account'
+                                            }, [
+                                                div({ style: 'display: inline-block; width: 34px;' }, [
+                                                    span({ class: 'fa fa-unlock', style: 'font-size: 150%; margin-right: 10px;' })
+                                                ]),
+                                                'Admin'
+                                            ])
+                                        ]);
+                                    }()),
                                     li({ class: 'divider' }),
                                     li({}, [
                                         a({ href: '#', 'data-menu-item': 'logout', id: events.addEvent({
@@ -137,7 +162,7 @@ define([
                             ]);
                         });
                 }
-                return a({ type: 'button', class: 'btn btn-primary navbar-btn kb-nav-btn', 'data-button': 'signin', href: '#auth2/login' }, [
+                return a({ class: 'btn btn-primary navbar-btn kb-nav-btn', 'data-button': 'signin', href: '#auth2/login' }, [
                     div({ class: 'fa fa-sign-in  fa-inverse', style: 'margin-right: 5px;' }),
                     div({ class: 'kb-nav-btn-txt' }, ['Sign In'])
                 ]);

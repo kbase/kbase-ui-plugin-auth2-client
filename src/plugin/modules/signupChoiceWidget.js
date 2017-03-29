@@ -374,10 +374,7 @@ define([
                     }
                 }, [
                     p([
-                        'The following KBase account policies have not yet been agreed to by this account. ',
-                    ]),
-                    p([
-                        'You may log into this account after you have agreed to these policies by checking the box at the bottom of each.'
+                        'The following KBase account policies will need to be agreed to before you can create a KBase account.',
                     ]),
                     div({}, [
                         policiesToResolve.missing.map(function (missingPolicy) {
@@ -407,7 +404,6 @@ define([
                                 }, 'Published on: ' + version.date),
                                 div({
                                     style: {
-
                                     }
                                 }, [
                                     div({
@@ -705,7 +701,7 @@ define([
         }
 
         function renderSignupSuccess(response) {
-            ui.setContent('main-title', 'KBase Login - Signed Up and Signed In')
+            ui.setContent('main-title', 'Signed Up and Signed In')
             var events = DomEvent.make({
                 node: container
             });
@@ -723,7 +719,7 @@ define([
                                     doRedirect(redirectUrl);
                                 }
                             })
-                        }, 'Continue to Destination')
+                        }, 'Continue to KBase')
                     ])
                 ])
             });
@@ -898,7 +894,8 @@ define([
                                 class: 'col-md-6'
                             }, [
                                 BS.buildPanel({
-                                    title: 'Linking This Identity Account',
+                                    title: 'Linking to this identity account',
+                                    type: 'default',
                                     body: div({
                                         class: 'container-fluid'
                                     }, [
@@ -1038,10 +1035,14 @@ define([
                     div({
                         class: 'col-md-12'
                     }, [
-                        div(
-                            h1({
+                        div({
+                            style: {
+                                display: 'none'
+                            }
+                        },
+                            h3({
                                 dataElement: 'main-title'
-                            }, 'KBase Login')
+                            }, 'KBase Signup')
                         ),
                         div({
                             dataElement: 'introduction'
@@ -1096,23 +1097,6 @@ define([
                 ])
             ]);
         }
-
-        // function getStateParams(choice) {
-        //     var q = {};
-        //     if (choice.redirecturl) {
-        //         var u = new URL(choice.redirecturl);
-        //         var s = u.search;
-        //         if (s.length > 1) {
-        //             s = s.substr(1);
-        //         }
-
-        //         s.split('&').forEach(function (field) {
-        //             var f = field.split('=').map(decodeURIComponent);
-        //             q[f[0]] = f[1];
-        //         });
-        //     }
-        //     return q;
-        // }
 
         function start(params) {
             // Clean up window 
@@ -1182,15 +1166,6 @@ define([
                         redirectUrl = choice.redirecturl;
                         stateParams = choice.state;
 
-                        console.log('state params', stateParams);
-                        if (stateParams.origin === 'signup') {
-                            runtime.send('app', 'navigate', {
-                                path: ['auth2', 'signup', '2']
-                            });
-                            return null;
-                        }
-
-
                         var intro;
                         if (choice.create.length === 0) {
                             if (choice.login.length === 0) {
@@ -1200,19 +1175,19 @@ define([
                                 // just log them in, but we should never see this case.
                                 intro = div([
                                     p([
-                                        'This ' + b(choice.provider) + ' account is associated with a KBase account.'
+                                        'This ' + b(choice.provider) + ' account is already associated with a KBase account.'
                                     ]),
                                     p([
-                                        'Click the login button to continue using KBase with the indicated account.'
+                                        'You may simply click the login button to continue using KBase with the indicated account.'
                                     ])
                                 ]);
-                                ui.setContent('main-title', 'KBase Login - Ready to Sign In');
+                                ui.setContent('main-title', 'Ready to Sign In');
                                 renderLogin(events, choice);
                             } else {
-                                ui.setContent('main-title', 'KBase Login - Sign In');
+                                ui.setContent('main-title', 'Sign In');
                                 intro = div([
                                     p([
-                                        'This ' + b(choice.provider) + ' identity account is associated with ',
+                                        'This ' + b(choice.provider) + ' identity account is already associated with ',
                                         String(choice.login.length),
                                         ' KBase accounts.'
                                     ]),
@@ -1224,31 +1199,14 @@ define([
                             }
                         } else if (choice.create.length === 1) {
                             if (choice.login.length === 0) {
-                                ui.setContent('main-title', 'KBase Login - Sign Up');
+                                ui.setContent('main-title', 'Sign Up');
 
-                                // different intro for signup vs login
-                                console.log('state params', stateParams);
-                                if (stateParams.origin === 'signup') {
-                                    runtime.send('app', 'navigate', {
-                                        path: '#auth2/signup/2'
-                                    });
-                                } else {
-                                    intro = div([
-                                        p([
-                                            'This ' + b(choice.provider) + ' identity account (shown below in <b>Linking This Identity Account</b>) is not currently associated ',
-                                            'with a KBase account. You may create a new KBase account below and have this ',
-                                            b(choice.provider),
-                                            ' identity account linked to it.'
-                                        ]),
-                                        p([
-                                            'After creating this new KBase account, you will be automatically logged in.',
-                                        ]),
-                                        p([
-                                            'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
-                                        ])
-                                    ]);
+                                intro = div([
+                                    p([
+                                        'You are ready to create a new KBase account this ' + b(choice.provider) + ' identity account.'
+                                    ])
+                                ]);
 
-                                }
                                 renderSignup(events, choice);
                             } else if (choice.login.length === 1) {
                                 intro = div([
@@ -1281,7 +1239,7 @@ define([
                         } else {
                             if (choice.login.length === 0) {
                                 // should not be possible!
-                                ui.setContent('main-title', 'KBase Login - Sign Up');
+                                ui.setContent('main-title', 'Sign Up');
                                 intro = div([
                                     p([
                                         'Your  ',
@@ -1304,7 +1262,7 @@ define([
                                 ]);
                             } else {
                                 // just log them in, but we should never see this case.
-                                ui.setContent('main-title', 'KBase Login - Sign Up or Sign In');
+                                ui.setContent('main-title', 'Sign Up or Sign In');
                                 intro = div([
                                     p([
                                         'Your  ',

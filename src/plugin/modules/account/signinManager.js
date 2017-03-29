@@ -2,37 +2,35 @@
 define([
     'kb_common/html',
     'kb_common/domEvent2',
-    'kb_common/bootstrapUtils'
+    'kb_common/bootstrapUtils',
+    'kb_common/format'
 ], function (
     html,
     DomEvent,
-    BS
+    BS,
+    format
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
-        h2 = t('h2'),
-        ul = t('ul'),
-        li = t('li'),
-        a = t('a'),
         table = t('table'),
         tr = t('tr'),
         th = t('th'),
         td = t('td'),
         button = t('button'),
-        form = t('form'),
-        input = t('input'),
-        label = t('label'),
-        select = t('select'),
-        option = t('option'),
-        p = t('p'),
-        iframe = t('iframe');
+        p = t('p');
 
     function factory(config) {
         var hostNode, container;
         var runtime = config.runtime;
 
         var vm = {
+            intro: {
+                id: html.genId(),
+                node: null,
+                enabled: true,
+                value: null,
+            },
             roles: {
                 value: null
             },
@@ -61,6 +59,7 @@ define([
             bindVmNode(vm.allTokens);
             bindVmNode(vm.currentToken);
             bindVmNode(vm.toolbar);
+            bindVmNode(vm.intro);
         }
 
         function renderLayout() {
@@ -75,16 +74,11 @@ define([
                 }, [
                     div({ class: 'col-md-12' }, [
                         div({
-                            id: vm.toolbar.id
+                            id: vm.intro.id
                         }),
                         div({
-                        }, [
-                            p([
-                                'The "Sign-Ins" tab allows you to manage your current sign-ins. A sign-in is created when you ',
-                                'sign in to KBase. Normally a sign-in is removed when you logout. However, if you do not create ',
-                                ' '
-                            ])
-                        ]),
+                            id: vm.toolbar.id
+                        }),                        
                         BS.buildPanel({
                             title: 'Your Current Sign-In',
                             body: div({
@@ -103,9 +97,15 @@ define([
             bindVm();
         }
 
-        function niceDate(epoch) {
-            var date = new Date(epoch);
-            return date.toUTCString();
+        function renderIntro() {
+            vm.intro.node.innerHTML = div({
+            }, [
+                p([
+                    'The "Sign-Ins" tab allows you to manage your current sign-ins. A sign-in is created when you ',
+                    'sign in to KBase. Normally a sign-in is removed when you logout. However, if you do not create ',
+                    ' '
+                ])
+            ]);
         }
 
         function doRevokeToken(tokenId) {
@@ -130,7 +130,7 @@ define([
                     console.error('ERROR', err);
                 });
         }
-
+ 
         function renderTokens() {
             var events = DomEvent.make({
                 node: vm.allTokens.node
@@ -178,8 +178,8 @@ define([
                 ])
             ].concat(vm.allTokens.value.map(function (token) {
                 return tr([
-                    td(niceDate(token.created)),
-                    td(niceDate(token.expires) + '<br>' + token.expires),
+                    td(format.niceTime(token.created)),
+                    td(format.niceElapsedTime(token.expires)),
                     td({
                         style: {
                             textAlign: 'right'
@@ -228,8 +228,8 @@ define([
                 ])
             ].concat(tokens.map(function (token) {
                 return tr([
-                    td(niceDate(token.created)),
-                    td(niceDate(token.expires) + '<br>' + token.expires),
+                    td(format.niceTime(token.created)),
+                    td(format.niceElapsedTime(token.expires)),
                     td({
                         style: {
                             textAlign: 'right'
@@ -304,6 +304,8 @@ define([
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
                     .then(function (result) {
+
+                        renderIntro();
 
                         renderToolbar();
 
