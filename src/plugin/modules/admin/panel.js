@@ -4,29 +4,15 @@ define([
     'kb_common_ts/Html',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    './personalInfoEditorKO',
-    './linksManager',
-    './rolesManagerKO',
-    './developerManager',
-    './tokenManager',
-    './developerTokenManager',
-    './serviceTokenManager',
-    './agreementsManager',
-    './signinManager'
+    './userManager',
+    './configManager'
 ], function (
     $,
     M_Html,
     html,
     BS,
-    PersonalInfoEditor,
-    LinksManager,
-    RolesManager,
-    DeveloperManager,
-    TokenManager,
-    DeveloperTokenManager,
-    ServiceTokenManager,
-    AgreementsManager,
-    SigninManager
+    UserManager,
+    ConfigManager
 ) {
     // var html = new M_Html.Html();
     var // t = html.tagMaker(),
@@ -93,49 +79,6 @@ define([
                     ])
                 ])
             ]);
-        }
-
-        function buildAbout() {
-            return buildMessage(div([
-                p('This is the account manager'),
-                p('It is designed to allow a user to manage all apsects of their account.'),
-                p('What can they do here?'),
-                ul([
-                    li('Edit their real name or email address'),
-                    li('View their account creation date'),
-                    li('View their last login time'),
-                    li('Manage their linked accounts'),
-                    li('Manage their developer tokens')
-                ])
-            ]));
-        }
-
-        function buildSimpleForm(def) {
-            var content = div([
-                form(def.fields.map(function (field) {
-                    var id = html.genId();
-                    return div({
-                        class: 'form-group'
-                    }, [
-                        label({
-                            for: id
-                        }, field.label),
-                        input({
-                            type: field.type | 'text',
-                            class: 'form-control',
-                            id: id,
-                            placeholder: field.placeholder
-                        })
-                    ])
-                }).concat([
-                    button({
-                        class: 'btn btn-primary',
-                        type: 'button'
-                    }, 'Save')
-                ]))
-
-            ]);
-            return content;
         }
 
         function buildTabs(arg) {
@@ -286,69 +229,21 @@ define([
 
         function renderLayout(node, params) {
             var tabDef = {
-                tabs: [{
-                        name: 'personalInfo',
-                        label: 'Personal',
+                tabs: [
+                    {
+                        name: 'userManager',
+                        label: 'Users',
                         panel: {
-                            factory: PersonalInfoEditor
+                            factory: UserManager
                         }
                     },
                     {
-                        name: 'links',
-                        label: 'Linked Sign-In Accounts',
+                        name: 'configManager',
+                        label: 'Configure Auth2',
                         panel: {
-                            factory: LinksManager
-                        }
-                    },
-                    {
-                        name: 'roles',
-                        label: 'Roles',
-                        panel: {
-                            factory: RolesManager
-                        }
-                    },
-                    (function () {
-                        if (vm.developerTokens.enabled) {
-                            return {
-                                name: 'developer-tokens',
-                                label: 'Developer Tokens',
-                                panel: {
-                                    factory: DeveloperTokenManager
-                                }
-                            };
-                        }
-                    }()),
-                    (function () {
-                        if (vm.serviceTokens.enabled) {
-                            return {
-                                name: 'service-tokens',
-                                label: 'Service Tokens',
-                                panel: {
-                                    factory: ServiceTokenManager
-                                }
-                            };
-                        }
-                    }()),
-
-                    {
-                        name: 'signins',
-                        label: 'Sign-Ins',
-                        panel: {
-                            factory: SigninManager
-                        }
-                    },
-                    {
-                        name: 'agreements',
-                        label: 'Usage Agreements',
-                        panel: {
-                            factory: AgreementsManager
+                            factory: ConfigManager
                         }
                     }
-                    // {
-                    //     name: 'about',
-                    //     label: 'About',
-                    //     content: buildAbout()
-                    // }
                 ]
             };
             var tabs = buildTabs(tabDef);
@@ -370,7 +265,7 @@ define([
                     document.getElementById(event.id).addEventListener(event.type, event.handler);
                 }
             });
-            var defaultTab = params.tab || 'personalInfo';
+            var defaultTab = params.tab || 'userManager';
             tabs.showTab(defaultTab);
         }
 

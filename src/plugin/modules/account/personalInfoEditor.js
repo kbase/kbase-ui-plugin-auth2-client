@@ -41,8 +41,14 @@ define([
         var runtime = config.runtime;
         var hostNode, container;
         var vm = {
+            form: {
+                id: html.genId(),
+                node: null
+            },
             realname: {
                 id: html.genId(),
+                node: null,
+                value: null,
                 label: 'Name',
                 type: 'text',
                 placeholder: 'Your Name',
@@ -68,6 +74,8 @@ define([
             },
             email: {
                 id: html.genId(),
+                node: null,
+                value: null,
                 label: 'E-Mail',
                 type: 'text',
                 placeholder: 'Your E-Mail Address',
@@ -138,7 +146,7 @@ define([
             return content;
         }
 
-        function render() {
+        function buildLayout() {
             return div({
                 class: 'container-fluid',
                 style: {
@@ -157,7 +165,7 @@ define([
                     class: 'row'
                 }, [
                     div({ class: 'col-md-12' }, [
-                        buildForm(vm)
+                        buildForm()
                     ])
                 ])
             ]);
@@ -181,6 +189,7 @@ define([
 
         function bindVm() {
             // bind the nodes
+            vm.form.node = document.getElementById(vm.form.id);
             vm.realname.node = document.getElementById(vm.realname.id);
             vm.email.node = document.getElementById(vm.email.id);
 
@@ -217,7 +226,7 @@ define([
                         //     realName: runtime.service('session').getRealname(),
                         //     email: runtime.service('session').getClient().getEmail()
                         // };
-                        container.innerHTML = render();
+                        container.innerHTML = buildLayout();
                         bindVm();
                     });
             });

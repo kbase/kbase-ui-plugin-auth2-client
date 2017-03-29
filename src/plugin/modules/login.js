@@ -48,78 +48,70 @@ define([
             }
             var providers = runtime.service('session').getProviders();
 
-            return form({
-                    class: 'form-inline',
-                    dataElement: 'login-form',
-                }, div({
+            return div({
+                style: {
+                    width: '80%',
+                    display: 'inline-block'
+                }
+            }, [
+                div({
+                    class: 'btn-group-vertical',
                     style: {
-                        width: '150px',
-                        display: 'inline-block'
+                        width: '100%'
                     }
                 }, [
-                    div({
-                        class: 'btn-group-vertical'
-                    }, [
-                        button({
-                            class: 'btn btn-default',
-                            style: {
-                                xtextAlign: 'center',
-                                xcursor: 'pointer',
-                                margin: '8px 0',
-                                xdisplay: 'block',
-                                xwhiteSpace: 'nowrap',
-                                xwidth: '100%',
-                                height: '44px'
-                            },
-                            type: 'button',
-                            id: events.addEvent('click', function () {
-                                runtime.send('app', 'navigate', {
-                                    path: 'auth2/login/legacy'
-                                });
-                            })
-                        }, 'Legacy Login')
-                    ].concat(providers.map(function (provider) {
-                            return utils.buildLoginButton(events, provider, {
-                                nextrequest: JSON.stringify(nextRequest),
-                                origin: 'login'
+                    button({
+                        class: 'btn btn-default',
+                        style: {
+                            margin: '8px 0',
+                            height: '44px'
+                        },
+                        type: 'button',
+                        id: events.addEvent('click', function () {
+                            runtime.send('app', 'navigate', {
+                                path: 'auth2/login/legacy'
                             });
                         })
-                    )),
-                    div({
-                        style: {
-                            marginTop: '1em'
-                        }
-                    }, [
-                        input({
-                            type: 'checkbox',
-                            checked: (function () {
-                                return runtime.service('session').getClient().isSessionPersistent();
-                            }()),
-                            id: events.addEvent('change', doStaySignedIn)
-                        }),
-                        ' Stay signed in'
-                    ]),
-                    div({
-                        style: {
-                            marginTop: '2em'
-                        }
-                    }, [
-                        a({
-                            href: runtime.config('resources.documentation.troubleshooting.signin')
-                        }, 'Trouble signing in?')
-                    ]),
-                    div({
-                        style: {
-                            marginTop: '2em'
-                        }
-                    }, [
-                        a({
-                            href: '#auth2/signup'
-                        }, 'Sign Up for a KBase Account')
-                    ])
+                    }, 'Legacy Login')
+                ].concat(providers.map(function (provider) {
+                    return utils.buildLoginButton(events, provider, {
+                        nextrequest: JSON.stringify(nextRequest),
+                        origin: 'login'
+                    });
+                }))),
+                div({
+                    style: {
+                        marginTop: '1em'
+                    }
+                }, [
+                    input({
+                        type: 'checkbox',
+                        checked: (function () {
+                            return runtime.service('session').getClient().isSessionPersistent();
+                        }()),
+                        id: events.addEvent('change', doStaySignedIn)
+                    }),
+                    ' Stay signed in'
+                ]),
+                div({
+                    style: {
+                        marginTop: '2em'
+                    }
+                }, [
+                    a({
+                        href: runtime.config('resources.documentation.troubleshooting.signin')
+                    }, 'Trouble signing in?')
+                ]),
+                div({
+                    style: {
+                        marginTop: '2em'
+                    }
+                }, [
+                    a({
+                        href: '#auth2/signup'
+                    }, 'Sign Up for a KBase Account')
                 ])
-
-            );
+            ]);
         }
 
         function buildLogoutControl(events) {
@@ -134,7 +126,6 @@ define([
         }
 
         function buildAuthControl(events, params) {
-            // var iframeContent = buildHtmlDoc().replace(/"/g, '&quot;')
             return div({
                 style: {
                     textAlign: 'center'
@@ -164,7 +155,6 @@ define([
                 i = html.tag('i'),
                 a = html.tag('a');
 
-            // eventMan.reset();
             var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
             var authControl = buildAuthControl(events, params);

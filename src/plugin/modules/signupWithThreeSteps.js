@@ -22,7 +22,6 @@ define([
         div = t('div'),
         span = t('span'),
         input = t('input'),
-        label = t('label'),
         p = html.tag('p');
 
     function factory(config) {
@@ -41,21 +40,21 @@ define([
                     node: null,
                     value: null
                 },
-                // step2: {
-                //     enabled: true,
-                //     id: html.genId(),
-                //     node: null,
-                //     value: null,
-                //     model: {
-                //         policyAgreements: {
-                //             enabled: false,
-                //             id: html.genId(),
-                //             node: null,
-                //             value: null
-                //         }
-                //     }
-                // },
                 step2: {
+                    enabled: true,
+                    id: html.genId(),
+                    node: null,
+                    value: null,
+                    model: {
+                        policyAgreements: {
+                            enabled: false,
+                            id: html.genId(),
+                            node: null,
+                            value: null
+                        }
+                    }
+                },
+                step3: {
                     enabled: true,
                     id: html.genId(),
                     node: null,
@@ -94,7 +93,7 @@ define([
                         p([
                             'In addition to Globus ID, required for the Globus Transfer service, ',
                             'Globus supports many organizational sign-in providers -- your organization may be supported. (If you are curious, just click on the ', 
-                            'Globus button to access their sign-in and signup tools - a list is provided there.)'
+                            'Globus button to access their sign-in and signup tools.'
                         ]),
                         p([
                             'KBase accounts created before 4/15/17 utilized Globus ID exclusively'
@@ -104,12 +103,7 @@ define([
                 google: {
                     id: 'Google',
                     label: 'Google',
-                    description: div([
-                        p([
-                            'Any Google account may be used to access KBase, including gmail ',
-                            'and organizational services built on the Google Apps platform.'
-                        ])
-                    ])
+                    description: ''
                 }
             };
         }
@@ -140,8 +134,7 @@ define([
                     div({
                         class: 'col-md-9',
                         style: {
-                            textAlign: 'left',
-                            marginTop: '6px'
+                            textAlign: 'left'
                         }
                     }, providers.globus.description)
                 ]),
@@ -157,23 +150,21 @@ define([
                     div({
                         class: 'col-md-9',
                         style: {
-                            textAlign: 'left',
-                            marginTop: '6px'
+                            textAlign: 'left'
                         }
                     }, providers.google.description)
                 ]),
                 div({
-                    class: 'row',
-                    style: {
-                        marginTop: '1em'
-                    }
+                    class: 'row'
                 }, [
                     div({
                         class: 'col-md-3'
                     }, [
                         div({
-                            class: 'checkbox'
-                        }, label([
+                            style: {
+                                marginTop: '1em'
+                            }
+                        }, [
                             input({
                                 type: 'checkbox',
                                 checked: (function () {
@@ -182,13 +173,12 @@ define([
                                 id: events.addEvent('change', doStaySignedIn)
                             }),
                             ' Stay signed in'
-                        ]))
+                        ])
                     ]),
                     div({
                         class: 'col-md-9',
                         style: {
-                            textAlign: 'left',
-                            marginTop: '6px'
+                            textAlign: 'left'
                         }
                     }, [
                         p([
@@ -340,15 +330,15 @@ define([
                         style: {
                             verticalAlign: 'middle'
                         }
-                    }, ' 1. Sign-in with one of our supported Sign-In providers')
+                    }, ' 1. Sign-in first with one of our supported Sign-In providers')
                 ]),
                 p([
-                    'KBase does not ask you create yet another password. ',
-                    'Rather, you use the either Globus or Google sign-in services.. '
+                    'KBase does not make you create yet another password. ',
+                    'Rather, you use the either Globus or Google to sign in. '
                 ]),
                
                 p([
-                    'After signing in (or signing up) with Globus or Google you will be returned to this page to complete the KBase sign-up process.'
+                    'After signing in (or signing up) you will be returned to this page to complete the KBase sign-up process.'
                 ]),
                 p({
                     style: {
@@ -373,79 +363,6 @@ define([
 
         }
 
-        // function renderStep2(params) {
-        //     if (params.step < 2) {
-        //         vm.get('step2').node.innerHTML = div({
-        //             class: 'col-sm-10 col-sm-offset-1',
-        //             style: {
-        //                 paddingBottom: '10px'
-        //             }
-        //         }, [
-        //             p({
-        //                 style: {
-        //                     marginTop: '10px',
-        //                     fontWeight: 'bold'
-        //                 }
-        //             }, [
-        //                 uncheckedBox(),
-        //                 span({
-        //                     style: {
-        //                         verticalAlign: 'middle'
-        //                     }
-        //                 }, '2. Agree to KBase Usage Policies')
-        //             ]),
-        //             p({}, [
-        //                 'When this step is active, you will be prompted to agree to the KBase usage policies'
-        //             ])
-        //         ]);
-        //         return;
-        //     }
-        //     var events = DomEvents.make({
-        //         node: container
-        //     });
-        //     vm.get('step2.policyAgreements').enabled = true;
-        //     vm.get('step2').node.innerHTML = div({
-        //         class: 'col-sm-10 col-sm-offset-1',
-        //         style: {
-        //             backgroundColor: 'white',
-        //             border: '1px silver solid',
-        //             paddingBottom: '10px'
-        //         }
-        //     }, [
-        //         p({
-        //             style: {
-        //                 marginTop: '10px',
-        //                 fontWeight: 'bold'
-        //             }
-        //         }, [
-        //             uncheckedBox(true),
-        //             span({
-        //                 style: {
-        //                     verticalAlign: 'middle'
-        //                 }
-        //             }, '2. Agree to KBase Usage Policies')
-        //         ]),
-        //         div({
-        //             id: vm.get('step2.policyAgreements').id
-        //         })
-        //     ]);
-        //     vm.bind('step2.policyAgreements');
-        //     events.attachEvents();
-
-        //     var w = PolicyAgreementWidget.make({
-        //         runtime: runtime,
-        //         vm: vm.get('step2.policyAgreements')
-        //     });
-        //     w.attach(vm.get('step2.policyAgreements').node)
-        //         .then(function () {
-        //             return w.start(params);
-        //         })
-        //         .catch(function (err) {
-        //             vm.get('step2.policyAgreements').node.innerHTML = err.message;
-        //         });
-
-        // }
-
         function renderStep2(params) {
             if (params.step < 2) {
                 vm.get('step2').node.innerHTML = div({
@@ -465,15 +382,10 @@ define([
                             style: {
                                 verticalAlign: 'middle'
                             }
-                        }, [
-                            '2. ',
-                            span({
-                                dataElement: 'title'
-                            }, 'Create a new KBase Account')
-                        ])
+                        }, '2. Agree to KBase Usage Policies')
                     ]),
                     p({}, [
-                        'To be done'
+                        'When this step is active, you will be prompted to agree to the KBase usage policies'
                     ])
                 ]);
                 return;
@@ -481,7 +393,7 @@ define([
             var events = DomEvents.make({
                 node: container
             });
-            vm.get('step2.signupChoice').enabled = true;
+            vm.get('step2.policyAgreements').enabled = true;
             vm.get('step2').node.innerHTML = div({
                 class: 'col-sm-10 col-sm-offset-1',
                 style: {
@@ -501,26 +413,97 @@ define([
                         style: {
                             verticalAlign: 'middle'
                         }
-                    }, span({
-                        dataElement: 'title'
-                    }, 'Create a new KBase Account'))
+                    }, '2. Agree to KBase Usage Policies')
                 ]),
                 div({
-                    id: vm.get('step2.signupChoice').id
+                    id: vm.get('step2.policyAgreements').id
                 })
             ]);
-            vm.bind('step2.signupChoice');
+            vm.bind('step2.policyAgreements');
+            events.attachEvents();
+
+            var w = PolicyAgreementWidget.make({
+                runtime: runtime,
+                vm: vm.get('step2.policyAgreements')
+            });
+            w.attach(vm.get('step2.policyAgreements').node)
+                .then(function () {
+                    return w.start(params);
+                })
+                .catch(function (err) {
+                    vm.get('step2.policyAgreements').node.innerHTML = err.message;
+                });
+
+        }
+
+        function renderStep3(params) {
+            if (params.step < 3) {
+                vm.get('step3').node.innerHTML = div({
+                    class: 'col-sm-10 col-sm-offset-1',
+                    style: {
+                        paddingBottom: '10px'
+                    }
+                }, [
+                    p({
+                        style: {
+                            marginTop: '10px',
+                            fontWeight: 'bold'
+                        }
+                    }, [
+                        uncheckedBox(),
+                        span({
+                            style: {
+                                verticalAlign: 'middle'
+                            }
+                        }, '3. Create a new KBase Account')
+                    ]),
+                    p({}, [
+                        'To be done'
+                    ])
+                ]);
+                return;
+            }
+            var events = DomEvents.make({
+                node: container
+            });
+            vm.get('step3.signupChoice').enabled = true;
+            vm.get('step3').node.innerHTML = div({
+                class: 'col-sm-10 col-sm-offset-1',
+                style: {
+                    backgroundColor: 'white',
+                    border: '1px silver solid',
+                    paddingBottom: '10px'
+                }
+            }, [
+                p({
+                    style: {
+                        marginTop: '10px',
+                        fontWeight: 'bold'
+                    }
+                }, [
+                    uncheckedBox(true),
+                    span({
+                        style: {
+                            verticalAlign: 'middle'
+                        }
+                    }, '2. Create a new KBase Account')
+                ]),
+                div({
+                    id: vm.get('step3.signupChoice').id
+                })
+            ]);
+            vm.bind('step3.signupChoice');
             events.attachEvents();
 
             var w = SignupChoiceWidget.make({
                 runtime: runtime
             });
-            w.attach(vm.get('step2.signupChoice').node)
+            w.attach(vm.get('step3.signupChoice').node)
                 .then(function () {
                     return w.start(params);
                 })
                 .catch(function (err) {
-                    vm.get('step2.signupChoice').node.innerHTML = err.message;
+                    vm.get('step3.signupChoice').node.innerHTML = err.message;
                 });
 
         }
@@ -559,10 +542,10 @@ define([
                     }),
                     div({
                         id: vm.get('step2').id
+                    }),
+                    div({
+                        id: vm.get('step3').id
                     })
-                    // div({
-                    //     id: vm.get('step3').id
-                    // })
                 ])
             ]);
         }
@@ -584,7 +567,7 @@ define([
                     events.attachEvents();
                     renderStep1(params);
                     renderStep2(params);
-                    // renderStep3(params);
+                    renderStep3(params);
                 } catch (ex) {
                     console.error('ERROR rendering login stuff', ex);
                     showErrorMessage(ex);
