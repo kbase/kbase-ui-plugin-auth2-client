@@ -8,7 +8,7 @@ define([
     './tokenManager',
     './userManager',
     '../../utils'
-], function (
+], function(
     $,
     M_Html,
     html,
@@ -27,7 +27,7 @@ define([
         li = t('li'),
         a = t('a');
 
-  
+
 
     function factory(config) {
         var hostNode, container,
@@ -36,7 +36,7 @@ define([
                 runtime: runtime
             });
 
-        var vm = utils.ViewModel({
+        var vm = Utils.ViewModel({
             model: {
                 userInfo: {
                     id: html.genId(),
@@ -50,7 +50,7 @@ define([
                 }
             }
         });
-        
+
 
         // RENDERING
 
@@ -96,7 +96,7 @@ define([
                 tabClasses = ['nav', 'nav-tabs'],
                 tabStyle = {},
                 activeIndex, tabTabs,
-                tabs = arg.tabs.filter(function (tab) {
+                tabs = arg.tabs.filter(function(tab) {
                     return (tab ? true : false);
                 }),
                 selectedTab = arg.initialTab,
@@ -113,7 +113,7 @@ define([
                 tabsAttribs.id = tabsId;
             }
 
-            tabs.forEach(function (tab, index) {
+            tabs.forEach(function(tab, index) {
                 tab.panelId = html.genId();
                 tab.tabId = html.genId();
                 if (tab.selected === true && selectedTab === undefined) {
@@ -126,28 +126,28 @@ define([
                         id: tab.tabId,
                         jquery: true,
                         type: 'show.bs.tab',
-                        handler: function (e) {
+                        handler: function(e) {
                             // var panelId = e.target.getAttribute('data-target');
                             var panel = document.getElementById(tab.panelId);
                             // close any active panels.
-                            Promise.all(arg.tabs.map(function (tab) {
+                            Promise.all(arg.tabs.map(function(tab) {
                                     if (tab && tab.panel && tab.panel.instance) {
                                         return tab.panel.instance.stop()
-                                            .then(function () {
+                                            .then(function() {
                                                 return tab.panel.instance.detach();
                                             })
-                                            .then(function () {
+                                            .then(function() {
                                                 tab.panel.instance = null;
                                             });
                                     }
                                 }))
-                                .then(function () {
+                                .then(function() {
                                     tab.panel.instance = tab.panel.factory.make({
                                         runtime: runtime
                                     });
                                     return tab.panel.instance.attach(panel)
                                 })
-                                .then(function () {
+                                .then(function() {
                                     tab.panel.instance.start(params);
                                 });
                         }
@@ -168,7 +168,7 @@ define([
             }
             content = div(tabsAttribs, [
                 ul({ class: tabClasses.join(' '), role: 'tablist' },
-                    tabTabs.map(function (tab, index) {
+                    tabTabs.map(function(tab, index) {
                         if (tab.name) {
                             tabMap[tab.name] = tab;
                         }
@@ -202,7 +202,7 @@ define([
                         return li(tabAttribs, a(linkAttribs, [icon, label].join(' ')));
                     })),
                 div({ class: 'tab-content' },
-                    tabs.map(function (tab, index) {
+                    tabs.map(function(tab, index) {
                         var attribs = {
                             role: 'tabpanel',
                             class: panelClasses.join(' '),
@@ -250,8 +250,7 @@ define([
 
         function renderTabs(params) {
             var tabDef = {
-                tabs: [
-                    {
+                tabs: [{
                         name: 'userManager',
                         label: 'User Manager',
                         panel: {
@@ -286,7 +285,7 @@ define([
                     }, [tabs.content])
                 ])
             ]);
-            tabs.events.forEach(function (event) {
+            tabs.events.forEach(function(event) {
                 if (event.jquery) {
                     $(document.getElementById(event.id)).on(event.type, event.handler);
                 } else {
@@ -297,7 +296,7 @@ define([
             tabs.showTab(defaultTab);
         }
 
-        
+
 
         function renderUserInfo() {
             var userInfo = vm.get('userInfo');
@@ -312,8 +311,7 @@ define([
                         class: 'col-md-12'
                     }, [
                         utils.buildTable({
-                            columns: [
-                                {
+                            columns: [{
                                     label: 'Name'
                                 },
                                 {
@@ -321,15 +319,16 @@ define([
                                 },
                                 {
                                     label: 'Sign Up Time',
-                                    format: function (value) {
+                                    format: function(value) {
                                         return Date(value).toLocaleString();
                                     }
                                 }
                             ],
                             rows: [
-                                [userInfo.value.display, 
-                                    userInfo.value.user, 
-                                    userInfo.value.created]
+                                [userInfo.value.display,
+                                    userInfo.value.user,
+                                    userInfo.value.created
+                                ]
                             ],
                             classes: ['table', 'table-striped', 'table-hover']
                         })
@@ -341,30 +340,16 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            
             return runtime.service('session').getClient().getAdminUser(params.username)
-                .then(function (userInfo) {
-                    console.log('userinfo', userInfo);
+                .then(function(userInfo) {
                     vm.get('userInfo').value = userInfo;
-                    // vm.roles.value = account.roles;
-                    // account.roles.forEach(function (role) {
-                    //     switch (role.id) {
-                    //     case 'ServToken':
-                    //         vm.serviceTokens.enabled = true;
-                    //         break;
-                    //     case 'DevToken':
-                    //         vm.developerTokens.enabled = true;
-                    //         break;
-                    //     }
-                    // });
-
                     runtime.send('ui', 'setTitle', 'User Manager: ' + userInfo.user);
                     renderLayout();
                     renderUserInfo();
@@ -373,11 +358,11 @@ define([
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -393,8 +378,8 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
-    }
+    };
 });

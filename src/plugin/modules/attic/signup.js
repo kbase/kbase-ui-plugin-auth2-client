@@ -4,25 +4,33 @@ define([
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client',
+    'kb_common_ts/HttpClient',
+    'kb_common_ts/Auth2',
     './utils',
-    './signupChoiceWidget',
-    './policyAgreementWidget',
+    './widgets/signupWidget',
+    './widgets/errorWidget',
+    './policies',
     'bootstrap'
-], function (
+], function(
     Promise,
     html,
     DomEvents,
     BS,
     Plugin,
+    HttpClient,
+    M_Auth2,
     Utils,
-    SignupChoiceWidget,
-    PolicyAgreementWidget
+    SignupWidget,
+    ErrorWidget,
+    Policies
 ) {
     var t = html.tag,
         div = t('div'),
         span = t('span'),
         input = t('input'),
         label = t('label'),
+        select = t('select'),
+        option = t('option'),
         p = html.tag('p');
 
     function factory(config) {
@@ -31,58 +39,175 @@ define([
             utils = Utils.make({
                 runtime: runtime
             }),
-            nextRequest;
-        var vm = utils.ViewModel({
+            nextRequest,
+            policies = Policies.make({
+                runtime: runtime
+            });
+        var vm = Utils.ViewModel({
             model: {
-                
                 step1: {
-                    enabled: true,
                     id: html.genId(),
                     node: null,
                     value: null
                 },
-                // step2: {
-                //     enabled: true,
-                //     id: html.genId(),
-                //     node: null,
-                //     value: null,
-                //     model: {
-                //         policyAgreements: {
-                //             enabled: false,
-                //             id: html.genId(),
-                //             node: null,
-                //             value: null
-                //         }
-                //     }
-                // },
                 step2: {
-                    enabled: true,
                     id: html.genId(),
                     node: null,
                     value: null,
                     model: {
+                        choice: {
+                            value: null
+                        },
                         signupChoice: {
-                            enabled: false,
+                            disabled: true,
+                            id: html.genId(),
+                            node: null,
+                            value: null
+                        },
+                        globusProviders: {
+                            disabled: true,
                             id: html.genId(),
                             node: null,
                             value: null
                         }
                     }
+                },
+                error: {
+                    id: html.genId(),
+                    node: null
+                },
+                alreadySignedUp: {
+                    id: html.genId(),
+                    node: null
                 }
             }
         });
 
-        function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
-            });
-        }
 
         function doStaySignedIn(e) {
             var checked = e.target.checked;
             var auth2Client = runtime.service('session').getClient();
             auth2Client.setSessionPersistent(checked);
+        }
+
+        function getGlobusProviders() {
+            var http = new HttpClient.HttpClient();
+
+            var path = [
+                Plugin.plugin.fullPath,
+                'data',
+                'globus-providers.json'
+            ].join('/');
+            var url = window.location.origin + '/' + path;
+
+            return http.request({
+                    method: 'GET',
+                    url: url
+                })
+                .then(function(result) {
+                    if (result.status === 200) {
+                        try {
+                            return JSON.parse(result.response);
+                        } catch (ex) {
+                            throw new Error('Error fetching file: ' + ex.message);
+                        }
+                    } else {
+                        console.error('ERROR', result);
+                        throw new Error('Error fetching file: ' + result.status);
+                    }
+                });
+        }
+
+        function renderGlobusProvidersx() {
+            getGlobusProviders()
+                .then(function(globusProviders) {
+                    var content = select({
+                            class: 'form-control'
+                        },
+                        globusProviders
+                        .sort(function(a, b) {
+                            if (a.label < b.label) {
+                                return -1;
+                            } else if (a.label > b.label) {
+                                return 1;
+                            }
+                            return 0;
+                        })
+                        .map(function(provider) {
+                            return option({
+                                value: provider.id
+                            }, provider.label);
+                        }));
+                    console.log('here', content, vm.get('step2.globusProviders').node);
+                    vm.get('step2.globusProviders').node.innerHTML = content;
+                });
+        }
+
+        function renderGlobusProviders() {
+            getGlobusProviders()
+                .then(function(globusProviders) {
+                    // var filtered
+                    var searchInputId = html.genId();
+                    var searchOutputId = html.genId();
+                    var content = div({
+
+                    }, [
+                        div({}, [
+                            input({
+                                type: 'text',
+                                id: searchInputId
+                            })
+                        ]),
+                        div({
+                            style: {
+                                border: '1px silver solid',
+                                maxHeight: '300px',
+                                overflow: 'auto',
+                                padding: '4px'
+                            }
+                        }, div({
+                            id: searchOutputId,
+                        }, 'search for org above'))
+
+                    ]);
+                    vm.get('step2.globusProviders').node.innerHTML = content;
+
+                    var searchNode = document.getElementById(searchInputId);
+                    var outputNode = document.getElementById(searchOutputId);
+                    searchNode.addEventListener('keyup', function(e) {
+                        console.log('keyup');
+                        updateSearch(searchNode.value);
+                    });
+
+                    function updateSearch(search) {
+                        if (search.length === 0) {
+                            outputNode.innerHTML = 'Please enter a search term above or "." to show all (case insensitive regular expression)';
+                            return;
+                        }
+
+                        var term;
+                        try {
+                            term = new RegExp(search, 'i');
+                        } catch (ex) {
+                            outputNode.innerHTML = 'Error: ' + ex.message;
+                            return;
+                        }
+                        var content = globusProviders
+                            .filter(function(item) {
+                                if (item.label.match(term)) {
+                                    return true;
+                                }
+                                return false;
+                            })
+                            .map(function(item) {
+                                return div(
+                                    item.label
+                                );
+                            }).join('\n');
+                        outputNode.innerHTML = content;
+                    }
+                    updateSearch('');
+                });
         }
 
         function getProviders() {
@@ -93,11 +218,16 @@ define([
                     description: div([
                         p([
                             'In addition to Globus ID, required for the Globus Transfer service, ',
-                            'Globus supports many organizational sign-in providers -- your organization may be supported. (If you are curious, just click on the ', 
-                            'Globus button to access their sign-in and signup tools - a list is provided there.)'
+                            'Globus supports many organizational sign-in providers -- your organization may be supported.'
                         ]),
                         p([
-                            'KBase accounts created before 4/15/17 utilized Globus ID exclusively'
+                            'Sign-in providers offered by Globus: ',
+                            span({
+                                id: vm.get('step2.globusProviders').id
+                            })
+                        ]),
+                        p([
+                            'KBase accounts created before 4/15/17 utilized Globus ID exclusively.'
                         ])
                     ])
                 },
@@ -134,9 +264,9 @@ define([
                     div({
                         class: 'col-md-3'
                     }, utils.buildLoginButton(events, providers.globus, {
-                            nextrequest: JSON.stringify(nextRequest),
-                            origin: 'signup'
-                        })),
+                        nextrequest: JSON.stringify(nextRequest),
+                        origin: 'signup'
+                    })),
                     div({
                         class: 'col-md-9',
                         style: {
@@ -151,9 +281,9 @@ define([
                     div({
                         class: 'col-md-3'
                     }, utils.buildLoginButton(events, providers.google, {
-                            nextrequest: JSON.stringify(nextRequest),
-                            origin: 'signup'
-                        })),
+                        nextrequest: JSON.stringify(nextRequest),
+                        origin: 'signup'
+                    })),
                     div({
                         class: 'col-md-9',
                         style: {
@@ -176,7 +306,7 @@ define([
                         }, label([
                             input({
                                 type: 'checkbox',
-                                checked: (function () {
+                                checked: (function() {
                                     return runtime.service('session').getClient().isSessionPersistent();
                                 }()),
                                 id: events.addEvent('change', doStaySignedIn)
@@ -197,9 +327,8 @@ define([
                             'your browser will delete the cookie when your browser is exited.'
                         ]),
                         p([
-                            'Your KBase sign-in will be active for two weeks, or until you ',
-                            'sign out. ',
-                            'After this you simply need to sign-in again.'
+                            'If you stay signed in, your KBase sign-in will be active for two weeks, or until you ',
+                            'sign out or delete your browser cookies. '
                         ])
                     ])
                 ])
@@ -325,7 +454,7 @@ define([
                 class: 'col-sm-10 col-sm-offset-1',
                 style: {
                     backgroundColor: 'white',
-                    border: '1px silver solid',
+                    xborder: '1px silver solid',
                     paddingBottom: '10px'
                 }
             }, [
@@ -346,7 +475,7 @@ define([
                     'KBase does not ask you create yet another password. ',
                     'Rather, you use the either Globus or Google sign-in services.. '
                 ]),
-               
+
                 p([
                     'After signing in (or signing up) with Globus or Google you will be returned to this page to complete the KBase sign-up process.'
                 ]),
@@ -369,82 +498,13 @@ define([
                     }
                 }, buildAuthControl(events, params))
             ]);
+
+            // gotta fix this...
+            vm.bind('step2.globusProviders');
+            renderGlobusProviders();
             events.attachEvents();
-
         }
-
-        // function renderStep2(params) {
-        //     if (params.step < 2) {
-        //         vm.get('step2').node.innerHTML = div({
-        //             class: 'col-sm-10 col-sm-offset-1',
-        //             style: {
-        //                 paddingBottom: '10px'
-        //             }
-        //         }, [
-        //             p({
-        //                 style: {
-        //                     marginTop: '10px',
-        //                     fontWeight: 'bold'
-        //                 }
-        //             }, [
-        //                 uncheckedBox(),
-        //                 span({
-        //                     style: {
-        //                         verticalAlign: 'middle'
-        //                     }
-        //                 }, '2. Agree to KBase Usage Policies')
-        //             ]),
-        //             p({}, [
-        //                 'When this step is active, you will be prompted to agree to the KBase usage policies'
-        //             ])
-        //         ]);
-        //         return;
-        //     }
-        //     var events = DomEvents.make({
-        //         node: container
-        //     });
-        //     vm.get('step2.policyAgreements').enabled = true;
-        //     vm.get('step2').node.innerHTML = div({
-        //         class: 'col-sm-10 col-sm-offset-1',
-        //         style: {
-        //             backgroundColor: 'white',
-        //             border: '1px silver solid',
-        //             paddingBottom: '10px'
-        //         }
-        //     }, [
-        //         p({
-        //             style: {
-        //                 marginTop: '10px',
-        //                 fontWeight: 'bold'
-        //             }
-        //         }, [
-        //             uncheckedBox(true),
-        //             span({
-        //                 style: {
-        //                     verticalAlign: 'middle'
-        //                 }
-        //             }, '2. Agree to KBase Usage Policies')
-        //         ]),
-        //         div({
-        //             id: vm.get('step2.policyAgreements').id
-        //         })
-        //     ]);
-        //     vm.bind('step2.policyAgreements');
-        //     events.attachEvents();
-
-        //     var w = PolicyAgreementWidget.make({
-        //         runtime: runtime,
-        //         vm: vm.get('step2.policyAgreements')
-        //     });
-        //     w.attach(vm.get('step2.policyAgreements').node)
-        //         .then(function () {
-        //             return w.start(params);
-        //         })
-        //         .catch(function (err) {
-        //             vm.get('step2.policyAgreements').node.innerHTML = err.message;
-        //         });
-
-        // }
+        x
 
         function renderStep2(params) {
             if (params.step < 2) {
@@ -486,7 +546,7 @@ define([
                 class: 'col-sm-10 col-sm-offset-1',
                 style: {
                     backgroundColor: 'white',
-                    border: '1px silver solid',
+                    xborder: '1px silver solid',
                     paddingBottom: '10px'
                 }
             }, [
@@ -512,23 +572,23 @@ define([
             vm.bind('step2.signupChoice');
             events.attachEvents();
 
-            var w = SignupChoiceWidget.make({
-                runtime: runtime
+            var w = SignupWidget.make({
+                runtime: runtime,
+                choice: vm.get('step2.choice').value
             });
             w.attach(vm.get('step2.signupChoice').node)
-                .then(function () {
+                .then(function() {
                     return w.start(params);
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     vm.get('step2.signupChoice').node.innerHTML = err.message;
                 });
-
         }
 
-        function buildForm(events, params) {
+        function renderLayout() {
             var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
-            return div({ class: 'container', style: 'margin-top: 4em', dataWidget: 'login' }, [
+            container.innerHTML = div({ class: 'container', style: 'margin-top: 4em', dataWidget: 'login' }, [
                 div({}, [
                     div({
                         style: {
@@ -546,25 +606,21 @@ define([
                     })
                 ]),
                 div({ class: 'row' }, [
-                    // div({
-                    //     class: 'col-sm-10 col-sm-offset-1'
-                    // }, [
-                    //     h1({ style: 'font-size:1.6em' }, ['Sign Up for KBase'])
-                    //     // p([
-                    //     //     'Signing up for KBase is easy!',
-                    //     // ])
-                    // ]),
                     div({
                         id: vm.get('step1').id
                     }),
                     div({
                         id: vm.get('step2').id
+                    }),
+                    div({
+                        id: vm.get('error').id
+                    }),
+                    div({
+                        id: vm.get('alreadySignedUp').id
                     })
-                    // div({
-                    //     id: vm.get('step3').id
-                    // })
                 ])
             ]);
+            vm.bindAll();
         }
 
         function showErrorMessage(message) {
@@ -574,26 +630,42 @@ define([
         }
 
         function renderSignupStuff(params) {
-            return Promise.try(function () {
-                try {
-                    var events = DomEvents.make({
-                        node: container
-                    });
-                    container.innerHTML = buildForm(events, params);
-                    vm.bindAll();
-                    events.attachEvents();
-                    renderStep1(params);
-                    renderStep2(params);
-                    // renderStep3(params);
-                } catch (ex) {
-                    console.error('ERROR rendering login stuff', ex);
-                    showErrorMessage(ex);
-                }
-            });
+            return Promise.all([runtime.service('session').getClient().getClient().getLoginChoice(), policies.start()])
+                .spread(function(choice) {
+                    var fixing = [];
+                    if (choice.login) {
+                        fixing = fixing.concat(choice.login.map(function(login) {
+                            return policies.evaluatePolicies(login.policy_ids)
+                                .then(function(policiesToResolve) {
+                                    login.policiesToResolve = policiesToResolve;
+                                });
+                        }));
+                    }
+                    if (choice.create) {
+                        fixing = fixing.concat(choice.create.map(function(create) {
+                            return policies.evaluatePolicies([])
+                                .then(function(policiesToResolve) {
+                                    create.policiesToResolve = policiesToResolve;
+                                });
+                        }));
+                    }
+
+                    return Promise.all([choice, Promise.all(fixing)]);
+                })
+                .spread(function(choice) {
+                    vm.get('step2.choice').value = choice;
+                    try {
+                        renderStep1(params);
+                        renderStep2(params);
+                    } catch (ex) {
+                        console.error('ERROR rendering login stuff', ex);
+                        showErrorMessage(ex);
+                    }
+                });
         }
 
         function renderAlreadySignedUp() {
-            container.innerHTML = 'It looks like you are already signed up.';
+            vm.get('alreadySignedUp').node.innerHTML = 'It looks like you are already signed up.';
         }
 
         function doRedirect(params) {
@@ -610,42 +682,84 @@ define([
             } else {
                 runtime.send('app', 'navigate', '');
             }
-            // container.innerHTML = BS.buildPresentableJson(params);
         }
 
-        function start(params) {
-            return Promise.try(function () {
-                // if is logged in, just redirect to the nextrequest,
-                // or the nexturl, or dashboard.
-                if (params.step) {
-                    params.step = parseInt(params.step);
-                } else {
-                    params.step = 1;
-                }
-                if (params.nextrequest) {
-                    nextRequest = JSON.parse(params.nextrequest);
-                } else {
-                    nextRequest = '';
-                }
+        function showAuthError(error) {
+            var errorWidget = ErrorWidget.make({
+                runtime: runtime
+            });
+            return errorWidget.attach(vm.get('error').node)
+                .then(function() {
+                    return errorWidget.start({
+                        error: error
+                    });
+                });
+        }
 
-                runtime.send('ui', 'setTitle', 'Sign Up for KBase');
+        function showError(error) {
+            var errorWidget = ErrorWidget.make({
+                runtime: runtime
+            });
+            return errorWidget.attach(vm.get('error').node)
+                .then(function() {
+                    return errorWidget.start({
+                        error: {
+                            code: error.name,
+                            message: error.message
+                        }
+                    });
+                });
+        }
 
-                if (runtime.service('session').isLoggedIn()) {
-                    return renderAlreadySignedUp(params);
-                } else {
-                    return renderSignupStuff(params);
-                }
+        // LIFECYCLE API
+
+        function attach(node) {
+            return Promise.try(function() {
+                hostNode = node;
+                container = hostNode.appendChild(document.createElement('div'));
+                renderLayout();
             });
         }
 
+        function start(params) {
+            return Promise.try(function() {
+                    // if is logged in, just redirect to the nextrequest,
+                    // or the nexturl, or dashboard.
+                    if (params.step) {
+                        params.step = parseInt(params.step);
+                    } else {
+                        params.step = 1;
+                    }
+                    if (params.nextrequest) {
+                        nextRequest = JSON.parse(params.nextrequest);
+                    } else {
+                        nextRequest = '';
+                    }
+
+                    runtime.send('ui', 'setTitle', 'Sign Up for KBase');
+
+                    if (runtime.service('session').isLoggedIn()) {
+                        return renderAlreadySignedUp(params);
+                    } else {
+                        return renderSignupStuff(params);
+                    }
+                })
+                .catch(M_Auth2.AuthError, function(err) {
+                    showAuthError(err);
+                })
+                .catch(function(err) {
+                    showError(err);
+                });
+        }
+
         function stop() {
-            return Promise.try(function () {
+            return Promise.try(function() {
 
             });
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -660,9 +774,8 @@ define([
         };
     }
 
-
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

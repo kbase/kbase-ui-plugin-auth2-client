@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     'kb_common/format'
-], function (
+], function(
     html,
     DomEvent,
     BS,
@@ -38,6 +38,11 @@ define([
                 enabled: false,
                 value: null
             },
+            alerts: {
+                id: html.genId(),
+                enabled: true,
+                value: false
+            },
             addTokenForm: {
                 id: html.genId(),
                 enabled: true,
@@ -61,10 +66,35 @@ define([
 
         function bindVm() {
             bindVmNode(vm.addTokenForm);
+            bindVmNode(vm.alerts);
             bindVmNode(vm.newToken);
             bindVmNode(vm.allTokens);
             bindVmNode(vm.toolbar);
         }
+
+        function showAlert(type, message) {
+            var alert = div({
+                class: 'alert ' + 'alert-' + type,
+                style: {
+                    marginTop: '10px'
+                },
+                dataBind: 'css: messageType'
+            }, [
+                button({
+                    type: 'button',
+                    class: 'close',
+                    dataDismiss: 'alert',
+                    ariaLabel: 'Close'
+                }, span({
+                    ariaHidden: 'true'
+                }, '&times;')),
+                div({}, message)
+            ]);
+            var temp = document.createElement('div');
+            temp.innerHTML = alert;
+            vm.alerts.node.appendChild(temp);
+        }
+
 
         function renderLayout() {
             container.innerHTML = div({
@@ -80,10 +110,14 @@ define([
                         div({
                             id: vm.toolbar.id
                         }),
-                      
+
                         BS.buildPanel({
+                            type: 'default',
                             title: 'Service Tokens',
                             body: div([
+                                div({
+                                    id: vm.alerts.id
+                                }),
                                 div({
                                     id: vm.addTokenForm.id,
                                     style: {
@@ -109,14 +143,30 @@ define([
             return Format.niceTime(date);
         }
 
+        function niceElapsed(epoch) {
+            var date = new Date(epoch);
+            return Format.niceElapsedTime(date);
+        }
+
         function doRevokeToken(tokenId) {
             // Revoke
             runtime.service('session').getClient().revokeToken(tokenId)
-                .then(function () {
+                .then(function() {
                     render();
                     return null;
                 })
-                .catch(function (err) {
+                .catch(function(err) {
+                    console.error('ERROR', err);
+                });
+        }
+
+        function doLogoutToken(tokenId) {
+            // Revoke
+            return runtime.service('session').getClient().logout(tokenId)
+                .then(function() {
+                    runtime.send('session', 'loggedout');
+                })
+                .catch(function(err) {
                     console.error('ERROR', err);
                 });
         }
@@ -135,14 +185,23 @@ define([
             }, [
                 p('New ' + b(newToken.type) + ' token successfully created'),
                 p('Please copy it to a secure location and remove this message'),
-                p('This message will self-destruct in ' + span({id: clockId}) + '.'),
-                p('New Token: ' + newToken.token),
+                p('This message will self-destruct in ' + span({ id: clockId }) + '.'),
+                p([
+                    'New Token: ',
+                    span({
+                        style: {
+                            fontWeight: 'bold',
+                            fontSize: '120%',
+                            fontFamily: 'monospace'
+                        }
+                    }, newToken.token)
+                ]),
                 div(button({
                     type: 'button',
                     class: 'btn btn-danger',
                     id: events.addEvent({
                         type: 'click',
-                        handler: function () {
+                        handler: function() {
                             clock.stop();
                             vm.newToken.node.innerHTML = '';
                         }
@@ -151,26 +210,32 @@ define([
             ]);
             events.attachEvents();
 
-            function Clock(countdown, id) {
+            function CountDownClock(countDownInSeconds, id) {
+                var countdown = countDownInSeconds * 1000;
                 var node = document.getElementById(id);
+                var startTime = new Date().getTime();
                 var timer;
                 if (!node) {
                     return;
                 }
-                function render() {
-                    node.innerHTML = String(countdown);
+
+                function render(timeLeft) {
+                    node.innerHTML = niceDuration(timeLeft);
                 }
+
                 function loop() {
-                    timer = window.setTimeout(function () {                       
-                        countdown -= 1;
-                        render();
-                        if (countdown > 0) {
+                    timer = window.setTimeout(function() {
+                        var now = new Date().getTime();
+                        var elapsed = now - startTime;
+                        render(countdown - elapsed);
+                        if (elapsed < countdown) {
                             loop();
                         } else {
                             vm.newToken.node.innerHTML = '';
                         }
-                    }, 1000);
+                    }, 500);
                 }
+
                 function stop() {
                     countdown = 0;
                     if (timer) {
@@ -183,26 +248,103 @@ define([
                     stop: stop
                 };
             }
-            var clock = Clock(10, clockId);
+            var clock = CountDownClock(300, clockId);
         }
 
         function handleSubmitAddToken() {
             var name = vm.addTokenForm.node.querySelector('[name="name"]');
 
-            runtime.service('session').getClient().createToken({
-                name: name.value,
-                type: 'server'
-            })
-            .then(function (result) {
-                renderAllTokens();
-                vm.newToken.value = result;
-                renderNewToken();
-                return null;
-            })
-            .catch(function (err) {
-                console.error('ERROR',err);
-            });
+            var tokenName = name.value;
+            if (tokenName.length === 0) {
+                showAlert('danger', 'A token must have a non-zero length name');
+                return;
+            }
 
+            runtime.service('session').getClient().createToken({
+                    name: name.value,
+                    type: 'server'
+                })
+                .then(function(result) {
+                    renderAllTokens();
+                    vm.newToken.value = result;
+                    renderNewToken();
+                    return null;
+                })
+                .catch(function(err) {
+                    console.error('ERROR', err);
+                });
+
+        }
+
+        function niceDuration(value, defaultValue) {
+            if (!value) {
+                return defaultValue;
+            }
+            var minimized = [];
+            var units = [{
+                unit: 'millisecond',
+                short: 'ms',
+                single: 'm',
+                size: 1000
+            }, {
+                unit: 'second',
+                short: 'sec',
+                single: 's',
+                size: 60
+            }, {
+                unit: 'minute',
+                short: 'min',
+                single: 'm',
+                size: 60
+            }, {
+                unit: 'hour',
+                short: 'hr',
+                single: 'h',
+                size: 24
+            }, {
+                unit: 'day',
+                short: 'day',
+                single: 'd',
+                size: 30
+            }];
+            var temp = value;
+            var parts = units
+                .map(function(unit) {
+                    var unitValue = temp % unit.size;
+                    temp = (temp - unitValue) / unit.size;
+                    return {
+                        name: unit.single,
+                        value: unitValue
+                    };
+                }).reverse();
+
+            parts.pop();
+
+            var keep = false;
+            for (var i = 0; i < parts.length; i += 1) {
+                if (!keep) {
+                    if (parts[i].value > 0) {
+                        keep = true;
+                        minimized.push(parts[i]);
+                    }
+                } else {
+                    minimized.push(parts[i]);
+                }
+            }
+
+            if (minimized.length === 0) {
+                // This means that there is are no time measurements > 1 second.
+                return '<1s';
+            } else {
+                // Skip seconds if we are into the hours...
+                if (minimized.length > 2) {
+                    minimized.pop();
+                }
+                return minimized.map(function(item) {
+                        return String(item.value) + item.name;
+                    })
+                    .join(' ');
+            }
         }
 
         function renderAddTokenForm() {
@@ -212,8 +354,8 @@ define([
             vm.addTokenForm.node.innerHTML = form({
                 class: 'form-inline',
                 id: events.addEvent({
-                    type: 'submit', 
-                    handler: function (e) {
+                    type: 'submit',
+                    handler: function(e) {
                         e.preventDefault();
                         handleSubmitAddToken();
                         return false;
@@ -290,10 +432,10 @@ define([
                         }
                     }, revokeAllButton)
                 ])
-            ].concat(vm.allTokens.value.map(function (token) {
+            ].concat(vm.allTokens.value.map(function(token) {
                 return tr([
                     td(niceDate(token.created)),
-                    td('never'),
+                    td(niceElapsed(token.expires)),
                     td(token.name),
                     td({
                         style: {
@@ -304,7 +446,7 @@ define([
                         type: 'button',
                         id: events.addEvent({
                             type: 'click',
-                            handler: function () {
+                            handler: function() {
                                 doRevokeToken(token.id);
                             }
                         })
@@ -314,18 +456,18 @@ define([
             events.attachEvents();
         }
 
-        
+
         function doRevokeAll() {
-            return Promise.all(vm.allTokens.value.map(function (token) {
-                return runtime.service('session').getClient().revokeToken(token.id);
-            }))
-            .then(function () {
-                render();
-                return null;
-            })
-            .catch(function (err) {
-                console.error('ERROR', err);
-            });
+            return Promise.all(vm.allTokens.value.map(function(token) {
+                    return runtime.service('session').getClient().revokeToken(token.id);
+                }))
+                .then(function() {
+                    render();
+                    return null;
+                })
+                .catch(function(err) {
+                    console.error('ERROR', err);
+                });
         }
 
         function renderToolbar() {
@@ -359,62 +501,51 @@ define([
         function renderAllTokens() {
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
-                    .then(function (result) {
+                    .then(function(result) {
+
                         renderToolbar();
 
+                        // Render "other" tokens
+
                         vm.allTokens.value = result.tokens
-                            .filter(function (token) {
+                            .filter(function(token) {
                                 return (token.type === 'Service');
                             });
 
                         renderTokens();
                         renderAddTokenForm();
+
                     })
-                    .catch(function (err) {
-                        vm.allTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
+                    .catch(function(err) {
+                        vm.serverTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
                     });
             }
         }
 
         function render() {
             renderAllTokens();
-            // return runtime.service('session').getClient().getMe()
-            //     .then(function (account) {
-            //         vm.roles.value = account.roles;
-            //         vm.roles.value.forEach(function (role) {
-            //             switch (role.id) {
-            //             case 'ServToken':
-            //                 vm.serverTokens.enabled = true;
-            //                 break;
-            //             case 'DevToken':
-            //                 vm.developerTokens.enabled = true;
-            //                 break;
-            //             }
-            //         });
-            //         return Promise.all([renderAllTokens(), renderServerTokens(), renderDeveloperTokens()]);
-            //     });
         }
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 renderLayout();
                 render();
             });
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
@@ -432,7 +563,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

@@ -6,7 +6,7 @@ define([
     'kb_plugin_auth2-client',
     './utils',
     'bootstrap'
-], function (
+], function(
     Promise,
     html,
     DomEvents,
@@ -16,10 +16,16 @@ define([
 ) {
     var t = html.tag,
         div = t('div'),
+        span = t('span'),
         a = t('a'),
+        b = t('b'),
         button = t('button'),
-        form = t('form'),
-        input = t('input');
+        input = t('input'),
+        p = html.tag('p'),
+        h1 = html.tag('h1'),
+        h3 = html.tag('h3'),
+        legend = html.tag('legend'),
+        i = html.tag('i');
 
     function factory(config) {
         var hostNode, container,
@@ -30,7 +36,7 @@ define([
             nextRequest;
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
@@ -40,6 +46,16 @@ define([
             var checked = e.target.checked;
             var auth2Client = runtime.service('session').getClient();
             auth2Client.setSessionPersistent(checked);
+        }
+
+        function doSignup() {
+            runtime.service('session').getClient().loginCancel()
+                .finally(function() {
+                    // don't care whether it succeeded or failed.
+                    runtime.send('app', 'navigate', {
+                        path: 'auth2/signup'
+                    });
+                });
         }
 
         function buildLoginControl(events) {
@@ -60,25 +76,51 @@ define([
                         width: '100%'
                     }
                 }, [
-                    button({
-                        class: 'btn btn-default',
-                        style: {
-                            margin: '8px 0',
-                            height: '44px'
-                        },
-                        type: 'button',
-                        id: events.addEvent('click', function () {
-                            runtime.send('app', 'navigate', {
-                                path: 'auth2/login/legacy'
-                            });
-                        })
-                    }, 'Legacy Login')
-                ].concat(providers.map(function (provider) {
+
+                    // button({
+                    //     class: 'btn btn-default',
+                    //     style: {
+                    //         margin: '8px 0',
+                    //         height: '44px'
+                    //     },
+                    //     type: 'button',
+                    //     id: events.addEvent('click', function() {
+                    //         runtime.send('app', 'navigate', {
+                    //             path: 'auth2/login/legacy'
+                    //         });
+                    //     })
+                    // }, 'Legacy Login')
+                ].concat(providers.map(function(provider) {
                     return utils.buildLoginButton(events, provider, {
                         nextrequest: JSON.stringify(nextRequest),
                         origin: 'login'
                     });
-                }))),
+                }).concat([
+                    div({
+                        style: {
+                            padding: '5px',
+                            border: '1px silver dashed',
+                            margin: '12px 0 0 0'
+                        }
+                    }, [
+                        span({
+                            style: {
+
+                            }
+                        }, 'This sign-in page look different?'),
+                        a({
+                            class: 'btn btn-link',
+                            href: '#auth2/login/legacy',
+                            style: {
+                                margin: '0 0',
+                                minHeight: '44px',
+                                whiteSpace: 'normal'
+                            },
+                        }, [
+                            'New sign-in process as of 4/15/17'
+                        ])
+                    ])
+                ]))),
                 div({
                     style: {
                         marginTop: '1em'
@@ -86,7 +128,7 @@ define([
                 }, [
                     input({
                         type: 'checkbox',
-                        checked: (function () {
+                        checked: (function() {
                             return runtime.service('session').getClient().isSessionPersistent();
                         }()),
                         id: events.addEvent('change', doStaySignedIn)
@@ -107,8 +149,9 @@ define([
                         marginTop: '2em'
                     }
                 }, [
-                    a({
-                        href: '#auth2/signup'
+                    button({
+                        class: 'btn btn-link',
+                        id: events.addEvent('click', doSignup)
                     }, 'Sign Up for a KBase Account')
                 ])
             ]);
@@ -138,7 +181,7 @@ define([
 
         function doLogout() {
             runtime.service('session').logout()
-                .then(function (result) {
+                .then(function(result) {
                     if (result.status === 'error') {
                         console.error('ERROR', result);
                     } else {
@@ -148,12 +191,7 @@ define([
         }
 
         function buildForm(events, params) {
-            var div = html.tag('div'),
-                p = html.tag('p'),
-                h1 = html.tag('h1'),
-                legend = html.tag('legend'),
-                i = html.tag('i'),
-                a = html.tag('a');
+
 
             var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
@@ -176,8 +214,8 @@ define([
                     })
                 ]),
                 div({ class: 'row' }, [
-                    div({ class: 'col-sm-7 col-sm-offset-1' }, [
-                        h1({ style: 'font-size:1.6em' }, ['Welcome to KBase']),
+                    div({ class: 'col-sm-8 ' }, [
+                        h1({ xstyle: 'font-size:1.6em' }, ['Welcome to KBase']),
                         p([
                             'After signing in, you can start working with KBase. Upload your experimental data and perform comparative genomics and systems biology analyses by creating ',
                             i('Narratives'),
@@ -191,9 +229,48 @@ define([
                             ', and a ',
                             a({ href: runtime.config('resources.documentation.tutorials.url') }, 'library of tutorials'),
                             ' that show you how to use various KBase apps to analyze your data.'
+                        ]),
+                        div({
+                            style: {
+                                marginLeft: '20px',
+                                borderLeft: '10px #ccc solid',
+                                paddingLeft: '10px'
+                            }
+                        }, [
+                            h3('Sign in Changes'),
+                            p([
+                                'On 4/15/17 KBase launched a new authentication and authorization system. ',
+                                'One of the changes is to replace a direct login to KBase with an authorization ',
+                                'system using Google and Globus for user identification.'
+                            ]),
+                            p([
+                                b('If you previously logged in to KBase directly'),
+                                ' you will now ',
+                                'need to sign in using Globus. Simply click the Globus button, choose the "Globus ID" identity provider ',
+                                'on the Globus sign-in page, and sign in with your KBase username and password.'
+                            ]),
+                            p({
+                                style: {
+                                    fontStyle: 'italic'
+                                }
+                            }, [
+                                'The reason your KBase username and password work at Globus is that KBase has always ',
+                                'used Globus and Globus ID behind the scenes.'
+                            ]),
+                            p([
+                                'If you are a ',
+                                b('new user'),
+                                ' you may simply use the identity provider more convenient for you. ',
+                                a({ href: '', target: '_blank' }, 'This blog post'), ' describes the advantages of each.'
+                            ]),
+                            p([
+                                'For more detailed information and instructions for see ',
+                                a({ href: '#auth2/login/legacy' }, 'this page.')
+                            ])
+
                         ])
                     ]),
-                    div({ class: 'col-sm-3' }, [
+                    div({ class: 'col-sm-4' }, [
                         div({ class: 'well well-kbase' }, [
                             div({ class: 'login-form' }, [
                                 legend({ style: 'text-align: center' }, 'KBase Sign In'),
@@ -242,7 +319,7 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 // if is logged in, just redirect to the nextrequest,
                 // or the nexturl, or dashboard.
                 if (params.nextrequest) {
@@ -260,13 +337,13 @@ define([
         }
 
         function stop() {
-            return Promise.try(function () {
+            return Promise.try(function() {
 
             });
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -283,7 +360,7 @@ define([
 
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

@@ -24,7 +24,7 @@ install:
             id: auth2LoginSuccess
             type: factory
         -
-            module: loginContinue 
+            module: loginContinueKO 
             id: auth2LoginContinue
             type: factory
         -
@@ -48,7 +48,7 @@ install:
             id: auth2_legacyLogin
             type: factory
         -
-            module: signup
+            module: signupKO
             id: auth2_signup
             type: factory
         -
@@ -58,6 +58,10 @@ install:
         -
             module: admin/user/panel
             id: auth2_adminUser
+            type: factory
+        -
+            module: signedout
+            id: auth2_signedout
             type: factory
     routes:
         # -
@@ -104,6 +108,10 @@ install:
             path: ['auth2', 'admin', 'user', {type: param, name: username}]
             widget: auth2_adminUser
             authorization: true
+        -
+            path: ['auth2', 'signedout']
+            widget: auth2_signedout
+            authorization: false
                 
     menu:
         # -

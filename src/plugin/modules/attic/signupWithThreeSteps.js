@@ -31,7 +31,7 @@ define([
                 runtime: runtime
             }),
             nextRequest;
-        var vm = utils.ViewModel({
+        var vm = Utils.ViewModel({
             model: {
                 
                 step1: {

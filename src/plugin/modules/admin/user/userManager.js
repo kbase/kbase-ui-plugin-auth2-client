@@ -28,12 +28,9 @@ define([
 
     function factory(config) {
         var hostNode, container;
-        var runtime = config.runtime,
-            utils = Utils.make({
-                runtime: runtime
-            });
+        var runtime = config.runtime;
 
-        var vm = utils.ViewModel({
+        var vm = Utils.ViewModel({
             model: {
                 userInfo: {
                     id: html.genId(),

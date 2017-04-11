@@ -4,7 +4,7 @@ define([
     'kb_common/bootstrapUtils',
     'knockout',
     './components/userInfoEditor'
-], function (
+], function(
     html,
     BS,
     ko
@@ -19,66 +19,62 @@ define([
         var hostNode, container;
         var vm;
 
+
         function render(id, vmMap) {
+            var tabs = BS.buildTabs({
+                initialTab: 0,
+                tabs: [{
+                    label: 'Main',
+                    name: 'main',
+                    content: div({
+                        style: {
+                            marginTop: '10px'
+                        },
+                        dataBind: {
+                            component: {
+                                name: '"user-info-editor"',
+                                params: (function() {
+                                    var params = {};
+                                    Object.keys(vm).forEach(function(k) {
+                                        params[k] = k;
+                                    });
+                                    return params;
+                                }())
+                            }
+                        }
+                    })
+                }, {
+                    label: 'About',
+                    name: 'about',
+                    content: div({
+                        style: {
+                            marginTop: '10px'
+                        }
+                    }, [
+                        p('You may view and edit edit your basic account information here.'),
+                        p('Changes saved will be immediately available')
+                    ])
+                }]
+            });
             return div({
                 id: id,
                 class: 'container-fluid',
                 style: {
                     marginTop: '10px'
                 }
-            }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({ class: 'col-md-12' }, [
-                        p('You may edit your account information here.')
-                    ])
-                ]),
-
-                div({
-                    class: 'row'
-                }, [
-                    div({ class: 'col-md-12' }, [
-                        BS.buildPanel({
-                            title: 'Personal Info Editor',
-                            body: div({
-                                dataBind: {
-                                    component: {
-                                        name: '"user-info-editor"',
-                                        params: (function () {
-                                            var params = {};
-                                            Object.keys(vm).forEach(function (k) {
-                                                params[k] = k;
-                                            });
-                                            return params;
-                                        }())
-                                    }
-                                }
-                            })
-                        })
-                    ])
-                ])
-            ]);
+            }, tabs.content);
         }
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
-        function start(params) {
+        function start() {
             return runtime.service('session').getClient().getMe()
-                .then(function (account) {
-                    // vm = {
-                    //     realName: account.display,
-                    //     email: account.email,
-                    //     created: account.created,
-                    //     lastLogin: account.lastLogin,
-                    //     username: account.user
-                    // };
-                    console.log('account', account);
+                .then(function(account) {
                     var id = html.genId();
                     vm = {
                         realname: account.display,
@@ -86,7 +82,7 @@ define([
                         created: account.created,
                         lastLogin: account.lastlogin,
                         username: account.user,
-                        doSave: function (data) {
+                        doSave: function(data) {
                             return runtime.service('session').getClient().putMe(data);
                         }
                     };
@@ -96,11 +92,11 @@ define([
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
@@ -117,7 +113,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

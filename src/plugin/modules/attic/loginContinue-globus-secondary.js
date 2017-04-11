@@ -6,8 +6,7 @@ define([
     'kb_common_ts/Cookie',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
-    './policies',
-    './utils'
+    './policies'
 ], function (
     Promise,
     html,
@@ -16,8 +15,7 @@ define([
     M_Cookie,
     Plugin,
     BS,
-    Policies,
-    Utils
+    Policies
 ) {
     'use strict';
 
@@ -35,6 +33,8 @@ define([
         label = t('label'),
         input = t('input'),
         button = t('button'),
+        h1 = t('h1'),
+        h2 = t('h2'),
         h3 = t('h3'),
         ul = t('ul'),
         li = t('li');
@@ -53,14 +53,6 @@ define([
             policies = Policies.make({
                 runtime: runtime
             });
-
-        var utils = Utils.make({
-            runtime: runtime
-        });
-
-        var vm = config.vm;
-
-        // var vm = utils.
 
         // var auth2 = Auth2.make({
         //     cookieName: runtime.config('services.auth2.cookieName'),
@@ -94,11 +86,13 @@ define([
         }
 
         function showError(error) {
+            console.log('showing error', error);
             var node = ui.getElement('error');
             node.classList.remove('hidden');
-            setContent(vm.error.id, '[data-element="title"]', error.title);
+            setContent(vm.error.code.id, '[data-element="body"]', error.code);
             setContent(vm.error.message.id, '[data-element="body"]', error.message);
             setContent(vm.error.detail.id, '[data-element="body"]', error.detail);
+            setContent(vm.error.data.id, '[data-element="body"]', BS.buildPresentableJson(error.data));
         }
 
         function hideResponse(response) {
@@ -113,7 +107,58 @@ define([
             node.innerHTML = BS.buildPresentableJson(response);
         }
 
-       
+        function doSubmitSignup(id, linkAll) {
+            var create = vm.create.vm[id];
+            var signupForm = create.vm.form.node;
+            var realName = signupForm.querySelector('[name="realname"]').value;
+            var username = signupForm.querySelector('[name="username"]').value;
+            var email = signupForm.querySelector('[name="email"]').value;
+
+            var agreementsToSubmit = [];
+            // missing policies
+            create.value.policiesToResolve.missing.forEach(function (policy) {
+                if (!policy.agreed) {
+                    throw new Error('Cannot submit with missing policies not agreed to');
+                }
+                // agreementsToSubmit.push([policy.id, policy.version].join('.'));
+                agreementsToSubmit.push({
+                    id: policy.id,
+                    version: policy.version
+                });
+            });
+            // outdated policies.
+            create.value.policiesToResolve.outdated.forEach(function (policy) {
+                if (!policy.agreed) {
+                    throw new Error('Cannot submit with missing policies not agreed to');
+                }
+                // agreementsToSubmit.push([policy.id, policy.version].join('.'));
+                agreementsToSubmit.push({
+                    id: policy.id,
+                    version: policy.version
+                });
+            });
+
+            var data = {
+                id: id,
+                user: username,
+                display: realName,
+                email: email,
+                linkall: linkAll,
+                policy_ids: agreementsToSubmit.map(function (a) {
+                    return [a.id, a.version].join('.');
+                })
+            };
+
+            runtime.service('session').getClient().loginCreate(data)
+                .then(function (response) {
+                    hideError();
+                    renderSignupSuccess(response);
+                })
+                .catch(function (err) {
+                    hideResponse();
+                    showError(err);
+                });
+        }
 
         function doRedirect() {
             var nextRequest = stateParams.nextrequest;
@@ -128,6 +173,49 @@ define([
             } else {
                 runtime.send('app', 'navigate', '');
             }
+        }
+
+        function handleLoginSubmit(identityId, linkall) {
+
+            // get the agreements, if any.
+            var login = vm.login.vm[identityId];
+            var agreementsToSubmit = [];
+            // missing policies
+            login.value.policiesToResolve.missing.forEach(function (policy) {
+                if (!policy.agreed) {
+                    throw new Error('Cannot submit with missing policies not agreed to');
+                }
+                // agreementsToSubmit.push([policy.id, policy.version].join('.'));
+                agreementsToSubmit.push({
+                    id: policy.id,
+                    version: policy.version
+                });
+            });
+            // outdated policies.
+            login.value.policiesToResolve.outdated.forEach(function (policy) {
+                if (!policy.agreed) {
+                    throw new Error('Cannot submit with missing policies not agreed to');
+                }
+                // agreementsToSubmit.push([policy.id, policy.version].join('.'));
+                agreementsToSubmit.push({
+                    id: policy.id,
+                    version: policy.version
+                });
+            });
+
+            runtime.service('session').getClient().loginPick({
+                token: inProcessToken,
+                identityId: identityId,
+                linkAll: linkall,
+                agreements: agreementsToSubmit
+            })
+            .then(function () {
+                doRedirect(redirectUrl);
+            })
+            .catch(function (err) {
+                showError(err);
+            });
+            return false;
         }
 
         function evaluatePolicies(policyIds) {
@@ -259,7 +347,10 @@ define([
                     }
                 }, [
                     p([
-                        'The following KBase account policies will need to be agreed to before you can create a KBase account.',
+                        'The following KBase account policies have not yet been agreed to by this account. ',
+                    ]),
+                    p([
+                        'You may log into this account after you have agreed to these policies by checking the box at the bottom of each.'
                     ]),
                     div({}, [
                         policiesToResolve.missing.map(function (missingPolicy) {
@@ -586,8 +677,8 @@ define([
             });
         }
 
-        function renderSignupSuccess(response) {
-            ui.setContent('main-title', 'Signed Up and Signed In')
+        function renderSignupSuccess() {
+            ui.setContent('main-title', 'KBase Login - Signed Up and Signed In')
             var events = DomEvent.make({
                 node: container
             });
@@ -780,8 +871,7 @@ define([
                                 class: 'col-md-6'
                             }, [
                                 BS.buildPanel({
-                                    title: 'Linking to this identity account',
-                                    type: 'default',
+                                    title: 'Linking This Identity Account',
                                     body: div({
                                         class: 'container-fluid'
                                     }, [
@@ -898,10 +988,16 @@ define([
             vm = {
                 error: {
                     id: html.genId(),
+                    code: {
+                        id: html.genId()
+                    },
                     message: {
                         id: html.genId()
                     },
                     detail: {
+                        id: html.genId()
+                    },
+                    data: {
                         id: html.genId()
                     }
                 },
@@ -921,14 +1017,10 @@ define([
                     div({
                         class: 'col-md-12'
                     }, [
-                        div({
-                            style: {
-                                display: 'none'
-                            }
-                        },
-                            h3({
+                        div(
+                            h1({
                                 dataElement: 'main-title'
-                            }, 'KBase Signup')
+                            }, 'KBase Login')
                         ),
                         div({
                             dataElement: 'introduction'
@@ -948,15 +1040,20 @@ define([
                         div({
                             id: vm.error.id,
                         }, BS.buildPanel({
-
                             name: 'error',
                             hidden: true,
                             title: 'Error',
                             type: 'danger',
                             body: div([
                                 div({
-                                    dataElement: 'title'
-                                }),
+                                    id: vm.error.code.id,
+                                }, ui.buildPanel({
+                                    name: 'code',
+                                    title: 'Code',
+                                    body: div({
+                                        dataElement: 'body'
+                                    })
+                                })),
                                 div({
                                     id: vm.error.message.id,
                                 }, ui.buildPanel({
@@ -976,12 +1073,40 @@ define([
                                     body: div({
                                         dataElement: 'body'
                                     })
+                                })),
+                                div({
+                                    id: vm.error.data.id,
+                                }, ui.buildCollapsiblePanel({
+                                    name: 'data',
+                                    title: 'Data',
+                                    collapsed: true,
+                                    hidden: false,
+                                    body: div({
+                                        dataElement: 'body'
+                                    })
                                 }))
                             ])
                         }))
                     ])
                 ])
             ]);
+        }
+
+        function getStateParams(choice) {
+            var q = {};
+            if (choice.redirecturl) {
+                var u = new URL(choice.redirecturl);
+                var s = u.search;
+                if (s.length > 1) {
+                    s = s.substr(1);
+                }
+
+                s.split('&').forEach(function (field) {
+                    var f = field.split('=').map(decodeURIComponent);
+                    q[f[0]] = f[1];
+                });
+            }
+            return q;
         }
 
         function start(params) {
@@ -1010,10 +1135,8 @@ define([
                         return runtime.service('session').getClient().getClient().getLoginChoice();
                     })
                     .then(function (choice) {
+                        console.log('choice', choice);
                         var fixing = [];
-                        // This will update the login and create objects with a
-                        // "policiesToResolve" property, which will contain any
-                        // new or updated usage policies that need to be agreed to.
                         if (choice.login) {
                             fixing = fixing.concat(choice.login.map(function (login) {
                                 return evaluatePolicies(login.policy_ids)
@@ -1052,7 +1175,17 @@ define([
                         // account, in which case there are 2 or more login items and no 
                         // create.
                         redirectUrl = choice.redirecturl;
-                        stateParams = choice.state;
+                        // stateParams = choice.state;
+                        stateParams = getStateParams(choice);
+
+                        console.log('state params', stateParams);
+                        if (stateParams.origin === 'signup') {
+                            runtime.send('app', 'navigate', {
+                                path: ['auth2', 'signup', '2']
+                            });
+                            return null;
+                        }
+
 
                         var intro;
                         if (choice.create.length === 0) {
@@ -1063,16 +1196,16 @@ define([
                                 // just log them in, but we should never see this case.
                                 intro = div([
                                     p([
-                                        'This ' + b(choice.provider) + ' account is already associated with a KBase account.'
+                                        'This ' + b(choice.provider) + ' account is associated with a KBase account.'
                                     ]),
                                     p([
-                                        'You may simply click the login button to continue using KBase with the indicated account.'
+                                        'Click the login button to continue using KBase with the indicated account.'
                                     ])
                                 ]);
-                                ui.setContent('main-title', 'Ready to Sign In');
+                                ui.setContent('main-title', 'KBase Login - Ready to Sign In');
                                 renderLogin(events, choice);
                             } else {
-                                ui.setContent('main-title', 'Sign In');
+                                ui.setContent('main-title', 'KBase Login - Sign In');
                                 intro = div([
                                     p([
                                         'This ' + b(choice.provider) + ' identity account is associated with ',
@@ -1087,14 +1220,31 @@ define([
                             }
                         } else if (choice.create.length === 1) {
                             if (choice.login.length === 0) {
-                                ui.setContent('main-title', 'Sign Up');
+                                ui.setContent('main-title', 'KBase Login - Sign Up');
 
-                                intro = div([
-                                    p([
-                                        'You are ready to create a new KBase account this ' + b(choice.provider) + ' identity account.'
-                                    ])
-                                ]);
+                                // different intro for signup vs login
+                                console.log('state params', stateParams);
+                                if (stateParams.origin === 'signup') {
+                                    runtime.send('app', 'navigate', {
+                                        path: '#auth2/signup/2'
+                                    });
+                                } else {
+                                    intro = div([
+                                        p([
+                                            'This ' + b(choice.provider) + ' identity account (shown below in <b>Linking This Identity Account</b>) is not currently associated ',
+                                            'with a KBase account. You may create a new KBase account below and have this ',
+                                            b(choice.provider),
+                                            ' identity account linked to it.'
+                                        ]),
+                                        p([
+                                            'After creating this new KBase account, you will be automatically logged in.',
+                                        ]),
+                                        p([
+                                            'Thereafter, you may then use this ' + b(choice.provider) + ' account to log in to KBase.'
+                                        ])
+                                    ]);
 
+                                }
                                 renderSignup(events, choice);
                             } else if (choice.login.length === 1) {
                                 intro = div([
@@ -1127,7 +1277,7 @@ define([
                         } else {
                             if (choice.login.length === 0) {
                                 // should not be possible!
-                                ui.setContent('main-title', 'Sign Up');
+                                ui.setContent('main-title', 'KBase Login - Sign Up');
                                 intro = div([
                                     p([
                                         'Your  ',
@@ -1150,7 +1300,7 @@ define([
                                 ]);
                             } else {
                                 // just log them in, but we should never see this case.
-                                ui.setContent('main-title', 'Sign Up or Sign In');
+                                ui.setContent('main-title', 'KBase Login - Sign Up or Sign In');
                                 intro = div([
                                     p([
                                         'Your  ',
@@ -1187,38 +1337,39 @@ define([
                         // container.querySelector('[data-element="debug"]').innerHTML = debug;
                     })
                     .catch(function (err) {
-                        if (err.code) {
-                            console.error('ERROR', err);
-                            // appCode is the specific error code from auth2
-                            switch (err.code) {
-                            case 10010:
-                                showError({
-                                    title: 'Error',
-                                    message: 'No authentication token or token has expired',
-                                    detail: div([
-                                        p([
-                                            'This error can occur when visiting this page without logging in first, ',
-                                            'or if the previous login page was unattended for more than 30 minutes'
-                                        ])
-                                    ])
-                                });
-                                break;
-                            default:
-                                showError({
-                                    title: 'Error fetching login choices',
-                                    message: err.message,
-                                    detail: BS.buildPresentableJson(err)
-                                });
-                            }
+                        showError(err);
+                        // if (err.code) {
+                        //     console.error('ERROR', err);
+                        //     // appCode is the specific error code from auth2
+                        //     switch (err.code) {
+                        //     case 10010:
+                        //         showError({
+                        //             title: 'Error',
+                        //             message: 'No authentication token or token has expired',
+                        //             detail: div([
+                        //                 p([
+                        //                     'This error can occur when visiting this page without logging in first, ',
+                        //                     'or if the previous login page was unattended for more than 30 minutes'
+                        //                 ])
+                        //             ])
+                        //         });
+                        //         break;
+                        //     default:
+                        //         showError({
+                        //             title: 'Error fetching login choices',
+                        //             message: err.message,
+                        //             detail: BS.buildPresentableJson(err)
+                        //         });
+                        //     }
 
-                        } else {
-                            console.error(err);
-                            showError({
-                                title: 'Error processing login choice',
-                                message: 'Unexpected response',
-                                detail: BS.buildPresentableJson(err)
-                            });
-                        }
+                        // } else {
+                        //     console.error(err);
+                        //     showError({
+                        //         title: 'Error processing login choice',
+                        //         message: 'Unexpected response',
+                        //         detail: BS.buildPresentableJson(err)
+                        //     });
+                        // }
 
                     });
             });

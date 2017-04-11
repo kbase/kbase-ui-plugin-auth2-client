@@ -33,11 +33,11 @@ define([
         label = t('label'),
         input = t('input'),
         button = t('button'),
-        h1 = t('h1'),
-        h2 = t('h2'),
         h3 = t('h3'),
         ul = t('ul'),
-        li = t('li');
+        li = t('li'),
+        select = t('select'),
+        option = t('option');
 
     var vm;
 
@@ -756,6 +756,19 @@ define([
             };
         }
 
+        function getOrganizations() {
+            return [
+                {
+                    id: 'org1',
+                    label: 'Organization One'
+                },
+                {
+                    id: 'org2',
+                    label: 'Organization Two'
+                }
+            ]
+        }
+
         function renderSignup(events, choiceResponse) {
             var showNumber = false;
             if (choiceResponse.create.length > 1) {
@@ -881,7 +894,41 @@ define([
                                             value: create.prov_email
                                         })
                                     ]),
-
+                                    div({
+                                        class: 'form-group'
+                                    }, [
+                                        label({
+                                            for: 'organization'
+                                        }, 'Organization'),
+                                        select({
+                                            class: 'form-control'
+                                        }, getOrganizations().map(function (org) {
+                                            return option({
+                                                value: org.id
+                                            }, org.label);
+                                        })),
+                                        div({
+                                            class: 'row',
+                                            style: {
+                                                marginTop: '3px'
+                                            }
+                                        }, [
+                                            div({
+                                                class: 'col-md-3',
+                                                textAlign: 'right'
+                                            }, label({
+                                                for: 'organization_other'
+                                            }, 'Other: ')),
+                                            div({
+                                                class: 'col-md-9'
+                                            }, input({
+                                                type: 'text',
+                                                class: 'form-control',
+                                                id: 'organization_other',
+                                                name: 'organization_other'
+                                            }))
+                                        ])
+                                    ]),
                                     button({
                                         class: 'btn btn-primary',
                                         type: 'submit',
