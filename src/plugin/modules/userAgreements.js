@@ -3,8 +3,8 @@ define([
     'marked',
     'kb_common_ts/HttpClient',
     'kb_plugin_auth2-client',
-    './utils'
-], function (
+    './lib/utils'
+], function(
     marked,
     M_HttpClient,
     Plugin,
@@ -35,21 +35,21 @@ define([
             ].join('/');
             var url = window.location.origin + '/' + agreementPath;
             return http.request({
-                method: 'GET',
-                url: url
-            })
-            .then(function (result) {
-                if (result.status === 200) {
-                    try {
-                        return marked(result.response);
-                    } catch (ex) {
-                        throw new Error('Error formatting agreement file: ' + ex.message);
+                    method: 'GET',
+                    url: url
+                })
+                .then(function(result) {
+                    if (result.status === 200) {
+                        try {
+                            return marked(result.response);
+                        } catch (ex) {
+                            throw new Error('Error formatting agreement file: ' + ex.message);
+                        }
+                    } else {
+                        console.error('ERROR', result);
+                        throw new Error('Error fetching agreement: ' + result.status);
                     }
-                } else {
-                    console.error('ERROR', result);
-                    throw new Error('Error fetching agreement: ' + result.status);
-                }
-            });
+                });
         }
 
         function loadPolicies() {
@@ -64,7 +64,7 @@ define([
                     method: 'GET',
                     url: url
                 })
-                .then(function (result) {
+                .then(function(result) {
                     if (result.status === 200) {
                         return JSON.parse(result.response);
                     } else {
@@ -74,13 +74,13 @@ define([
         }
 
         function getLatestPolicies() {
-            return policies.map(function (policy) {
-                var latestVersionId = Math.max.apply(null, policy.versions.map(function (version) {
+            return policies.map(function(policy) {
+                var latestVersionId = Math.max.apply(null, policy.versions.map(function(version) {
                     return version.version;
                 }));
                 // Array.from not supported in IE
                 // TODO: use es6 polyfill lib
-                var latestVersion = policy.versions.filter(function (version) {
+                var latestVersion = policy.versions.filter(function(version) {
                     return (version.version === latestVersionId);
                 })[0];
 
@@ -95,7 +95,7 @@ define([
         }
 
         function getPolicy(id) {
-            return policies.filter(function (policy) {
+            return policies.filter(function(policy) {
                 return (policy.id === id);
             })[0];
         }
@@ -106,7 +106,7 @@ define([
                 return;
             }
 
-            return policy.versions.filter(function (ver) {
+            return policy.versions.filter(function(ver) {
                 return (version === ver.version);
             })[0];
         }
@@ -117,17 +117,17 @@ define([
 
         function start(params) {
             return loadPolicies()
-                .then(function (result) {
+                .then(function(result) {
                     policies = result;
                     return runtime.service('session').getClient().getMe();
                 })
-                .then(function (account) {
+                .then(function(account) {
                     userAgreements = utils.parsePolicyAgreements(account.policy_ids);
                 });
         }
 
         function stop() {
-            return Promise.try(function () {
+            return Promise.try(function() {
 
             });
         }
@@ -149,7 +149,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

@@ -6,8 +6,8 @@ define([
     'kb_common_ts/Cookie',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
-    '../policies',
-    '../utils'
+    '../lib/policies',
+    '../lib/utils'
 ], function(
     html,
     DomEvent,

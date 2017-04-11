@@ -2,8 +2,8 @@
 define([
     'kb_common/html',
     'kb_common/domEvent2',
-    '../../utils'
-], function (
+    '../../lib/utils'
+], function(
     html,
     DomEvents,
     Utils
@@ -44,37 +44,39 @@ define([
                 }
             }
         });
+
         function buildPresentableJson(data) {
             switch (typeof data) {
-            case 'string':
-                return data;
-            case 'number':
-                return String(data);
-            case 'boolean':
-                return String(data);
-            case 'object':
-                if (data === null) {
-                    return 'NULL';
-                }
-                if (data instanceof Array) {
+                case 'string':
+                    return data;
+                case 'number':
+                    return String(data);
+                case 'boolean':
+                    return String(data);
+                case 'object':
+                    if (data === null) {
+                        return 'NULL';
+                    }
+                    if (data instanceof Array) {
+                        return table({ class: 'table table-striped' },
+                            data.map(function(datum, index) {
+                                return tr([
+                                    th(String(index)),
+                                    td(buildPresentableJson(datum))
+                                ]);
+                            }).join('\n')
+                        );
+                    }
                     return table({ class: 'table table-striped' },
-                        data.map(function (datum, index) {
-                            return tr([
-                                th(String(index)),
-                                td(buildPresentableJson(datum))
-                            ]);
+                        Object.keys(data).map(function(key) {
+                            return tr([th(key), td(buildPresentableJson(data[key]))]);
                         }).join('\n')
                     );
-                }
-                return table({ class: 'table table-striped' },
-                    Object.keys(data).map(function (key) {
-                        return tr([th(key), td(buildPresentableJson(data[key]))]);
-                    }).join('\n')
-                );
-            default:
-                return 'Not representable: ' + (typeof data);
+                default:
+                    return 'Not representable: ' + (typeof data);
             }
         }
+
         function renderUser(users) {
             var events = DomEvents.make({
                 node: container
@@ -98,7 +100,7 @@ define([
         // LIFECYCLE
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
@@ -106,7 +108,7 @@ define([
 
         function start(params) {
             return runtime.service('session').getClient().getAdminUser(params.username)
-                .then(function (userInfo) {
+                .then(function(userInfo) {
                     vm.get('userInfo').value = userInfo;
                     renderLayout();
                     vm.bindAll();
@@ -115,17 +117,17 @@ define([
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
                 }
             });
-        } 
+        }
 
         return {
             attach: attach,
@@ -137,7 +139,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

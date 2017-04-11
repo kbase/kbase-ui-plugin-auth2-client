@@ -7,10 +7,10 @@ define([
     'kb_plugin_auth2-client',
     'kb_common_ts/HttpClient',
     'kb_common_ts/Auth2',
-    './utilsKO',
+    './lib/utilsKO',
     './widgets/errorWidget',
-    './policies',
-    './format',
+    './lib/policies',
+    './lib/format',
     // loaded for effect
     'bootstrap',
     './components/signupComponent',

@@ -3,7 +3,7 @@ define([
     'kb_common_ts/Html',
     'kb_common/domEvent',
     'kb_plugin_auth2-client',
-    './utils'
+    './lib/utils'
 ], function(
     Html,
     DomEvent,
@@ -16,7 +16,6 @@ define([
         a = t('a'),
         b = t('b'),
         i = t('i'),
-        bspan = t('span', { style: { fontWeight: 'bold' } }),
         h2 = t('h2'),
         p = t('p'),
         img = t('img'),
@@ -216,8 +215,10 @@ define([
         }
 
         function attach(node) {
-            hostNode = node;
-            container = hostNode.appendChild(document.createElement('div'));
+            return Promise.try(function() {
+                hostNode = node;
+                container = hostNode.appendChild(document.createElement('div'));
+            });
         }
 
         function start(params) {
@@ -232,9 +233,11 @@ define([
         }
 
         function detach() {
-            if (hostNode && container) {
-                hostNode.remove(container);
-            }
+            return Promise.try(function() {
+                if (hostNode && container) {
+                    hostNode.removeChild(container);
+                }
+            });
         }
 
         return {

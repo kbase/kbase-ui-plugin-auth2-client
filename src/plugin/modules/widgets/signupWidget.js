@@ -4,8 +4,8 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common/domEvent2',
     'kb_common_ts/Auth2',
-    '../utils',
-    '../observed',
+    '../lib/utils',
+    '../lib/observed',
     './policyWidget',
     './errorWidget'
 ], function(

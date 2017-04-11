@@ -7,7 +7,7 @@ define([
     './roleManager',
     './tokenManager',
     './userManager',
-    '../../utils'
+    '../../lib/utils'
 ], function(
     $,
     M_Html,

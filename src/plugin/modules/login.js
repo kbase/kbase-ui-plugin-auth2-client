@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client',
-    './utils',
+    './lib/utils',
     'bootstrap'
 ], function(
     Promise,

@@ -6,7 +6,7 @@ define([
     'kb_common_ts/Cookie',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
-    './utils'
+    './lib/utils'
 ], function(
     Promise,
     html,
