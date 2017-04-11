@@ -3,7 +3,7 @@ define([
     'marked',
     'kb_common_ts/HttpClient',
     'kb_plugin_auth2-client'
-], function (
+], function(
     marked,
     M_HttpClient,
     Plugin
@@ -32,7 +32,7 @@ define([
                     method: 'GET',
                     url: url
                 })
-                .then(function (result) {
+                .then(function(result) {
                     if (result.status === 200) {
                         try {
                             return marked(result.response);
@@ -58,7 +58,7 @@ define([
                     method: 'GET',
                     url: url
                 })
-                .then(function (result) {
+                .then(function(result) {
                     if (result.status === 200) {
                         return JSON.parse(result.response);
                     } else {
@@ -68,41 +68,36 @@ define([
         }
 
         function getLatestPolicies() {
-            return Promise.try(function () {
-                return policies.map(function (policy) {
-                    var latestVersionId = Math.max.apply(null, policy.versions.map(function (version) {
-                        return version.version;
-                    }));
-                    // Array.from not supported in IE
-                    // TODO: use es6 polyfill lib
-                    var latestVersion = policy.versions.filter(function (version) {
-                        return (version.version === latestVersionId);
-                    })[0];
-                    // console.log('getting latest policies... ??');
-                    return {
-                        id: policy.id,
-                        title: policy.title,
-                        version: latestVersion.version,
-                        date: latestVersion.date,
-                        file: latestVersion.file
-                    };
-                });
-            })
-            .then(function (policies) {
-                // console.log('getting latest policies...', policies);
-                return Promise.all(policies.map(function (policy) {
-                    return getPolicyFile(policy)
-                        .then(function (contents) {
-                            // console.log('got contents', contents);
-                            policy.fileContent = contents;
-                            return policy;
-                        });
+            var latest = policies.map(function(policy) {
+                var latestVersionId = Math.max.apply(null, policy.versions.map(function(version) {
+                    return version.version;
                 }));
+                // Array.from not supported in IE
+                // TODO: use es6 polyfill lib
+                var latestVersion = policy.versions.filter(function(version) {
+                    return (version.version === latestVersionId);
+                })[0];
+                // console.log('getting latest policies... ??');
+                return {
+                    id: policy.id,
+                    title: policy.title,
+                    version: latestVersion.version,
+                    date: latestVersion.date,
+                    file: latestVersion.file
+                };
             });
+            return Promise.all(latest.map(function(policy) {
+                return getPolicyFile(policy)
+                    .then(function(contents) {
+                        // console.log('got contents', contents);
+                        policy.fileContent = contents;
+                        return policy;
+                    });
+            }));
         }
 
         function getPolicy(id) {
-            return policies.filter(function (policy) {
+            return policies.filter(function(policy) {
                 return (policy.id === id);
             })[0];
         }
@@ -112,20 +107,69 @@ define([
             if (!policy) {
                 return;
             }
-            return policy.versions.filter(function (ver) {
+            return policy.versions.filter(function(ver) {
                 return (version === ver.version);
             })[0];
         }
 
+        function evaluatePolicies(policyIds) {
+            var userAgreementMap = {};
+            var userAgreementVersionMap = {};
+            policyIds.forEach(function(policyId) {
+                var id = policyId.id.split('.');
+                var agreement = {
+                    id: id[0],
+                    version: id[1],
+                    date: new Date(policyId.agreed_on)
+                };
+                userAgreementMap[agreement.id] = agreement;
+                userAgreementVersionMap[agreement.id + '.' + agreement.version] = agreement;
+            });
+            return getLatestPolicies()
+                .then(function(latestPolicies) {
+                    var userPolicies = [];
+                    var missingPolicies = [];
+                    var outdatedPolicies = [];
+                    latestPolicies.forEach(function(latestPolicy) {
+                        var userAgreement = userAgreementMap[latestPolicy.id];
+                        var userAgreementVersion = userAgreementVersionMap[latestPolicy.id + '.' + latestPolicy.version];
+                        if (!userAgreement) {
+                            missingPolicies.push({
+                                policy: latestPolicy,
+                                id: latestPolicy.id,
+                                version: latestPolicy.version
+                            });
+                        } else if (!userAgreementVersion) {
+                            outdatedPolicies.push({
+                                policy: latestPolicy,
+                                id: latestPolicy.id,
+                                version: latestPolicy.version,
+                                agreement: userAgreement
+                            });
+                        } else {
+                            userPolicies.push(userAgreement);
+                        }
+                    });
+                    return {
+                        user: userPolicies,
+                        missing: missingPolicies,
+                        outdated: outdatedPolicies
+                    };
+                });
+        }
+
+        // LC API
+
         function start(params) {
             return loadPolicies()
-                .then(function (result) {
+                .then(function(result) {
                     policies = result;
+                    return null;
                 });
         }
 
         function stop() {
-            return Promise.try(function () {
+            return Promise.try(function() {
 
             });
         }
@@ -139,13 +183,14 @@ define([
             loadPolicies: loadPolicies,
             getPolicy: getPolicy,
             getPolicyVersion: getPolicyVersion,
-            getLatestPolicies: getLatestPolicies
+            getLatestPolicies: getLatestPolicies,
+            evaluatePolicies: evaluatePolicies
         };
 
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

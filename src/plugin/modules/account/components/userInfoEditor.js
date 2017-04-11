@@ -1,14 +1,13 @@
 define([
+    'knockout-plus',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    'kb_common/format',
-    'knockout',
-    'knockout-validation',
-], function (
+    'kb_common/format'
+], function(
+    ko,
     html,
     BS,
-    Format,
-    ko
+    Format
 ) {
     var t = html.tag,
         div = t('div'),
@@ -18,12 +17,21 @@ define([
         input = t('input'),
         button = t('button');
 
-    var fields = {        
+    var fields = {
         username: {
             name: 'username',
             label: 'Username',
             description: 'Your username may not be changed',
-            more: 'You many not change this information, it is for display only'
+            more: div([
+                p([
+                    'You many not change your username after your account is created.'
+                ]),
+                p([
+                    'The username associates your account with the Narratives, data, ',
+                    'and applications you create within KBase. It is also recorded with internal log files ',
+                    'and other records to assist in providing run-time services, metrics and suppport.'
+                ])
+            ])
         },
         created: {
             name: 'created',
@@ -44,23 +52,18 @@ define([
             label: 'Name',
             type: 'text',
             placeholder: 'Your Name',
-            description: div([
-                p([
-                    'This field contains your name as you wish it to be displayed to other KBase users ',
-                    ' as well as KBase staff.'
-                ])
+            description: span([
+                'This field contains your name as you wish it to be displayed to other KBase users ',
+                ' as well as KBase staff.'
             ]),
             more: div([
                 p([
-                    'This name will be displayed to other KBase users until you create your profile. ',
-                    'When you create your profile, a new display name will be created which contains ',
-                    'additional information, including title, suffix, first and last name. '
+                    'When you create your profile, ',
+                    'you will be able to add additional information, including title, suffix, and affiliations. '
                 ]),
                 p([
-                    'After you create your profile, that name information will be used for display to ',
-                    'other users (when they are logged in), and in Narratives and related data you may publish. ',
-                    'When you have a profile, the name shown here ',
-                    'on your account will the only be available to KBase staff.'
+                    'Your name will be displayed in any context within the KBase in which you are identified. ',
+                    'This includes the Dashboard, User Profile, App Catalog, and Narrative Interface.'
                 ])
             ])
         },
@@ -69,11 +72,9 @@ define([
             label: 'E-Mail',
             type: 'text',
             placeholder: 'Your E-Mail Address',
-            description: div([
-                p([
-                    'Your email address may be used by KBase staff to contact you. ',
-                    'It will not be displayed to other users.'
-                ])
+            description: span([
+                'Your email address may be used by KBase staff to contact you. ',
+                'It will not be displayed to other users.'
             ]),
             more: div([
                 p([
@@ -83,37 +84,48 @@ define([
         }
     };
 
-    function more(content, name) {
+    function fieldDoc(description, content, name) {
         return div({
             dataElement: 'more'
         }, [
             div([
-                button({
-                    type: 'button',
-                    class: 'btn btn-link',
+                span({
+                    // type: 'button',
+                    // class: 'btn btn-link',
                     style: {
                         padding: '2px',
-                        lineHeight: '1'
+                        cursor: 'pointer'
+                            // lineHeight: '1'
                     },
                     dataElement: 'button',
                     dataBind: {
-                        click: 'showMore.bind($data, "' + name +'")'
+                        click: 'showMore.bind($data, "' + name + '")'
                     }
                 }, span({
                     dataElement: 'label'
-                }, span({
-                    class: 'fa ',
-                    dataBind: {
-                        css: {
-                            '"fa-caret-right"': 'more.' + name + '()' ,
-                            '"fa-caret-down"': '!more.' + name + '()'
+                }, [
+                    description,
+                    span({
+                        class: 'fa ',
+                        style: {
+                            marginLeft: '5px',
+                        },
+                        dataBind: {
+                            css: {
+                                '"fa-caret-right"': 'more.' + name + '()',
+                                '"fa-caret-down"': '!more.' + name + '()'
+                            }
                         }
-                    }
-                })))
+                    })
+                ]))
             ]),
             div({
                 dataBind: 'css: {hidden: more.' + name + '()}',
-                dataElement: 'content'
+                dataElement: 'content',
+                style: {
+                    border: '1px silver dashed',
+                    padding: '6px'
+                }
             }, content)
         ]);
     }
@@ -162,8 +174,7 @@ define([
                 div({
                     class: 'col-md-6'
                 }, [
-                    field.description,
-                    more(field.more, field.name)
+                    fieldDoc(field.description, field.more, field.name)
                 ])
             ])
         ]);
@@ -187,17 +198,16 @@ define([
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-6'
-                },
-                div({
-                    dataBind: 'text: ' + (field.vmId || field.name)
-                })
+                        class: 'col-md-6'
+                    },
+                    div({
+                        dataBind: 'text: ' + (field.vmId || field.name)
+                    })
                 ),
                 div({
                     class: 'col-md-6'
                 }, [
-                    field.description,
-                    more(field.more, field.name)
+                    fieldDoc(field.description, field.more, field.name)
                 ])
             ])
         ]);
@@ -231,7 +241,7 @@ define([
                 validationOptions: {
                     insertMessages: 'false'
                 }
-            }            
+            }
         }, [
             buildDisplay(fields.username),
             buildInput(fields.realname),
@@ -252,7 +262,7 @@ define([
 
     function component() {
         return {
-            viewModel: function (data) {
+            viewModel: function(data) {
                 var doSave = data.doSave;
 
                 var email = ko.observable(data.email)
@@ -272,25 +282,25 @@ define([
                 var created = ko.observable(data.created);
                 var lastLogin = ko.observable(data.lastLogin);
 
-                var createdAt = ko.pureComputed(function () {
+                var createdAt = ko.pureComputed(function() {
                     return Format.niceTime(created());
                 });
-                var lastLoginAt = ko.pureComputed(function () {
-                    return Format.niceElapsedTime(lastLogin()) + 
-                           ' (' + 
-                           Format.niceTime(lastLogin()) +
-                           ')';
+                var lastLoginAt = ko.pureComputed(function() {
+                    return Format.niceElapsedTime(lastLogin()) +
+                        ' (' +
+                        Format.niceTime(lastLogin()) +
+                        ')';
                 });
 
                 // var realnameMore = ko.observable(true);
                 // var emailMore = ko.observable(true);
 
                 var more = {};
-                Object.keys(fields).forEach(function (key) {
+                Object.keys(fields).forEach(function(key) {
                     more[key] = ko.observable(true);
                 });
 
-                function showMore (name) {
+                function showMore(name) {
                     if (more[name]()) {
                         more[name](false);
                     } else {
@@ -298,21 +308,21 @@ define([
                     }
                 }
 
-                function save () {
+                function save() {
                     doSave({
-                        display: realname(),
-                        email: email()
-                    })
-                    .then(function () {
-                        message('Successfully Saved');
-                        messageType({
-                            'alert-success': true,
-                            hidden: false
+                            display: realname(),
+                            email: email()
+                        })
+                        .then(function() {
+                            message('Successfully Saved');
+                            messageType({
+                                'alert-success': true,
+                                hidden: false
+                            });
+                        })
+                        .catch(function(err) {
+                            console.error('boo', err);
                         });
-                    })
-                    .catch(function (err) {
-                        console.error('boo', err);
-                    });
                 }
 
                 var message = ko.observable();

@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     'kb_common/format'
-], function (
+], function(
     html,
     DomEvent,
     BS,
@@ -63,43 +63,47 @@ define([
         }
 
         function renderLayout() {
-            container.innerHTML = div({
-                class: 'container-fluid',
+            var tabs = BS.buildTabs({
                 style: {
-                    marginTop: '10px'
-                }
-            }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({ class: 'col-md-12' }, [
-                        div({
-                            id: vm.intro.id
-                        }),
+                    paddingTop: '10px'
+                },
+                tabs: [{
+                    name: 'main',
+                    label: 'Main',
+                    content: div({}, [
                         div({
                             id: vm.toolbar.id
-                        }),                        
+                        }),
                         BS.buildPanel({
+                            type: 'default',
                             title: 'Your Current Sign-In',
                             body: div({
                                 id: vm.currentToken.id
                             })
-                        }),  
+                        }),
                         BS.buildPanel({
+                            type: 'default',
                             title: 'Active Sign-Ins in other Browsers',
                             body: div({
                                 id: vm.allTokens.id
                             })
-                        }),                        
+                        }),
                     ])
-                ])
-            ]);
+                }, {
+                    name: 'about',
+                    label: 'About',
+                    content: div({
+                        id: vm.intro.id
+                    })
+                }]
+            });
+
+            container.innerHTML = tabs.content;
             bindVm();
         }
 
         function renderIntro() {
-            vm.intro.node.innerHTML = div({
-            }, [
+            vm.intro.node.innerHTML = div({}, [
                 p([
                     'The "Sign-Ins" tab allows you to manage your current sign-ins. A sign-in is created when you ',
                     'sign in to KBase. Normally a sign-in is removed when you logout. However, if you do not create ',
@@ -111,11 +115,11 @@ define([
         function doRevokeToken(tokenId) {
             // Revoke
             runtime.service('session').getClient().revokeToken(tokenId)
-                .then(function () {
+                .then(function() {
                     render();
                     return null;
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     console.error('ERROR', err);
                 });
         }
@@ -123,14 +127,17 @@ define([
         function doLogoutToken(tokenId) {
             // Revoke
             return runtime.service('session').getClient().logout(tokenId)
-                .then(function () {
-                    runtime.send('session', 'loggedout');
+                .then(function() {
+                    // runtime.send('session', 'loggedout');
+                    runtime.send('app', 'navigate', {
+                        path: 'auth2/signedout'
+                    });
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     console.error('ERROR', err);
                 });
         }
- 
+
         function renderTokens() {
             var events = DomEvent.make({
                 node: vm.allTokens.node
@@ -176,7 +183,7 @@ define([
                         }
                     }, revokeAllButton)
                 ])
-            ].concat(vm.allTokens.value.map(function (token) {
+            ].concat(vm.allTokens.value.map(function(token) {
                 return tr([
                     td(format.niceTime(token.created)),
                     td(format.niceElapsedTime(token.expires)),
@@ -189,7 +196,7 @@ define([
                         type: 'button',
                         id: events.addEvent({
                             type: 'click',
-                            handler: function () {
+                            handler: function() {
                                 doRevokeToken(token.id);
                             }
                         })
@@ -226,7 +233,7 @@ define([
                         }
                     }, '')
                 ])
-            ].concat(tokens.map(function (token) {
+            ].concat(tokens.map(function(token) {
                 return tr([
                     td(format.niceTime(token.created)),
                     td(format.niceElapsedTime(token.expires)),
@@ -240,7 +247,7 @@ define([
                             type: 'button',
                             id: events.addEvent({
                                 type: 'click',
-                                handler: function () {
+                                handler: function() {
                                     doLogoutToken(token.id);
                                 }
                             })
@@ -253,23 +260,23 @@ define([
 
         function doRevokeAllAndLogout() {
             return doRevokeAll()
-                .then(function () {
+                .then(function() {
                     // sloppy, but conserves code.
                     return doLogoutToken(null);
                 });
         }
 
         function doRevokeAll() {
-            return Promise.all(vm.allTokens.value.map(function (token) {
-                return runtime.service('session').getClient().revokeToken(token.id);
-            }))
-            .then(function () {
-                render();
-                return null;
-            })
-            .catch(function (err) {
-                console.error('ERROR', err);
-            });
+            return Promise.all(vm.allTokens.value.map(function(token) {
+                    return runtime.service('session').getClient().revokeToken(token.id);
+                }))
+                .then(function() {
+                    render();
+                    return null;
+                })
+                .catch(function(err) {
+                    console.error('ERROR', err);
+                });
         }
 
         function renderToolbar() {
@@ -303,7 +310,7 @@ define([
         function renderAllTokens() {
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
-                    .then(function (result) {
+                    .then(function(result) {
 
                         renderIntro();
 
@@ -315,14 +322,14 @@ define([
                         // Render "other" tokens
 
                         vm.allTokens.value = result.tokens
-                            .filter(function (token) {
+                            .filter(function(token) {
                                 return (token.type === 'Login');
                             });
 
                         renderTokens();
 
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         vm.allTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
                     });
             }
@@ -333,25 +340,25 @@ define([
         }
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 renderLayout();
                 return render();
             });
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
@@ -369,7 +376,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

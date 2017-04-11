@@ -2,7 +2,7 @@
 define([
     'kb_common/html',
     'kb_common/domEvent2'
-], function (
+], function(
     html,
     DomEvents
 ) {
@@ -48,7 +48,7 @@ define([
         }
 
         function bindVm(vm) {
-            Object.keys(vm).forEach(function (key) {
+            Object.keys(vm).forEach(function(key) {
                 bindVmNode(vm[key]);
             });
         }
@@ -87,13 +87,13 @@ define([
 
         function doUserSearch(searchString) {
             return runtime.service('session').getClient().adminUserSearch({
-                prefix: searchString,
-                fields: 'username,displayname'
-            })
-                .then(function (result) {
+                    prefix: searchString,
+                    fields: 'username,displayname'
+                })
+                .then(function(result) {
                     renderUsers(result);
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     console.error('ERR', err);
                 });
         }
@@ -102,10 +102,7 @@ define([
             // don't get the key, just get the data from the control.
             var searchText = vm.search.node.querySelector('[name="search-input"]').value;
             if (searchText.length >= 2) {
-                console.log('searching for ...', searchText);
                 doUserSearch(searchText);
-            } else {
-                console.log('not long enough to search...');
             }
         }
 
@@ -155,20 +152,20 @@ define([
         }
 
         function renderIntro() {
-            vm.intro.node.innerHTML = div({},[
+            vm.intro.node.innerHTML = div({}, [
                 p('This is the user manager')
             ]);
         }
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 renderLayout();
                 renderIntro();
                 renderSearch();
@@ -191,17 +188,17 @@ define([
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
                 }
             });
-        } 
+        }
 
         return {
             attach: attach,
@@ -213,7 +210,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

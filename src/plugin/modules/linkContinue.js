@@ -5,7 +5,8 @@ define([
     'kb_common/ui',
     'kb_common_ts/Cookie',
     'kb_plugin_auth2-client',
-    'kb_common/bootstrapUtils'
+    'kb_common/bootstrapUtils',
+    './utils'
 ], function (
     Promise,
     html,
@@ -13,27 +14,17 @@ define([
     UI,
     M_Cookie,
     Plugin,
-    BS
+    BS,
+    Utils
 ) {
     'use strict';
 
     var t = html.tag,
         div = t('div'),
-        span = t('span'),
         p = t('p'),
         b = t('b'),
-        i = t('i'),
-        table = t('table'),
-        tr = t('tr'),
-        td = t('td'),
-        th = t('th'),
-        form = t('form'),
-        label = t('label'),
-        input = t('input'),
         button = t('button'),
         h1 = t('h1');
-
-    var vm = {};
 
     function widget(config) {
         var hostNode, container, runtime = config.runtime,
@@ -44,12 +35,28 @@ define([
             // obtained via the login/choice call
             redirectUrl;
 
+        var vm = Utils.ViewModel({
+            model: {
+                error: {
+                    id: html.genId(),
+                    message: {
+                        id: html.genId()
+                    },
+                    detail: {
+                        id: html.genId()
+                    }
+                }
+            }
+        });
+
         // var auth2 = Auth2.make({
         //     cookieName: runtime.config('services.auth2.cookieName'),
         //     authBaseUrl: runtime.config('services.auth2.url')
         // });
 
         // API
+
+
 
         function attach(node) {
             return Promise.try(function () {
@@ -96,17 +103,6 @@ define([
         }
 
         function renderLayout() {
-            vm = {
-                error: {
-                    id: html.genId(),
-                    message: {
-                        id: html.genId()
-                    },
-                    detail: {
-                        id: html.genId()
-                    }
-                }
-            };
             container.innerHTML = div({
                 class: 'container-fluid'
             }, [
@@ -127,47 +123,12 @@ define([
                         div({
                             dataElement: 'link'
                         }),
-
-                        div({
-                            dataElement: 'debug'
-                        }),
                         div({
                             dataElement: 'response'
                         }),
                         div({
-                            id: vm.error.id,
-                        }, BS.buildPanel({
-
-                            name: 'error',
-                            hidden: true,
-                            title: 'Error',
-                            type: 'danger',
-                            body: div([
-                                div({
-                                    dataElement: 'title'
-                                }),
-                                div({
-                                    id: vm.error.message.id,
-                                }, ui.buildPanel({
-                                    name: 'message',
-                                    title: 'Message',
-                                    body: div({
-                                        dataElement: 'body'
-                                    })
-                                })),
-                                div({
-                                    id: vm.error.detail.id,
-                                }, ui.buildCollapsiblePanel({
-                                    name: 'detail',
-                                    title: 'Detail',
-                                    collapsed: true,
-                                    hidden: false,
-                                    body: div({
-                                        dataElement: 'body'
-                                    })
-                                }))
-                            ])
-                        }))
+                            id: vm.get('error').id
+                        })
                     ])
                 ])
             ]);
@@ -175,7 +136,7 @@ define([
 
         function doLink(accountId) {
             return runtime.service('session').getClient().linkPick(accountId)
-                .then(function (result) {
+                .then(function () {
                     runtime.send('app', 'navigate', {
                         path: 'auth2/account',
                         params: {
@@ -202,7 +163,6 @@ define([
             var events = DomEvent.make({
                 node: container
             });
-
 
             var content = div({}, [
                 choiceData.ids.map(function (id) {

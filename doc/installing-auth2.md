@@ -47,15 +47,15 @@ sudo su
 add-apt-repository ppa:webupd8team/java
 add-apt-repository ppa:nginx/stable
 apt-get update
-apt-get upgrade
-apt-get dist-upgrade
-apt-get autoremove
+apt-get upgrade -y
+apt-get dist-upgrade -y
+apt-get autoremove -y
 apt-get install oracle-java8-installer ant git nginx nginx-extras -y
 cd /vagrant
-mkdir auth2
-cd auth2
-git clone https://github.com/kbase/auth2
-git clone https://github.com/kbase/jars
+#mkdir auth2
+#cd auth2
+#git clone https://github.com/kbase/auth2
+#git clone https://github.com/kbase/jars
 ```
 
 don't install the ubuntu (or ppa) jetty - i could not find an up to date one.
@@ -127,7 +127,7 @@ test.mongo.wired_tiger=false
 # path to a temporary directory to use for tests.
 test.temp.dir=/home/vagrant/temptestdir
 
-# true to keep the temporary directory contents after running tests. 
+# true to keep the temporary directory contents after running tests.
 test.temp.dir.keep=true
 ```
 
@@ -383,7 +383,7 @@ When prompted enter a passsword for the ***ROOT*** user.
 
 Now you can start the auth2 server again. 
 
-Take your browser to https://authdev.kbase.us/localaccount/login ... you should see a login page!
+Take your browser to https://authdev.kbase.us/services/auth/localaccount/login ... you should see a login page!
 
 Log in as the ***ROOT*** user.
 
@@ -391,7 +391,7 @@ Add an admin user.
 
 I created my admin user with the username "admin"
 
-https://authdev.kbase.us/admin/localaccount
+https://authdev.kbase.us/services/auth/localaccount/login
 
 Copy the temp password.
 

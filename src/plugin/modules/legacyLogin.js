@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent',
     'kb_plugin_auth2-client',
     './utils'
-], function (
+], function(
     Html,
     DomEvent,
     Plugin,
@@ -14,10 +14,9 @@ define([
         t = html.tagMaker(),
         div = t('div'),
         a = t('a'),
-        span = t('span'),
         b = t('b'),
         i = t('i'),
-        bspan = t('span', {style: {fontWeight: 'bold'}}),
+        bspan = t('span', { style: { fontWeight: 'bold' } }),
         h2 = t('h2'),
         p = t('p'),
         img = t('img'),
@@ -42,27 +41,20 @@ define([
             var content = div({
                 class: 'container-fluid'
             }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({
-                        class: 'col-md-12'
-                    }, [
-                        h2('KBase Legacy Login')
-                    ])
-                ]),
+
                 div({
                     class: 'row'
                 }, [
                     div({
                         class: 'col-md-6'
                     }, [
+                        h2('KBase Sign-In Changes'),
                         p([
                             'On April 15, 2017 KBase rolled out a new authentication system. '
                         ]),
                         p([
                             'The login process now provides much more functionality, but it does work differently. ',
-                            'This page briefly describes the changes.'
+                            'This page describes the changes.'
                         ]),
                         div({
                             class: 'row'
@@ -73,7 +65,7 @@ define([
                                     textAlign: 'center'
                                 }
                             }, [
-                                div({style: {fontWeight: 'bold'}}, 'Old Sign In Form'),
+                                div({ style: { fontWeight: 'bold' } }, 'Old Sign In Form'),
                                 img({
                                     src: Plugin.plugin.fullPath + '/images/old-sign-in-form.png',
                                     style: {
@@ -87,7 +79,7 @@ define([
                                     textAlign: 'center'
                                 }
                             }, [
-                                div({style: {fontWeight: 'bold'}}, 'New Sign In Form'),
+                                div({ style: { fontWeight: 'bold' } }, 'New Sign In Form'),
                                 img({
                                     src: Plugin.plugin.fullPath + '/images/new-sign-in-form.png',
                                     style: {
@@ -97,8 +89,8 @@ define([
                             ])
                         ]),
                         p([
-                            'The primary difference between the new and old sign in process is that we used to require and ',
-                            'only support direct entry of a ', i('username'), ' and ', i('password'), '. ',
+                            'Before 4/15/17, KBase required and ',
+                            'only supported direct entry of a ', i('username'), ' and ', i('password'), '. ',
                             ' Behind the scenes, we used Globus to ',
                             'authenticate the username and password. (You may remember Globus from your initial KBase sign-up process.)'
                         ]),
@@ -109,29 +101,33 @@ define([
                         ]),
                         p([
                             'In addition, Globus supports not just direct entry of username and password, but also authentication through ',
-                            'organizational authentication providers as well as Google. The Globus direct login with username and ',
+                            'organizational authentication providers as well as Google and ORCiD. The Globus direct login with username and ',
                             'password is referred to as ', b('Globus ID'), '.'
                         ])
-                        
+
                     ]),
                     div({
                         class: 'col-md-6'
                     }, [
                         h2('How to Sign In the first time'),
                         p([
-                            'If you signed up for KBase prior to ', b('April 15, 2017'), 
-                            ' you will have created a Globus ID account. ',
+                            'If you signed up for KBase prior to ', b('April 15, 2017'),
+                            ' you will have created a Globus.org and Globus ID account. ',
                             'Therefore, the first time you log into KBase after April 15, you will need to: ',
                             ul([
-                                li('Choose Globus as your Sign-in provider'),
-                                li('Choose Globus ID as your authentication method at Globus'),
-                                li('Log in at Globus ID with your usual KBase username and password')
+                                li(['Choose Globus as your Sign-in provider ', i('at KBase')]),
+                                li(['Choose Globus ID as your identity provider ', i('at Globus')]),
+                                li('Log in with your usual KBase username and password')
                             ])
                         ]),
                         p([
+                            'After this you will be returned to KBase and be signed in.'
+                        ]),
+                        h2('Instructions'),
+                        p([
                             '1. From the KBase Sign In page, choose the "Globus" button. (The button below works too)'
                         ]),
-                        p({style: {textAlign: 'center'}}, [
+                        p({ style: { textAlign: 'center' } }, [
                             div({
                                 style: {
                                     display: 'inline-block',
@@ -163,7 +159,7 @@ define([
                         p([
                             '3. From the Globus ID sign in page, enter your usual KBase username and password. ',
                             'If you have trouble logging in, you may use the password recover feature, or ',
-                            a({href: 'https://www.globus.org/'}, 'contact Globus directly')
+                            a({ href: 'https://www.globus.org/' }, 'contact Globus directly')
                         ]),
                         p(
                             img({
@@ -225,14 +221,14 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 nextRequest = params.nextRequest;
                 render();
             });
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
@@ -250,7 +246,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

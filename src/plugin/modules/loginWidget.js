@@ -5,7 +5,7 @@ define([
     'kb_common/domEvent2',
     'kb_plugin_auth2-client',
     'bootstrap'
-], function (
+], function(
     Promise,
     html,
     Gravatar,
@@ -37,11 +37,15 @@ define([
 
         function handleSignout(e) {
             e.preventDefault();
+
             runtime.service('session').logout()
-                .then(function () {
+                .then(function() {
                     // w.setState('updated', new Date());
+                    runtime.send('app', 'navigate', {
+                        path: 'auth2/signedout'
+                    });
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     console.error('ERROR');
                     console.error(err);
                     alert('Error signing out (check console for details)');
@@ -76,14 +80,14 @@ define([
         }
 
         function renderLogin(events) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (runtime.service('session').isLoggedIn()) {
                     /* TODO: fix dependencies like this -- realname is not available until, and unless, the                     
                     profile is loaded, which happens asynchronously.            
                     */
                     /// ar profile = widget.get('userProfile'), realname;
                     return runtime.service('session').getMe()
-                        .then(function (account) {
+                        .then(function(account) {
                             if (!account) {
                                 // Don't bother rendering yet if the profile is not ready 
                                 // yet.
@@ -98,7 +102,7 @@ define([
                                 ]),
                                 ul({ class: 'dropdown-menu', role: 'menu' }, [
                                     li({}, [
-                                        div({ 
+                                        div({
                                             display: 'inline-block',
                                             dataElement: 'user-label',
                                             style: {
@@ -120,8 +124,8 @@ define([
                                         ])
                                     ]),
                                     li({}, [
-                                        a({ 
-                                            href: '#auth2/account', 
+                                        a({
+                                            href: '#auth2/account',
                                             'data-menu-item': 'account'
                                         }, [
                                             div({ style: 'display: inline-block; width: 34px;' }, [
@@ -130,13 +134,13 @@ define([
                                             'Account'
                                         ])
                                     ]),
-                                    (function () {
+                                    (function() {
                                         if (!hasRole(account, 'Admin')) {
                                             return;
                                         }
                                         return li({}, [
-                                            a({ 
-                                                href: '#auth2/admin', 
+                                            a({
+                                                href: '#auth2/admin',
                                                 'data-menu-item': 'account'
                                             }, [
                                                 div({ style: 'display: inline-block; width: 34px;' }, [
@@ -148,10 +152,14 @@ define([
                                     }()),
                                     li({ class: 'divider' }),
                                     li({}, [
-                                        a({ href: '#', 'data-menu-item': 'logout', id: events.addEvent({
-                                            type: 'click', 
-                                            handler: handleSignout
-                                        })}, [
+                                        a({
+                                            href: '#',
+                                            'data-menu-item': 'logout',
+                                            id: events.addEvent({
+                                                type: 'click',
+                                                handler: handleSignout
+                                            })
+                                        }, [
                                             div({ style: 'display: inline-block; width: 34px;' }, [
                                                 span({ class: 'fa fa-sign-out', style: 'font-size: 150%; margin-right: 10px;' })
                                             ]),
@@ -174,7 +182,7 @@ define([
         var hostNode, container;
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
@@ -185,33 +193,33 @@ define([
                 node: container
             });
             return renderLogin(events)
-                .then(function (loginContent) {
+                .then(function(loginContent) {
                     container.innerHTML = loginContent;
                     events.attachEvents();
                 });
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 // this.set('loggedin', runtime.service('session').isLoggedIn());
                 // runtime.service('userprofile').onChange(function (data) {
                 //     this.set('userProfile', data);
                 // }.bind(this));
 
-                runtime.service('session').onChange(function () {
+                runtime.service('session').onChange(function() {
                     render();
                 });
                 return render();
-                
+
             });
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -227,7 +235,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return myWidget(config);
         }
     };
