@@ -322,6 +322,7 @@ define([
             return Promise.try(function() {
                 // if is logged in, just redirect to the nextrequest,
                 // or the nexturl, or dashboard.
+                runtime.send('ui', 'setTitle', 'KBase Sign In');
                 if (params.nextrequest) {
                     nextRequest = JSON.parse(params.nextrequest);
                 } else {

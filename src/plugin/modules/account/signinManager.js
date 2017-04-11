@@ -13,6 +13,7 @@ define([
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
+        span = t('span'),
         table = t('table'),
         tr = t('tr'),
         th = t('th'),
@@ -168,14 +169,24 @@ define([
                 tr([
                     th({
                         style: {
-                            width: '40%'
+                            width: '20%'
                         }
                     }, 'Created'),
                     th({
                         style: {
-                            width: '40%'
+                            width: '20%'
                         }
                     }, 'Expires'),
+                    th({
+                        style: {
+                            width: '20%'
+                        }
+                    }, 'Browser'),
+                    th({
+                        style: {
+                            width: '20%'
+                        }
+                    }, 'System'),
                     th({
                         style: {
                             width: '20%',
@@ -184,9 +195,52 @@ define([
                     }, revokeAllButton)
                 ])
             ].concat(vm.allTokens.value.map(function(token) {
+                console.log('token', token);
                 return tr([
                     td(format.niceTime(token.created)),
                     td(format.niceElapsedTime(token.expires)),
+                    td((function() {
+                        if (token.os === null || token.os.length === 0) {
+                            return span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, 'n/a');
+                        }
+                        return span([
+                            token.agent,
+                            span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, token.agentver)
+                        ]);
+                    }())),
+                    td((function() {
+                        if (token.os === null || token.os.length === 0) {
+                            return span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, 'n/a');
+                        }
+                        return span([
+                            token.os,
+                            span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, token.osver)
+                        ]);
+                    }())),
                     td({
                         style: {
                             textAlign: 'right'
@@ -219,14 +273,24 @@ define([
                 tr([
                     th({
                         style: {
-                            width: '40%'
+                            width: '20%'
                         }
                     }, 'Created'),
                     th({
                         style: {
-                            width: '40%'
+                            width: '20%'
                         }
                     }, 'Expires'),
+                    th({
+                        style: {
+                            width: '20%'
+                        }
+                    }, 'Browser'),
+                    th({
+                        style: {
+                            width: '20%'
+                        }
+                    }, 'System'),
                     th({
                         style: {
                             width: '20%'
@@ -237,6 +301,48 @@ define([
                 return tr([
                     td(format.niceTime(token.created)),
                     td(format.niceElapsedTime(token.expires)),
+                    td((function() {
+                        if (token.os === null || token.os.length === 0) {
+                            return span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, 'n/a');
+                        }
+                        return span([
+                            token.agent,
+                            span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, token.agentver)
+                        ]);
+                    }())),
+                    td((function() {
+                        if (token.os === null || token.os.length === 0) {
+                            return span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, 'n/a');
+                        }
+                        return span([
+                            token.os,
+                            span({
+                                style: {
+                                    fontStyle: 'italic',
+                                    marginLeft: '0.2em',
+                                    color: '#888'
+                                }
+                            }, token.osver)
+                        ]);
+                    }())),
                     td({
                         style: {
                             textAlign: 'right'
@@ -346,7 +452,7 @@ define([
             });
         }
 
-        function start(params) {
+        function start() {
             return Promise.try(function() {
                 renderLayout();
                 return render();
