@@ -134,22 +134,25 @@ define([
                                             'Account'
                                         ])
                                     ]),
-                                    (function() {
-                                        if (!hasRole(account, 'Admin')) {
-                                            return;
-                                        }
-                                        return li({}, [
-                                            a({
-                                                href: '#auth2/admin',
-                                                'data-menu-item': 'account'
-                                            }, [
-                                                div({ style: 'display: inline-block; width: 34px;' }, [
-                                                    span({ class: 'fa fa-unlock', style: 'font-size: 150%; margin-right: 10px;' })
-                                                ]),
-                                                'Admin'
-                                            ])
-                                        ]);
-                                    }()),
+                                    // DISABLE ADMIN
+                                    // For now. There is in actuality no back-end admin support yet other than for
+                                    // the auth2 built-in ui.
+                                    // (function() {
+                                    //     if (!hasRole(account, 'Admin')) {
+                                    //         return;
+                                    //     }
+                                    //     return li({}, [
+                                    //         a({
+                                    //             href: '#auth2/admin',
+                                    //             'data-menu-item': 'account'
+                                    //         }, [
+                                    //             div({ style: 'display: inline-block; width: 34px;' }, [
+                                    //                 span({ class: 'fa fa-unlock', style: 'font-size: 150%; margin-right: 10px;' })
+                                    //             ]),
+                                    //             'Admin'
+                                    //         ])
+                                    //     ]);
+                                    // }()),
                                     li({ class: 'divider' }),
                                     li({}, [
                                         a({
