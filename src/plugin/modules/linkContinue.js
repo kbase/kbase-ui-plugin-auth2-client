@@ -7,7 +7,7 @@ define([
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
     './utils'
-], function (
+], function(
     Promise,
     html,
     DomEvent,
@@ -59,7 +59,7 @@ define([
 
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 events = DomEvent.make(container);
@@ -136,7 +136,7 @@ define([
 
         function doLink(accountId) {
             return runtime.service('session').getClient().linkPick(accountId)
-                .then(function () {
+                .then(function() {
                     runtime.send('app', 'navigate', {
                         path: 'auth2/account',
                         params: {
@@ -144,7 +144,7 @@ define([
                         }
                     });
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     console.error('ERROR', err);
                 });
         }
@@ -156,7 +156,7 @@ define([
                     tab: 'links'
                 }
             });
-        }   
+        }
 
         function renderLinkChoice(choiceData) {
             var node = ui.getElement('link');
@@ -165,12 +165,12 @@ define([
             });
 
             var content = div({}, [
-                choiceData.ids.map(function (id) {
+                choiceData.ids.map(function(id) {
                     var canLink = true;
                     var message;
                     if (id.may_link === 'no') {
                         canLink = false;
-                        message =  'I\'m sorry, this ' + choiceData.provider + ' account may not be linked - it is already linked to another KBase account';
+                        message = 'I\'m sorry, this ' + choiceData.provider + ' account may not be linked - it is already linked to another KBase account';
                     } else {
                         message = div([
                             p([
@@ -187,24 +187,24 @@ define([
                         }, [
                             div({}, message),
                             div({}, [
-                                button({                                
+                                button({
                                     class: 'btn btn-primary',
                                     type: 'button',
                                     disabled: !canLink,
                                     id: events.addEvent({
-                                        type: 'click', 
-                                        handler: function () {
+                                        type: 'click',
+                                        handler: function() {
                                             doLink(id.id);
                                         }
                                     })
                                 }, 'Link ' + b(id.prov_username)),
-                                button({                                
+                                button({
                                     class: 'btn btn-default',
                                     type: 'button',
                                     disabled: !canLink,
                                     id: events.addEvent({
-                                        type: 'click', 
-                                        handler: function () {
+                                        type: 'click',
+                                        handler: function() {
                                             cancelLink(id.id);
                                         }
                                     }),
@@ -242,27 +242,30 @@ define([
             // }
 
 
-            return Promise.try(function () {
-                var events = DomEvent.make({
-                    node: container
-                });
+            return Promise.try(function() {
+                // var events = DomEvent.make({
+                //     node: container
+                // });
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
-                    .then(function (result) {
-                        switch (result.status) {
-                        case 'ok':
-                            renderLinkChoice(result.data);
-                            break;
-                        case 'error':
-                            showError({
-                                title: 'Error processing login choice',
-                                message: result.data.error.message,
-                                detail: BS.buildPresentableJson(result)
-                            });
-                        }
-                        events.attachEvents();
+                    .then(function(result) {
+                        console.log('link choice', result);
+                        renderLinkChoice(result);
+                        // switch (result.status) {
+                        // case 'ok':
+
+                        //     break;
+                        // case 'error':
+                        //     showError({
+                        //         title: 'Error processing login choice',
+                        //         message: result.data.error.message,
+                        //         detail: BS.buildPresentableJson(result)
+                        //     });
+                        // }
+                        // events.attachEvents();
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
+                        // TODO: use the error component here.
                         container.innerHTML = err.message;
                         console.error('ERROR', err);
                     });
@@ -288,7 +291,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return widget(config);
         }
     };
