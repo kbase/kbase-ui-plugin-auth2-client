@@ -5,20 +5,20 @@ define([
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client',
     'kb_common_ts/HttpClient',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     './lib/utils',
     './widgets/signupWidget',
     './widgets/errorWidget',
     './lib/policies',
     'bootstrap'
-], function(
+], function (
     Promise,
     html,
     DomEvents,
     BS,
     Plugin,
     HttpClient,
-    M_Auth2,
+    Auth2Error,
     Utils,
     SignupWidget,
     ErrorWidget,
@@ -104,7 +104,7 @@ define([
                     method: 'GET',
                     url: url
                 })
-                .then(function(result) {
+                .then(function (result) {
                     if (result.status === 200) {
                         try {
                             return JSON.parse(result.response);
@@ -120,12 +120,12 @@ define([
 
         function renderGlobusProvidersx() {
             getGlobusProviders()
-                .then(function(globusProviders) {
+                .then(function (globusProviders) {
                     var content = select({
                             class: 'form-control'
                         },
                         globusProviders
-                        .sort(function(a, b) {
+                        .sort(function (a, b) {
                             if (a.label < b.label) {
                                 return -1;
                             } else if (a.label > b.label) {
@@ -133,7 +133,7 @@ define([
                             }
                             return 0;
                         })
-                        .map(function(provider) {
+                        .map(function (provider) {
                             return option({
                                 value: provider.id
                             }, provider.label);
@@ -145,7 +145,7 @@ define([
 
         function renderGlobusProviders() {
             getGlobusProviders()
-                .then(function(globusProviders) {
+                .then(function (globusProviders) {
                     var filtered
                     var searchInputId = html.genId();
                     var searchOutputId = html.genId();
@@ -174,7 +174,7 @@ define([
 
                     var searchNode = document.getElementById(searchInputId);
                     var outputNode = document.getElementById(searchOutputId);
-                    searchNode.addEventListener('keyup', function(e) {
+                    searchNode.addEventListener('keyup', function (e) {
                         console.log('keyup');
                         updateSearch(searchNode.value);
                     });
@@ -193,13 +193,13 @@ define([
                             return;
                         }
                         var content = globusProviders
-                            .filter(function(item) {
+                            .filter(function (item) {
                                 if (item.label.match(term)) {
                                     return true;
                                 }
                                 return false;
                             })
-                            .map(function(item) {
+                            .map(function (item) {
                                 return div(
                                     item.label
                                 );
@@ -306,7 +306,7 @@ define([
                         }, label([
                             input({
                                 type: 'checkbox',
-                                checked: (function() {
+                                checked: (function () {
                                     return runtime.service('session').getClient().isSessionPersistent();
                                 }()),
                                 id: events.addEvent('change', doStaySignedIn)
@@ -578,10 +578,10 @@ define([
                 choice: vm.get('step2.choice').value
             });
             w.attach(vm.get('step2.signupChoice').node)
-                .then(function() {
+                .then(function () {
                     return w.start(params);
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     vm.get('step2.signupChoice').node.innerHTML = err.message;
                 });
         }
@@ -632,20 +632,20 @@ define([
 
         function renderSignupStuff(params) {
             return Promise.all([runtime.service('session').getClient().getClient().getLoginChoice(), policies.start()])
-                .spread(function(choice) {
+                .spread(function (choice) {
                     var fixing = [];
                     if (choice.login) {
-                        fixing = fixing.concat(choice.login.map(function(login) {
+                        fixing = fixing.concat(choice.login.map(function (login) {
                             return policies.evaluatePolicies(login.policy_ids)
-                                .then(function(policiesToResolve) {
+                                .then(function (policiesToResolve) {
                                     login.policiesToResolve = policiesToResolve;
                                 });
                         }));
                     }
                     if (choice.create) {
-                        fixing = fixing.concat(choice.create.map(function(create) {
+                        fixing = fixing.concat(choice.create.map(function (create) {
                             return policies.evaluatePolicies([])
-                                .then(function(policiesToResolve) {
+                                .then(function (policiesToResolve) {
                                     create.policiesToResolve = policiesToResolve;
                                 });
                         }));
@@ -653,7 +653,7 @@ define([
 
                     return Promise.all([choice, Promise.all(fixing)]);
                 })
-                .spread(function(choice) {
+                .spread(function (choice) {
                     vm.get('step2.choice').value = choice;
                     try {
                         renderStep1(params);
@@ -690,7 +690,7 @@ define([
                 runtime: runtime
             });
             return errorWidget.attach(vm.get('error').node)
-                .then(function() {
+                .then(function () {
                     return errorWidget.start({
                         error: error
                     });
@@ -702,7 +702,7 @@ define([
                 runtime: runtime
             });
             return errorWidget.attach(vm.get('error').node)
-                .then(function() {
+                .then(function () {
                     return errorWidget.start({
                         error: {
                             code: error.name,
@@ -715,7 +715,7 @@ define([
         // LIFECYCLE API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 renderLayout();
@@ -723,7 +723,7 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                     // if is logged in, just redirect to the nextrequest,
                     // or the nexturl, or dashboard.
                     if (params.step) {
@@ -745,22 +745,22 @@ define([
                         return renderSignupStuff(params);
                     }
                 })
-                .catch(M_Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
                     showAuthError(err);
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     showError(err);
                 });
         }
 
         function stop() {
-            return Promise.try(function() {
+            return Promise.try(function () {
 
             });
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -776,7 +776,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

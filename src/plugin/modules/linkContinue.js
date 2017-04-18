@@ -4,17 +4,17 @@ define([
     'kb_common/domEvent2',
     'kb_common/ui',
     'kb_common_ts/Cookie',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
     './lib/utils'
-], function(
+], function (
     Promise,
     html,
     DomEvent,
     UI,
     M_Cookie,
-    Auth2,
+    Auth2Error,
     Plugin,
     BS,
     Utils
@@ -53,7 +53,7 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 events = DomEvent.make(container);
@@ -130,7 +130,7 @@ define([
 
         function doLink(accountId) {
             return runtime.service('session').getClient().linkPick(accountId)
-                .then(function() {
+                .then(function () {
                     runtime.send('app', 'navigate', {
                         path: 'auth2/account',
                         params: {
@@ -138,14 +138,14 @@ define([
                         }
                     });
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('ERROR', err);
                 });
         }
 
         function cancelLink() {
             runtime.service('session').getClient().linkCancel()
-                .catch(Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
                     // just continue...
                     if (err.code === '10010') {
                         // simply continue
@@ -153,7 +153,7 @@ define([
                         throw (err);
                     }
                 })
-                .then(function() {
+                .then(function () {
                     runtime.send('app', 'navigate', {
                         path: 'auth2/account',
                         params: {
@@ -161,7 +161,7 @@ define([
                         }
                     });
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('error', err);
                 });
         }
@@ -174,7 +174,7 @@ define([
             });
 
             var content = div({}, [
-                choiceData.ids.map(function(id) {
+                choiceData.ids.map(function (id) {
                     var canLink = true;
                     var message;
                     if (id.may_link === 'no') {
@@ -202,7 +202,7 @@ define([
                                     disabled: !canLink,
                                     id: events.addEvent({
                                         type: 'click',
-                                        handler: function() {
+                                        handler: function () {
                                             doLink(id.id);
                                         }
                                     })
@@ -213,7 +213,7 @@ define([
                                     disabled: !canLink,
                                     id: events.addEvent({
                                         type: 'click',
-                                        handler: function() {
+                                        handler: function () {
                                             cancelLink(id.id);
                                         }
                                     }),
@@ -251,16 +251,16 @@ define([
             // }
 
 
-            return Promise.try(function() {
+            return Promise.try(function () {
                 // var events = DomEvent.make({
                 //     node: container
                 // });
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
-                    .then(function(result) {
+                    .then(function (result) {
                         renderLinkChoice(result);
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         // TODO: use the error component here.
                         container.innerHTML = err.message;
                         console.error('ERROR', err);
@@ -287,7 +287,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return widget(config);
         }
     };

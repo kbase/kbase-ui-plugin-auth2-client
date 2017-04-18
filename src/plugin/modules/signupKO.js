@@ -7,6 +7,7 @@ define([
     'kb_plugin_auth2-client',
     'kb_common_ts/HttpClient',
     'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     './lib/utilsKO',
     './widgets/errorWidget',
     './lib/policies',
@@ -14,9 +15,9 @@ define([
     // loaded for effect
     'bootstrap',
     './components/signupComponent',
-    './components/signinComponent',
+    './components/signinForm',
     './components/globusProviders'
-], function(
+], function (
     Promise,
     ko,
     html,
@@ -25,6 +26,7 @@ define([
     Plugin,
     HttpClient,
     Auth2,
+    Auth2Error,
     Utils,
     ErrorWidget,
     Policies,
@@ -635,7 +637,7 @@ define([
 
     function component() {
         return {
-            viewModel: function(data) {
+            viewModel: function (data) {
                 var runtime = data.runtime;
 
                 // var step = data.step;
@@ -646,7 +648,7 @@ define([
 
                 var providers = getProviders();
 
-                var nextRequest = data.nextRequst; // JSON.stringify(nextRequest);
+                var nextRequest = data.nextRequest; // JSON.stringify(nextRequest);
 
                 var staySignedIn = ko.observable(true);
 
@@ -657,14 +659,14 @@ define([
                     var clienttime = new Date().getTime();
                     var expires = choice.expires;
                     var servertime = choice.servertime;
-                    var expiresIn = ko.pureComputed(function() {
+                    var expiresIn = ko.pureComputed(function () {
                         if (!expires) {
                             return '';
                         }
                         return format.niceDuration((expires - now() + (servertime - clienttime)));
                     });
                     // start clock... improve
-                    var t = window.setInterval(function() {
+                    var t = window.setInterval(function () {
                         now(new Date().getTime());
                     }, 500);
                 }
@@ -706,7 +708,7 @@ define([
                 }
 
                 var error = ko.observable();
-                var isError = ko.pureComputed(function() {
+                var isError = ko.pureComputed(function () {
                     if (error()) {
                         return true;
                     }
@@ -715,12 +717,12 @@ define([
 
                 function doCancelChoiceSession() {
                     runtime.service('session').getClient().loginCancel()
-                        .then(function() {
+                        .then(function () {
                             runtime.send('app', 'navigate', {
                                 path: 'login'
                             });
                         })
-                        .catch(function(err) {
+                        .catch(function (err) {
                             error(err);
                         });
                 }
@@ -802,7 +804,7 @@ define([
         // LIFECYCLE API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 renderLayout();
@@ -810,14 +812,20 @@ define([
         }
 
         function start(params) {
+            if (runtime.service('session').isLoggedIn()) {
+                runtime.send('app', 'navigate', {
+                    path: 'dashboard'
+                });
+            }
+
             runtime.send('ui', 'setTitle', 'Sign Up for KBase');
             return runtime.service('session').getClient().getClient().getLoginChoice()
-                .then(function(choice) {
+                .then(function (choice) {
                     var policies = Policies.make({
                         runtime: runtime
                     });
                     return policies.start()
-                        .then(function() {
+                        .then(function () {
                             if (choice.login && choice.login.length === 1) {
                                 return policies.evaluatePolicies(choice.login[0].policy_ids);
                             } else if (choice.create && choice.create.length === 1) {
@@ -828,11 +836,11 @@ define([
                                 throw new Error('Neither login nor signup available for this sign-up account');
                             }
                         })
-                        .then(function(policiesToResolve) {
+                        .then(function (policiesToResolve) {
                             return [choice, policiesToResolve];
                         });
                 })
-                .catch(Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
                     if (err.code === '10010') {
@@ -840,7 +848,7 @@ define([
                     }
                     throw err;
                 })
-                .spread(function(choice, policiesToResolve) {
+                .spread(function (choice, policiesToResolve) {
                     var step, nextRequest;
                     // comes in as "nextrequest" all lower case, but known otherwise
                     // as "nextRequest", camelCase
@@ -873,11 +881,11 @@ define([
                     };
                     ko.applyBindings(viewModel, container);
                 })
-                .catch(Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
                     showError(vm.error.node, err);
                 })
 
-            .catch(function(err) {
+            .catch(function (err) {
                 // This is most likely due to an expired token.
                 // When token expiration detection is implemented, we should rarely see this.
                 var viewModel = {
@@ -904,13 +912,13 @@ define([
         }
 
         function stop() {
-            return Promise.try(function() {
+            return Promise.try(function () {
 
             });
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -926,7 +934,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

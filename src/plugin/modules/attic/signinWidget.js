@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent2',
     'kb_common/ui',
     'kb_common_ts/Cookie',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
     '../lib/policies',
@@ -13,13 +13,13 @@ define([
     './policyWidget',
     '../lib/utils',
     '../lib/observed'
-], function(
+], function (
     Promise,
     html,
     DomEvent,
     UI,
     M_Cookie,
-    M_Auth2,
+    Auth2Error,
     Plugin,
     BS,
     Policies,
@@ -88,7 +88,7 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 events = DomEvent.make(container);
@@ -108,7 +108,7 @@ define([
                 runtime: runtime
             });
             errorWidget.attach(vm.get('error').node)
-                .then(function() {
+                .then(function () {
                     return errorWidget.start({
                         error: error
                     });
@@ -120,7 +120,7 @@ define([
                 runtime: runtime
             });
             errorWidget.attach(vm.get('error').node)
-                .then(function() {
+                .then(function () {
                     return errorWidget.start({
                         error: {
                             code: error.name,
@@ -164,7 +164,7 @@ define([
             var login = vm.get('choice').value.login[0];
             var agreementsToSubmit = [];
             // missing policies
-            login.policiesToResolve.missing.forEach(function(policy) {
+            login.policiesToResolve.missing.forEach(function (policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -175,7 +175,7 @@ define([
                 });
             });
             // outdated policies.
-            login.policiesToResolve.outdated.forEach(function(policy) {
+            login.policiesToResolve.outdated.forEach(function (policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -192,10 +192,10 @@ define([
                     linkAll: false,
                     agreements: agreementsToSubmit
                 })
-                .then(function() {
+                .then(function () {
                     doRedirect(redirectUrl);
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     showError(err);
                 });
             return false;
@@ -204,7 +204,7 @@ define([
         function evaluatePolicies(policyIds) {
             var userAgreementMap = {};
             var userAgreementVersionMap = {};
-            policyIds.forEach(function(policyId) {
+            policyIds.forEach(function (policyId) {
                 var id = policyId.id.split('.');
                 var agreement = {
                     id: id[0],
@@ -215,11 +215,11 @@ define([
                 userAgreementVersionMap[agreement.id + '.' + agreement.version] = agreement;
             });
             return policies.getLatestPolicies()
-                .then(function(latestPolicies) {
+                .then(function (latestPolicies) {
                     var userPolicies = [];
                     var missingPolicies = [];
                     var outdatedPolicies = [];
-                    latestPolicies.forEach(function(latestPolicy) {
+                    latestPolicies.forEach(function (latestPolicy) {
                         var userAgreement = userAgreementMap[latestPolicy.id];
                         var userAgreementVersion = userAgreementVersionMap[latestPolicy.id + '.' + latestPolicy.version];
                         if (!userAgreement) {
@@ -257,12 +257,12 @@ define([
             // LOGIN
             var login = vm.get('login');
             var disableLogin = false;
-            login.value.policiesToResolve.missing.forEach(function(policy) {
+            login.value.policiesToResolve.missing.forEach(function (policy) {
                 if (!policy.agreed) {
                     disableLogin = true;
                 }
             });
-            login.value.policiesToResolve.outdated.forEach(function(policy) {
+            login.value.policiesToResolve.outdated.forEach(function (policy) {
                 if (!policy.agreed) {
                     disableLogin = true;
                 }
@@ -325,7 +325,7 @@ define([
                 body: div({}, [
                     div({}, p('You may log into the following KBase accounts:')),
                     div({},
-                        choice.value.login.map(function(login) {
+                        choice.value.login.map(function (login) {
                             var formId = html.genId();
                             // vm.login.vm[login.id] = {
                             //     value: login,
@@ -355,7 +355,7 @@ define([
                                         form({
                                             id: events.addEvent({
                                                 type: 'submit',
-                                                handler: function(e) {
+                                                handler: function (e) {
                                                     e.preventDefault();
                                                     console.log('submitting...');
                                                     handleLoginSubmit();
@@ -372,7 +372,7 @@ define([
                                                 ' via ' + choice.provider + ' account linked identity ',
                                                 i(login.prov_usernames[0]) + '.'),
                                             div({
-                                                id: deferUI.defer(function(node) {
+                                                id: deferUI.defer(function (node) {
                                                     // var policyObserver = Observed.make({
                                                     //     value: create.policiesToResolve,
                                                     // }).changed({
@@ -383,11 +383,11 @@ define([
                                                     // });
                                                     var policiesToBeResolved = Observed({
                                                         value: login.policiesToResolve,
-                                                        changed: function(policiesToResolve) {
-                                                            if (policiesToResolve.missing.filter(function(item) {
+                                                        changed: function (policiesToResolve) {
+                                                            if (policiesToResolve.missing.filter(function (item) {
                                                                     return (!item.agreed);
                                                                 }).length +
-                                                                policiesToResolve.outdated.filter(function(item) {
+                                                                policiesToResolve.outdated.filter(function (item) {
                                                                     return (!item.agreed);
                                                                 }).length === 0) {
                                                                 enableSubmitButton();
@@ -400,10 +400,10 @@ define([
                                                         policiesToResolve: policiesToBeResolved
                                                     });
                                                     policyWidget.attach(node)
-                                                        .then(function() {
+                                                        .then(function () {
                                                             return policyWidget.start();
                                                         })
-                                                        .catch(function(err) {
+                                                        .catch(function (err) {
                                                             node.innerHTML = 'Error: ' + err.message;
                                                         });
                                                 })
@@ -452,7 +452,7 @@ define([
                     s = s.substr(1);
                 }
 
-                s.split('&').forEach(function(field) {
+                s.split('&').forEach(function (field) {
                     var f = field.split('=').map(decodeURIComponent);
                     q[f[0]] = f[1];
                 });
@@ -461,31 +461,31 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 var events = DomEvent.make({
                     node: container
                 });
                 renderLayout();
                 vm.bindAll();
                 return policies.start()
-                    .then(function() {
+                    .then(function () {
                         return runtime.service('session').getClient().getClient().getLoginChoice();
                     })
-                    .then(function(choice) {
+                    .then(function (choice) {
                         vm.get('choice').value = choice;
                         var fixing = [];
                         if (choice.login) {
-                            fixing = fixing.concat(choice.login.map(function(login) {
+                            fixing = fixing.concat(choice.login.map(function (login) {
                                 return evaluatePolicies(login.policy_ids)
-                                    .then(function(policiesToResolve) {
+                                    .then(function (policiesToResolve) {
                                         login.policiesToResolve = policiesToResolve;
                                     });
                             }));
                         }
                         if (choice.create) {
-                            fixing = fixing.concat(choice.create.map(function(create) {
+                            fixing = fixing.concat(choice.create.map(function (create) {
                                 return evaluatePolicies([])
-                                    .then(function(policiesToResolve) {
+                                    .then(function (policiesToResolve) {
                                         create.policiesToResolve = policiesToResolve;
                                     });
                             }));
@@ -493,7 +493,7 @@ define([
 
                         return Promise.all([choice, Promise.all(fixing)]);
                     })
-                    .spread(function(choice) {
+                    .spread(function (choice) {
                         redirectUrl = choice.redirecturl;
                         // stateParams = choice.state;
                         stateParams = getStateParams(choice);
@@ -559,7 +559,7 @@ define([
                                 stateParams: stateParams
                             });
                             return signupWidget.attach(vm.get('create').node)
-                                .then(function() {
+                                .then(function () {
                                     signupWidget.start();
                                     return null;
                                 });
@@ -573,10 +573,10 @@ define([
                         ui.setContent('introduction', intro);
                         return null;
                     })
-                    .catch(M_Auth2.AuthError, function(err) {
+                    .catch(Auth2Error.AuthError, function (err) {
                         showAuthError(err);
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         hideResponse();
                         showError(err);
                     });
@@ -602,7 +602,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return widget(config);
         }
     };

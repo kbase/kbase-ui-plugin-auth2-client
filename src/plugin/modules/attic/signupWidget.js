@@ -3,16 +3,16 @@ define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_common/domEvent2',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     '../lib/utils',
     '../lib/observed',
     './policyWidget',
     './errorWidget'
-], function(
+], function (
     html,
     BS,
     DomEvent,
-    M_Auth2,
+    Auth2Error,
     Utils,
     Observed,
     PolicyWidget,
@@ -107,7 +107,7 @@ define([
 
             var agreementsToSubmit = [];
             // missing policies
-            create.policiesToResolve.missing.forEach(function(policy) {
+            create.policiesToResolve.missing.forEach(function (policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -118,7 +118,7 @@ define([
                 });
             });
             // outdated policies.
-            create.policiesToResolve.outdated.forEach(function(policy) {
+            create.policiesToResolve.outdated.forEach(function (policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -135,21 +135,21 @@ define([
                 display: realName,
                 email: email,
                 linkall: false,
-                policy_ids: agreementsToSubmit.map(function(a) {
+                policy_ids: agreementsToSubmit.map(function (a) {
                     return [a.id, a.version].join('.');
                 })
             };
             console.log('data', data, create);
 
             runtime.service('session').getClient().loginCreate(data)
-                .then(function(response) {
+                .then(function (response) {
                     hideError();
                     renderSignupSuccess(response);
                 })
-                .catch(M_Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
                     showAuthError(err);
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     hideResponse();
                     showError(err);
                 });
@@ -187,7 +187,7 @@ define([
                             class: 'btn btn-primary',
                             id: events.addEvent({
                                 type: 'click',
-                                handler: function() {
+                                handler: function () {
                                     doRedirect();
                                 }
                             })
@@ -211,7 +211,7 @@ define([
                 runtime: runtime
             });
             errorWidget.attach(vm.get('error').node)
-                .then(function() {
+                .then(function () {
                     return errorWidget.start({
                         error: error
                     });
@@ -224,7 +224,7 @@ define([
                 runtime: runtime
             });
             errorWidget.attach(vm.get('error').node)
-                .then(function() {
+                .then(function () {
                     return errorWidget.start({
                         error: {
                             code: error.name,
@@ -306,7 +306,7 @@ define([
                             dataElement: 'form',
                             id: events.addEvent({
                                 type: 'submit',
-                                handler: function(e) {
+                                handler: function (e) {
                                     e.preventDefault();
                                     doSubmitSignup();
                                 }
@@ -574,7 +574,7 @@ define([
                                 class: 'col-md-12'
                             }, [
                                 div({
-                                    id: deferUI.defer(function(node) {
+                                    id: deferUI.defer(function (node) {
                                         // var policyObserver = Observed.make({
                                         //     value: create.policiesToResolve,
                                         // }).changed({
@@ -585,11 +585,11 @@ define([
                                         // });
                                         var policiesToBeResolved = Observed({
                                             value: create.policiesToResolve,
-                                            changed: function(policiesToResolve) {
-                                                if (policiesToResolve.missing.filter(function(item) {
+                                            changed: function (policiesToResolve) {
+                                                if (policiesToResolve.missing.filter(function (item) {
                                                         return (!item.agreed);
                                                     }).length +
-                                                    policiesToResolve.outdated.filter(function(item) {
+                                                    policiesToResolve.outdated.filter(function (item) {
                                                         return (!item.agreed);
                                                     }).length === 0) {
                                                     enableSubmitButton();
@@ -602,10 +602,10 @@ define([
                                             policiesToResolve: policiesToBeResolved
                                         });
                                         policyWidget.attach(node)
-                                            .then(function() {
+                                            .then(function () {
                                                 return policyWidget.start();
                                             })
-                                            .catch(function(err) {
+                                            .catch(function (err) {
                                                 node.innerHTML = 'Error: ' + err.message;
                                             });
                                     })
@@ -624,7 +624,7 @@ define([
         // LIFECYCLE API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 return null;
@@ -632,20 +632,20 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 render();
                 return null;
             });
         }
 
         function stop() {
-            return Promise.toString(function() {
+            return Promise.toString(function () {
                 return null;
             });
         }
 
         function detach() {
-            return Promise.toString(function() {
+            return Promise.toString(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -662,7 +662,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };
