@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     'kb_common/format'
-], function(
+], function (
     html,
     DomEvent,
     BS,
@@ -128,11 +128,11 @@ define([
         function doRevokeToken(tokenId) {
             // Revoke
             runtime.service('session').getClient().revokeToken(tokenId)
-                .then(function() {
+                .then(function () {
                     render();
                     return null;
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('ERROR', err);
                 });
         }
@@ -140,13 +140,13 @@ define([
         function doLogoutToken(tokenId) {
             // Revoke
             return runtime.service('session').getClient().logout(tokenId)
-                .then(function() {
+                .then(function () {
                     // runtime.send('session', 'loggedout');
                     runtime.send('app', 'navigate', {
                         path: 'auth2/signedout'
                     });
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('ERROR', err);
                 });
         }
@@ -207,14 +207,14 @@ define([
                     }, revokeAllButton)
                 ])
             ].concat(vm.allTokens.value
-                .sort(function(a, b) {
+                .sort(function (a, b) {
                     return (a.created - b.created);
                 })
-                .map(function(token) {
+                .map(function (token) {
                     return tr([
                         td(format.niceTime(token.created)),
                         td(format.niceElapsedTime(token.expires)),
-                        td((function() {
+                        td((function () {
                             if (token.os === null || token.os.length === 0) {
                                 return span({
                                     style: {
@@ -235,7 +235,7 @@ define([
                                 }, token.agentver)
                             ]);
                         }())),
-                        td((function() {
+                        td((function () {
                             if (token.os === null || token.os.length === 0) {
                                 return span({
                                     style: {
@@ -265,7 +265,7 @@ define([
                             type: 'button',
                             id: events.addEvent({
                                 type: 'click',
-                                handler: function() {
+                                handler: function () {
                                     doRevokeToken(token.id);
                                 }
                             })
@@ -305,18 +305,18 @@ define([
                         style: {
                             width: '20%'
                         }
-                    }, 'System'),
+                    }, 'Operating System'),
                     th({
                         style: {
                             width: '20%'
                         }
                     }, '')
                 ])
-            ].concat(tokens.map(function(token) {
+            ].concat(tokens.map(function (token) {
                 return tr([
                     td(format.niceTime(token.created)),
                     td(format.niceElapsedTime(token.expires)),
-                    td((function() {
+                    td((function () {
                         if (token.os === null || token.os.length === 0) {
                             return span({
                                 style: {
@@ -337,7 +337,7 @@ define([
                             }, token.agentver)
                         ]);
                     }())),
-                    td((function() {
+                    td((function () {
                         if (token.os === null || token.os.length === 0) {
                             return span({
                                 style: {
@@ -368,7 +368,7 @@ define([
                             type: 'button',
                             id: events.addEvent({
                                 type: 'click',
-                                handler: function() {
+                                handler: function () {
                                     doLogoutToken(token.id);
                                 }
                             })
@@ -381,21 +381,21 @@ define([
 
         function doRevokeAllAndLogout() {
             return doRevokeAll()
-                .then(function() {
+                .then(function () {
                     // sloppy, but conserves code.
                     return doLogoutToken(null);
                 });
         }
 
         function doRevokeAll() {
-            return Promise.all(vm.allTokens.value.map(function(token) {
+            return Promise.all(vm.allTokens.value.map(function (token) {
                     return runtime.service('session').getClient().revokeToken(token.id);
                 }))
-                .then(function() {
+                .then(function () {
                     render();
                     return null;
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('ERROR', err);
                 });
         }
@@ -431,7 +431,7 @@ define([
         function renderAllTokens() {
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
-                    .then(function(result) {
+                    .then(function (result) {
 
                         renderIntro();
 
@@ -443,14 +443,14 @@ define([
                         // Render "other" tokens
 
                         vm.allTokens.value = result.tokens
-                            .filter(function(token) {
+                            .filter(function (token) {
                                 return (token.type === 'Login');
                             });
 
                         renderTokens();
 
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         vm.allTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
                     });
             }
@@ -461,25 +461,25 @@ define([
         }
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 renderLayout();
                 return render();
             });
         }
 
         function stop() {
-            return Promise.try(function() {});
+            return Promise.try(function () {});
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
@@ -497,7 +497,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };
