@@ -717,7 +717,7 @@ define([
                     runtime.service('session').getClient().loginCancel()
                         .then(function() {
                             runtime.send('app', 'navigate', {
-                                path: 'auth2/login'
+                                path: 'login'
                             });
                         })
                         .catch(function(err) {
@@ -813,7 +813,6 @@ define([
             runtime.send('ui', 'setTitle', 'Sign Up for KBase');
             return runtime.service('session').getClient().getClient().getLoginChoice()
                 .then(function(choice) {
-                    // console.log('choice', choice);
                     var policies = Policies.make({
                         runtime: runtime
                     });

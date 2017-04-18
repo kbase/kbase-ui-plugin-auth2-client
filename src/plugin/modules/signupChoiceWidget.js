@@ -1169,7 +1169,6 @@ define([
                         return runtime.service('session').getClient().getClient().getLoginChoice();
                     })
                     .then(function(choice) {
-                        console.log('choice', choice);
                         var fixing = [];
                         if (choice.login) {
                             fixing = fixing.concat(choice.login.map(function(login) {

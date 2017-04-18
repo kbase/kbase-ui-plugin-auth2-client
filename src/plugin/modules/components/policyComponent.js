@@ -318,9 +318,6 @@ define([
         return {
             template: buildTemplate(),
             viewModel: function(data) {
-                // console.log('component data', data);
-                // console.log('test', data.policiesToResolve.missing.length);
-                // console.log('test', data.policiesToResolve.outdated.length);
                 var policiesToResolve = data.policiesToResolve;
 
                 var haveMissing = ko.observable(data.policiesToResolve.missing.length > 0);

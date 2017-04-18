@@ -20,7 +20,7 @@ define([
         var vm;
 
 
-        function render(id, vmMap) {
+        function render(id) {
             var tabs = BS.buildTabs({
                 initialTab: 0,
                 tabs: [{

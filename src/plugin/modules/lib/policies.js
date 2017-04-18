@@ -77,7 +77,6 @@ define([
                 var latestVersion = policy.versions.filter(function(version) {
                     return (version.version === latestVersionId);
                 })[0];
-                // console.log('getting latest policies... ??');
                 return {
                     id: policy.id,
                     title: policy.title,
@@ -89,7 +88,6 @@ define([
             return Promise.all(latest.map(function(policy) {
                 return getPolicyFile(policy)
                     .then(function(contents) {
-                        // console.log('got contents', contents);
                         policy.fileContent = contents;
                         return policy;
                     });

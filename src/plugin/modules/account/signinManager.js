@@ -104,11 +104,23 @@ define([
         }
 
         function renderIntro() {
-            vm.intro.node.innerHTML = div({}, [
+            vm.intro.node.innerHTML = div({
+                style: {
+                    maxWidth: '60em'
+                }
+            }, [
                 p([
-                    'The "Sign-Ins" tab allows you to manage your current sign-ins. A sign-in is created when you ',
-                    'sign in to KBase. Normally a sign-in is removed when you logout. However, if you do not create ',
-                    ' '
+                    'A sign-in session is created when you ',
+                    'sign in to KBase. Normally a sign-in is removed when you logout. ',
+                    'However, if you do not logout, your sign-in session will remain active for two weeks.'
+                ]),
+                p([
+                    'The browser and operating system columns can help you locate the browser with which ',
+                    'an active session is associated. If you have left the  "keep me logged in" option checked ',
+                    'when logging in, the browser will have a sign-in cookie lasting for two weeks, even if you ',
+                    'close and re-open your browser. ',
+                    'However, if you unselected the "keep me logged in" option your KBase browser cookie will be removed ',
+                    'when your browser is exited.'
                 ])
             ]);
         }
@@ -186,7 +198,7 @@ define([
                         style: {
                             width: '20%'
                         }
-                    }, 'System'),
+                    }, 'Operating System'),
                     th({
                         style: {
                             width: '20%',
@@ -194,69 +206,72 @@ define([
                         }
                     }, revokeAllButton)
                 ])
-            ].concat(vm.allTokens.value.map(function(token) {
-                console.log('token', token);
-                return tr([
-                    td(format.niceTime(token.created)),
-                    td(format.niceElapsedTime(token.expires)),
-                    td((function() {
-                        if (token.os === null || token.os.length === 0) {
-                            return span({
-                                style: {
-                                    fontStyle: 'italic',
-                                    marginLeft: '0.2em',
-                                    color: '#888'
-                                }
-                            }, 'n/a');
-                        }
-                        return span([
-                            token.agent,
-                            span({
-                                style: {
-                                    fontStyle: 'italic',
-                                    marginLeft: '0.2em',
-                                    color: '#888'
-                                }
-                            }, token.agentver)
-                        ]);
-                    }())),
-                    td((function() {
-                        if (token.os === null || token.os.length === 0) {
-                            return span({
-                                style: {
-                                    fontStyle: 'italic',
-                                    marginLeft: '0.2em',
-                                    color: '#888'
-                                }
-                            }, 'n/a');
-                        }
-                        return span([
-                            token.os,
-                            span({
-                                style: {
-                                    fontStyle: 'italic',
-                                    marginLeft: '0.2em',
-                                    color: '#888'
-                                }
-                            }, token.osver)
-                        ]);
-                    }())),
-                    td({
-                        style: {
-                            textAlign: 'right'
-                        }
-                    }, button({
-                        class: 'btn btn-danger',
-                        type: 'button',
-                        id: events.addEvent({
-                            type: 'click',
-                            handler: function() {
-                                doRevokeToken(token.id);
+            ].concat(vm.allTokens.value
+                .sort(function(a, b) {
+                    return (a.created - b.created);
+                })
+                .map(function(token) {
+                    return tr([
+                        td(format.niceTime(token.created)),
+                        td(format.niceElapsedTime(token.expires)),
+                        td((function() {
+                            if (token.os === null || token.os.length === 0) {
+                                return span({
+                                    style: {
+                                        fontStyle: 'italic',
+                                        marginLeft: '0.2em',
+                                        color: '#888'
+                                    }
+                                }, 'n/a');
                             }
-                        })
-                    }, 'Revoke'))
-                ]);
-            })));
+                            return span([
+                                token.agent,
+                                span({
+                                    style: {
+                                        fontStyle: 'italic',
+                                        marginLeft: '0.2em',
+                                        color: '#888'
+                                    }
+                                }, token.agentver)
+                            ]);
+                        }())),
+                        td((function() {
+                            if (token.os === null || token.os.length === 0) {
+                                return span({
+                                    style: {
+                                        fontStyle: 'italic',
+                                        marginLeft: '0.2em',
+                                        color: '#888'
+                                    }
+                                }, 'n/a');
+                            }
+                            return span([
+                                token.os,
+                                span({
+                                    style: {
+                                        fontStyle: 'italic',
+                                        marginLeft: '0.2em',
+                                        color: '#888'
+                                    }
+                                }, token.osver)
+                            ]);
+                        }())),
+                        td({
+                            style: {
+                                textAlign: 'right'
+                            }
+                        }, button({
+                            class: 'btn btn-danger',
+                            type: 'button',
+                            id: events.addEvent({
+                                type: 'click',
+                                handler: function() {
+                                    doRevokeToken(token.id);
+                                }
+                            })
+                        }, 'Revoke'))
+                    ]);
+                })));
             events.attachEvents();
         }
 

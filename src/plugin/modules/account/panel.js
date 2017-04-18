@@ -6,29 +6,23 @@ define([
     'kb_common/bootstrapUtils',
     './personalInfoEditorKO',
     './linksManager',
-    './rolesManagerKO',
-    './developerManager',
-    './tokenManager',
     './developerTokenManager',
     './serviceTokenManager',
     './agreementsManager',
     './signinManager'
 ], function(
     $,
-    M_Html,
+    Html,
     html,
     BS,
     PersonalInfoEditor,
     LinksManager,
-    RolesManager,
-    DeveloperManager,
-    TokenManager,
     DeveloperTokenManager,
     ServiceTokenManager,
     AgreementsManager,
     SigninManager
 ) {
-    // var html = new M_Html.Html();
+    // var html = new Html.Html();
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
@@ -397,7 +391,13 @@ define([
                     });
 
                     runtime.send('ui', 'setTitle', 'Account Manager');
-                    renderLayout(container, params);
+                    try {
+                        renderLayout(container, params);
+                    } catch (ex) {
+                        console.error('ERROR', ex);
+                        // renderError(ex);
+                        throw (ex);
+                    }
                 });
         }
 

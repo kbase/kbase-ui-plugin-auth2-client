@@ -3,12 +3,14 @@ define([
     'kb_common_ts/Html',
     'kb_common/domEvent',
     'kb_plugin_auth2-client',
-    './lib/utils'
+    './lib/utils',
+    'yaml!./config.yml'
 ], function(
     Html,
     DomEvent,
     Plugin,
-    Utils
+    Utils,
+    Config
 ) {
     var html = new Html.Html,
         t = html.tagMaker(),
@@ -49,7 +51,9 @@ define([
                     }, [
                         h2('KBase Sign-In Changes'),
                         p([
-                            'On April 15, 2017 KBase rolled out a new authentication system. '
+                            'On ',
+                            Config['auth2-launch-date'],
+                            ' KBase rolled out a new authentication system. '
                         ]),
                         p([
                             'The login process now provides much more functionality, but it does work differently. ',
@@ -110,9 +114,12 @@ define([
                     }, [
                         h2('How to Sign In the first time'),
                         p([
-                            'If you signed up for KBase prior to ', b('April 15, 2017'),
+                            'If you signed up for KBase prior to ',
+                            b(Config['auth2-launch-date']),
                             ' you will have created a Globus.org and Globus ID account. ',
-                            'Therefore, the first time you log into KBase after April 15, you will need to: ',
+                            'Therefore, the first time you log into KBase after ',
+                            Config['auth2-launch-date'],
+                            ', you will need to: ',
                             ul([
                                 li(['Choose Globus as your Sign-in provider ', i('at KBase')]),
                                 li(['Choose Globus ID as your identity provider ', i('at Globus')]),
@@ -223,7 +230,7 @@ define([
 
         function start(params) {
             return Promise.try(function() {
-                nextRequest = params.nextRequest;
+                nextRequest = params.nextRequest || null;
                 render();
             });
         }

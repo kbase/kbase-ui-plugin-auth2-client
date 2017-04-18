@@ -173,7 +173,7 @@ define([
                             ]);
                         });
                 }
-                return a({ class: 'btn btn-primary navbar-btn kb-nav-btn', 'data-button': 'signin', href: '#auth2/login' }, [
+                return a({ class: 'btn btn-primary navbar-btn kb-nav-btn', 'data-button': 'signin', href: '#login' }, [
                     div({ class: 'fa fa-sign-in  fa-inverse', style: 'margin-right: 5px;' }),
                     div({ class: 'kb-nav-btn-txt' }, ['Sign In'])
                 ]);
@@ -210,6 +210,7 @@ define([
                 // }.bind(this));
 
                 runtime.service('session').onChange(function() {
+                    // hmm, also take it upon ourselves to visit the logged out page if we are indeed logged out.
                     render();
                 });
                 return render();
