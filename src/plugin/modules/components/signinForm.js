@@ -122,7 +122,7 @@ define([
                 p([
                     'After signing out you will need to start the ',
                     a({
-                        href: '#auth2/login'
+                        href: '#login'
                     }, 'signin'),
                     ' process again.'
                 ]),
@@ -252,15 +252,10 @@ define([
         }
 
         function doSigninSuccess() {
-            if (nextRequest) {
-                try {
-                    runtime.send('app', 'navigate', nextRequest);
-                } catch (ex) {
-                    console.error('ERROR parsing next request', nextRequest, ex);
-                    runtime.send('app', 'navigate', '');
-                }
+            if (nextRequest !== null) {
+                runtime.send('app', 'navigate', nextRequest);
             } else {
-                runtime.send('app', 'navigate', '');
+                runtime.send('app', 'navigate', { path: 'dashboard' });
             }
         }
 

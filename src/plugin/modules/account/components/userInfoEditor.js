@@ -29,7 +29,7 @@ define([
                 p([
                     'The username associates your account with the Narratives, data, ',
                     'and applications you create within KBase. It is also recorded with internal log files ',
-                    'and other records to assist in providing run-time services, metrics and suppport.'
+                    'and other records to assist in providing services, metrics and suppport.'
                 ])
             ])
         },
@@ -58,8 +58,8 @@ define([
             ]),
             more: div([
                 p([
-                    'When you create your profile, ',
-                    'you will be able to add additional information, including title, suffix, and affiliations. '
+                    'In your profile, ',
+                    'you have the option to add additional information, including title, suffix, and affiliations. '
                 ]),
                 p([
                     'Your name will be displayed in any context within the KBase in which you are identified. ',
@@ -73,12 +73,16 @@ define([
             type: 'text',
             placeholder: 'Your E-Mail Address',
             description: span([
-                'Your email address may be used by KBase staff to contact you. ',
-                'It will not be displayed to other users.'
+                'Your email address may be used by KBase staff to contact you. '
             ]),
             more: div([
                 p([
-                    'This email address is'
+                    'The email address will not be displayed to other users. ',
+                    'It will only be used to contact you in case of issues relating to your account, ',
+                    'data, applications, or jobs. '
+                ]),
+                p([
+                    'At a future time it may be used to provide account recovery in case of loss of access to your account.'
                 ])
             ])
         }
@@ -198,12 +202,12 @@ define([
                 class: 'row'
             }, [
                 div({
-                        class: 'col-md-6'
-                    },
+                    class: 'col-md-6'
+                }, [
                     div({
                         dataBind: 'text: ' + (field.vmId || field.name)
                     })
-                ),
+                ]),
                 div({
                     class: 'col-md-6'
                 }, [

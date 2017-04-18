@@ -4,15 +4,17 @@ define([
     'kb_common/domEvent2',
     'kb_common/ui',
     'kb_common_ts/Cookie',
+    'kb_common_ts/Auth2',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
-    './utils'
+    './lib/utils'
 ], function(
     Promise,
     html,
     DomEvent,
     UI,
     M_Cookie,
+    Auth2,
     Plugin,
     BS,
     Utils
@@ -28,7 +30,6 @@ define([
 
     function widget(config) {
         var hostNode, container, runtime = config.runtime,
-            nextRequest,
             events, ui,
             // passed in the params to invoke this endpoint
             inProcessToken,
@@ -49,14 +50,7 @@ define([
             }
         });
 
-        // var auth2 = Auth2.make({
-        //     cookieName: runtime.config('services.auth2.cookieName'),
-        //     authBaseUrl: runtime.config('services.auth2.url')
-        // });
-
         // API
-
-
 
         function attach(node) {
             return Promise.try(function() {
@@ -150,13 +144,28 @@ define([
         }
 
         function cancelLink() {
-            runtime.send('app', 'navigate', {
-                path: 'auth2/account',
-                params: {
-                    tab: 'links'
-                }
-            });
+            runtime.service('session').getClient().linkCancel()
+                .catch(Auth2.AuthError, function(err) {
+                    // just continue...
+                    if (err.code === '10010') {
+                        // simply continue
+                    } else {
+                        throw (err);
+                    }
+                })
+                .then(function() {
+                    runtime.send('app', 'navigate', {
+                        path: 'auth2/account',
+                        params: {
+                            tab: 'links'
+                        }
+                    });
+                })
+                .catch(function(err) {
+                    console.error('error', err);
+                });
         }
+
 
         function renderLinkChoice(choiceData) {
             var node = ui.getElement('link');
@@ -249,20 +258,7 @@ define([
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
                     .then(function(result) {
-                        console.log('link choice', result);
                         renderLinkChoice(result);
-                        // switch (result.status) {
-                        // case 'ok':
-
-                        //     break;
-                        // case 'error':
-                        //     showError({
-                        //         title: 'Error processing login choice',
-                        //         message: result.data.error.message,
-                        //         detail: BS.buildPresentableJson(result)
-                        //     });
-                        // }
-                        // events.attachEvents();
                     })
                     .catch(function(err) {
                         // TODO: use the error component here.

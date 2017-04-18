@@ -7,11 +7,11 @@ define([
     'kb_plugin_auth2-client',
     'kb_common_ts/HttpClient',
     'kb_common_ts/Auth2',
-    '../utilsKO',
+    '../lib/utilsKO',
     // loaded for effect
     'bootstrap',
     './signupComponent',
-    './signinComponent',
+    './signinForm',
     './globusProviders'
 ], function(
     Promise,
@@ -27,8 +27,6 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
-        input = t('input'),
-        label = t('label'),
         h3 = t('h3'),
         ul = t('ul'),
         li = t('li'),
@@ -190,7 +188,7 @@ define([
                             p([
                                 'After signing out you will need to start the ',
                                 a({
-                                    href: '#auth2/login'
+                                    href: '#login'
                                 }, 'signin'),
                                 ' process again.'
                             ]),
@@ -320,15 +318,11 @@ define([
             viewModel: function(data) {
                 var runtime = data.runtime;
 
-                // var step = data.step;
-
                 var choice = data.choice;
 
                 var policiesToResolve = data.policiesToResolve;
 
-                // var providers = getProviders();
-
-                var nextRequest = data.nextRequst; // JSON.stringify(nextRequest);
+                var nextRequest = data.nextRequest;
 
                 var staySignedIn = ko.observable(true);
 
@@ -356,8 +350,6 @@ define([
                         uiState.signup(true);
                     }
                 }
-                // console.log('login', login, create);
-
                 // function doStaySignedIn() {
                 //     var checked = e.target.checked;
                 //     var auth2Client = runtime.service('session').getClient();
@@ -367,7 +359,7 @@ define([
                 function doProviderSignin(provider) {
                     runtime.service('session').loginStart({
                         state: {
-                            nextrequest: JSON.stringify(nextRequest),
+                            nextrequest: nextRequest,
                             origin: 'signup'
                         },
                         provider: provider.id,

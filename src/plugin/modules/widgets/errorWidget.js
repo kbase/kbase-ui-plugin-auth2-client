@@ -2,8 +2,8 @@
 define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    '../utils'
-], function (
+    '../lib/utils'
+], function(
     html,
     BS,
     Utils
@@ -38,7 +38,7 @@ define([
                     }
                 }
             }
-        });            
+        });
 
         //
 
@@ -110,26 +110,25 @@ define([
         // API 
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 render();
                 update(params.error);
             });
         }
 
         function stop() {
-            return Promise.try(function () {
-            });
+            return Promise.try(function() {});
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -139,14 +138,14 @@ define([
 
         return {
             attach: attach,
-            start: start,            
+            start: start,
             stop: stop,
             detach: detach
         };
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return factory(config);
         }
     };

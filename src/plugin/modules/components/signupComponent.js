@@ -647,7 +647,6 @@ define([
                             signupState('success');
                         })
                         .catch(Auth2.AuthError, function(err) {
-                            console.log('auth error', err);
                             error.code(err.code);
                             error.message(err.message);
                             error.detail(err.detail);
@@ -655,7 +654,6 @@ define([
                             signupState('error');
                         })
                         .catch(function(err) {
-                            console.log('error', err);
                             signupState('error');
                             error.code(err.name);
                             error.message(err.message);
@@ -663,17 +661,10 @@ define([
                 }
 
                 function doSignupSuccess() {
-                    // var nextRequest = vm.get('stateParams').value.nextrequest;
                     if (nextRequest) {
-                        try {
-                            // var navigateRequest = JSON.parse(nextRequest);
-                            runtime.send('app', 'navigate', nextRequest);
-                        } catch (ex) {
-                            console.error('ERROR parsing next request', nextRequest, ex);
-                            runtime.send('app', 'navigate', '');
-                        }
+                        runtime.send('app', 'navigate', nextRequest);
                     } else {
-                        runtime.send('app', 'navigate', '');
+                        runtime.send('app', 'navigate', { path: 'dashboard' });
                     }
                 }
 
@@ -684,7 +675,6 @@ define([
                 //         role: role
                 //     };
                 //     var field = fields[fieldName];
-                //     console.log('valid?', fieldName, field);
                 //     if (!field) {
                 //         return;
                 //     }

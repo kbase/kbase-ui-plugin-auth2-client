@@ -7,7 +7,7 @@ define([
     './roleManager',
     './tokenManager',
     './userManager',
-    '../../utils'
+    '../../lib/utils'
 ], function(
     $,
     M_Html,
@@ -26,8 +26,6 @@ define([
         ul = t('ul'),
         li = t('li'),
         a = t('a');
-
-
 
     function factory(config) {
         var hostNode, container,
@@ -296,11 +294,8 @@ define([
             tabs.showTab(defaultTab);
         }
 
-
-
         function renderUserInfo() {
             var userInfo = vm.get('userInfo');
-            // console.log('userinfo', userInfo);
             userInfo.node.innerHTML = div({
                 class: 'container-fluid'
             }, [

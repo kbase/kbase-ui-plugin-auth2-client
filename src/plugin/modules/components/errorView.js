@@ -68,7 +68,6 @@ define([
     }
 
     function viewModel(params) {
-        console.log('error view', params);
         return {
             code: params.code,
             message: params.message,

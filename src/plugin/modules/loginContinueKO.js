@@ -7,14 +7,15 @@ define([
     'kb_plugin_auth2-client',
     'kb_common_ts/HttpClient',
     'kb_common_ts/Auth2',
-    './utilsKO',
+    'kb_common_ts/Auth2Error',
+    './lib/utilsKO',
     './widgets/errorWidget',
-    './policies',
+    './lib/policies',
     // loaded for effect
     'bootstrap',
     './components/signinView',
     './components/errorView'
-], function(
+], function (
     Promise,
     ko,
     html,
@@ -23,6 +24,7 @@ define([
     Plugin,
     HttpClient,
     Auth2,
+    Auth2Error,
     Utils,
     ErrorWidget,
     Policies
@@ -38,7 +40,7 @@ define([
         // LIFECYCLE API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 var id = html.genId();
                 var layout = div({
@@ -62,7 +64,7 @@ define([
                     s = s.substr(1);
                 }
 
-                s.split('&').forEach(function(field) {
+                s.split('&').forEach(function (field) {
                     var f = field.split('=').map(decodeURIComponent);
                     q[f[0]] = f[1];
                 });
@@ -73,6 +75,30 @@ define([
                 }
             }
             return q;
+        }
+
+        function doSignIn(choice, nextRequest) {
+            return runtime.service('session').getClient().loginPick({
+                    identityId: choice.login[0].id,
+                    linkAll: false,
+                    agreements: []
+                })
+                .then(function () {
+                    if (nextRequest !== null) {
+                        try {
+                            runtime.send('app', 'navigate', nextRequest);
+                        } catch (ex) {
+                            console.error('ERROR parsing next request', nextRequest, ex);
+                            runtime.send('app', 'navigate', '');
+                        }
+                    } else {
+                        runtime.send('app', 'navigate', runtime.config('ui.defaults.loginPath', 'dashboard'));
+                    }
+                })
+                .catch(function (err) {
+                    console.error('Error', err);
+                    // showError(err);
+                });
         }
 
         function start(params) {
@@ -86,7 +112,7 @@ define([
 
             runtime.send('ui', 'setTitle', 'KBase Sign-In');
             return runtime.service('session').getClient().getClient().getLoginChoice()
-                .then(function(choice) {
+                .then(function (choice) {
                     var stateParams = getStateParam(choice);
 
                     if (stateParams.origin === 'signup') {
@@ -99,7 +125,7 @@ define([
                         runtime: runtime
                     });
                     return policies.start()
-                        .then(function() {
+                        .then(function () {
                             if (choice.login && choice.login.length === 1) {
                                 return policies.evaluatePolicies(choice.login[0].policy_ids);
                             } else if (choice.create && choice.create.length === 1) {
@@ -110,7 +136,7 @@ define([
                                 throw new Error('Neither login nor signup available for this sign-up account');
                             }
                         })
-                        .then(function(policiesToResolve) {
+                        .then(function (policiesToResolve) {
                             var step, nextRequest;
                             // comes in as "nextrequest" all lower case, but known otherwise
                             // as "nextRequest", camelCase
@@ -118,6 +144,14 @@ define([
                                 nextRequest = JSON.parse(params.nextrequest);
                             } else {
                                 nextRequest = '';
+                            }
+
+                            // If no policies to resolve and google auth provider then just
+                            // auto-signin.
+                            if (policiesToResolve.missing.length === 0 &&
+                                policiesToResolve.outdated.length === 0 &&
+                                choice.provider === 'Google') {
+                                return doSignIn(choice, stateParams.nextrequest);
                             }
 
                             main.innerHTML = div({
@@ -137,14 +171,15 @@ define([
                             var viewModel = {
                                 runtime: config.runtime,
                                 step: step,
-                                nextRequest: nextRequest,
+                                nextRequest: stateParams.nextrequest,
                                 choice: choice,
                                 policiesToResolve: policiesToResolve
                             };
                             ko.applyBindings(viewModel, main);
                         });
                 })
-                .catch(Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
+                    console.log('ERROR 1', err);
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
                     var viewModel = {
@@ -169,7 +204,8 @@ define([
                     ko.applyBindings(viewModel, main);
                 })
 
-            .catch(function(err) {
+            .catch(function (err) {
+                console.log('ERROR 2', err);
                 var viewModel = {
                     code: err.code,
                     message: err.message,
@@ -194,13 +230,13 @@ define([
         }
 
         function stop() {
-            return Promise.try(function() {
+            return Promise.try(function () {
 
             });
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -216,7 +252,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

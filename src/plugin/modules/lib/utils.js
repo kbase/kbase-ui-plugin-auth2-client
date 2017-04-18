@@ -3,6 +3,7 @@ define([
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
+    'kb_common_ts/Auth2',
     'kb_plugin_auth2-client',
     'bootstrap'
 ], function(
@@ -10,6 +11,7 @@ define([
     html,
     DomEvents,
     BS,
+    Auth2,
     Plugin
 ) {
     var t = html.tag,
@@ -21,17 +23,30 @@ define([
         var runtime = config.runtime;
 
         function doLogin(providerId, state) {
-
-            runtime.service('session').loginStart({
-                // TODO: this should be either the redirect url passed in 
-                // or the dashboard.
-                // We just let the login page do this. When the login page is 
-                // entered with a valid token, redirect to the nextrequest,
-                // and if that is empty, the dashboard.
-                state: state,
-                provider: providerId,
-                stayLoggedIn: false
-            });
+            runtime.service('session').getClient().loginCancel()
+                .catch(Auth2.AuthError, function(err) {
+                    // ignore this specific error...
+                    if (err.code !== '10010') {
+                        throw err;
+                    }
+                })
+                .catch(function(err) {
+                    // TODO: show error.
+                    console.error('Skipping error', err);
+                })
+                .finally(function() {
+                    //  don 't care whether it succeeded or failed.
+                    return runtime.service('session').loginStart({
+                        // TODO: this should be either the redirect url passed in 
+                        // or the dashboard.
+                        // We just let the login page do this. When the login page is 
+                        // entered with a valid token, redirect to the nextrequest,
+                        // and if that is empty, the dashboard.
+                        state: state,
+                        provider: providerId,
+                        stayLoggedIn: false
+                    });
+                });
         }
 
         function buildProviderLabel(provider) {
@@ -220,7 +235,6 @@ define([
             if (!vmNode) {
                 return;
             }
-            // console.log('get element', vmNode);
             var domNode = getElement(vmNode.node, elementPath);
             if (!domNode) {
                 return;

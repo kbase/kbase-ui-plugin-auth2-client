@@ -15,8 +15,8 @@ install:
             id: auth2Info
             type: factory
         -
-            module: login
-            id: auth2Login
+            module: signin
+            id: auth2Signin
             css: true
             type: factory
         -
@@ -36,8 +36,8 @@ install:
             id: auth2Account
             type: factory  
         -
-            module: loginWidget
-            id: auth2_login
+            module: signinWidget
+            id: auth2_signin
             type: factory
         -
             module: linkContinue
@@ -63,6 +63,14 @@ install:
             module: signedout
             id: auth2_signedout
             type: factory
+        -
+            module: interrupted
+            id: auth2_interrupted
+            type: factory
+        -
+            module: logout
+            id: auth2_logout
+            type: factory
     routes:
         # -
         #     path: ['auth2', 'info']
@@ -70,8 +78,13 @@ install:
         #     queryParams:
         #         nextrequest: {}
         -
-            path: ['auth2', 'login']
-            widget: auth2Login
+            path: ['login']
+            widget: auth2Signin
+            queryParams:
+                nextrequest: {}
+        -
+            path: ['logout']
+            widget: auth2Logout
             queryParams:
                 nextrequest: {}
         -
@@ -111,6 +124,10 @@ install:
         -
             path: ['auth2', 'signedout']
             widget: auth2_signedout
+            authorization: false
+        -
+            path: ['auth2', 'interrupted']
+            widget: auth2_interrupted
             authorization: false
                 
     menu:

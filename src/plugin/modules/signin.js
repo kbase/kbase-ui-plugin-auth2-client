@@ -3,14 +3,16 @@ define([
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
+    'kb_common_ts/Auth2',
     'kb_plugin_auth2-client',
-    './utils',
+    './lib/utils',
     'bootstrap'
 ], function(
     Promise,
     html,
     DomEvents,
     BS,
+    Auth2,
     Plugin,
     Utils
 ) {
@@ -50,6 +52,10 @@ define([
 
         function doSignup() {
             runtime.service('session').getClient().loginCancel()
+                .catch(Auth2.AuthError, function(err) {
+                    // ignore this specific error...
+                    console.warn('Skipping error', err);
+                })
                 .finally(function() {
                     // don't care whether it succeeded or failed.
                     runtime.send('app', 'navigate', {
@@ -92,7 +98,7 @@ define([
                     // }, 'Legacy Login')
                 ].concat(providers.map(function(provider) {
                     return utils.buildLoginButton(events, provider, {
-                        nextrequest: JSON.stringify(nextRequest),
+                        nextrequest: nextRequest,
                         origin: 'login'
                     });
                 }).concat([
@@ -100,24 +106,24 @@ define([
                         style: {
                             padding: '5px',
                             border: '1px silver dashed',
-                            margin: '12px 0 0 0'
+                            margin: '18px 0 0 0'
                         }
                     }, [
-                        span({
+                        div({
                             style: {
-
+                                marginTop: '10px'
                             }
                         }, 'This sign-in page look different?'),
                         a({
                             class: 'btn btn-link',
-                            href: '#auth2/login/legacy',
+                            href: '#auth2/login/legacy?nextRequest=' + encodeURIComponent(JSON.stringify(nextRequest)),
                             style: {
                                 margin: '0 0',
                                 minHeight: '44px',
                                 whiteSpace: 'normal'
                             },
                         }, [
-                            'New sign-in process as of 4/15/17'
+                            'New sign-in process as of 5/1/17'
                         ])
                     ])
                 ]))),
@@ -191,8 +197,6 @@ define([
         }
 
         function buildForm(events, params) {
-
-
             var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
             var authControl = buildAuthControl(events, params);
@@ -326,7 +330,7 @@ define([
                 if (params.nextrequest) {
                     nextRequest = JSON.parse(params.nextrequest);
                 } else {
-                    nextRequest = '';
+                    nextRequest = null;
                 }
 
                 if (runtime.service('session').isLoggedIn()) {

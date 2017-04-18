@@ -6,8 +6,8 @@ define([
     'kb_common_ts/Cookie',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
-    './policies'
-], function (
+    './lib/policies'
+], function(
     Promise,
     html,
     DomEvent,
@@ -62,7 +62,7 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(function() {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 events = DomEvent.make(container);
@@ -114,7 +114,7 @@ define([
 
             var agreementsToSubmit = [];
             // missing policies
-            create.value.policiesToResolve.missing.forEach(function (policy) {
+            create.value.policiesToResolve.missing.forEach(function(policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -125,7 +125,7 @@ define([
                 });
             });
             // outdated policies.
-            create.value.policiesToResolve.outdated.forEach(function (policy) {
+            create.value.policiesToResolve.outdated.forEach(function(policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -142,35 +142,35 @@ define([
                 display: realName,
                 email: email,
                 linkall: linkAll,
-                policy_ids: agreementsToSubmit.map(function (a) {
+                policy_ids: agreementsToSubmit.map(function(a) {
                     return [a.id, a.version].join('.');
                 })
             };
 
             runtime.service('session').getClient().loginCreate(data)
-                .then(function (response) {
+                .then(function(response) {
                     switch (response.status) {
-                    case 'ok':
-                        hideError();
-                        renderSignupSuccess(response);
-                        break;
-                    case 'error':
-                        hideResponse();
-                        showError({
-                            title: 'Error creating account',
-                            message: response.data.message,
-                            detail: response.data
-                        });
-                        break;
-                    default:
-                        hideResponse();
-                        showError({
-                            message: 'Unknown response',
-                            data: response
-                        });
+                        case 'ok':
+                            hideError();
+                            renderSignupSuccess(response);
+                            break;
+                        case 'error':
+                            hideResponse();
+                            showError({
+                                title: 'Error creating account',
+                                message: response.data.message,
+                                detail: response.data
+                            });
+                            break;
+                        default:
+                            hideResponse();
+                            showError({
+                                message: 'Unknown response',
+                                data: response
+                            });
                     }
                 })
-                .catch(function (err) {
+                .catch(function(err) {
                     console.error('ERROR', err);
                     showError({
                         title: 'Exception creating account',
@@ -200,7 +200,7 @@ define([
             var login = vm.login.vm[identityId];
             var agreementsToSubmit = [];
             // missing policies
-            login.value.policiesToResolve.missing.forEach(function (policy) {
+            login.value.policiesToResolve.missing.forEach(function(policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -211,7 +211,7 @@ define([
                 });
             });
             // outdated policies.
-            login.value.policiesToResolve.outdated.forEach(function (policy) {
+            login.value.policiesToResolve.outdated.forEach(function(policy) {
                 if (!policy.agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
@@ -223,32 +223,32 @@ define([
             });
 
             runtime.service('session').getClient().loginPick({
-                token: inProcessToken,
-                identityId: identityId,
-                linkAll: linkall,
-                agreements: agreementsToSubmit
-            })
-            .then(function (result) {
-                if (result.status === 'ok') {
-                    doRedirect(redirectUrl);
-                } else if (result.error) {
-                    showError({
-                        title: 'Error',
-                        message: 'Error logging into account',
-                        detail: BS.buildPresentableJson(result.data)
-                    });
-                }
-            })
-            .catch(function (err) {
-                console.error('ERROR', err);
-            });
+                    token: inProcessToken,
+                    identityId: identityId,
+                    linkAll: linkall,
+                    agreements: agreementsToSubmit
+                })
+                .then(function(result) {
+                    if (result.status === 'ok') {
+                        doRedirect(redirectUrl);
+                    } else if (result.error) {
+                        showError({
+                            title: 'Error',
+                            message: 'Error logging into account',
+                            detail: BS.buildPresentableJson(result.data)
+                        });
+                    }
+                })
+                .catch(function(err) {
+                    console.error('ERROR', err);
+                });
             return false;
         }
 
         function evaluatePolicies(policyIds) {
             var userAgreementMap = {};
             var userAgreementVersionMap = {};
-            policyIds.forEach(function (policyId) {
+            policyIds.forEach(function(policyId) {
                 var id = policyId.id.split('.');
                 var agreement = {
                     id: id[0],
@@ -259,11 +259,11 @@ define([
                 userAgreementVersionMap[agreement.id + '.' + agreement.version] = agreement;
             });
             return policies.getLatestPolicies()
-                .then(function (latestPolicies) {
+                .then(function(latestPolicies) {
                     var userPolicies = [];
                     var missingPolicies = [];
                     var outdatedPolicies = [];
-                    latestPolicies.forEach(function (latestPolicy) {
+                    latestPolicies.forEach(function(latestPolicy) {
                         var userAgreement = userAgreementMap[latestPolicy.id];
                         var userAgreementVersion = userAgreementVersionMap[latestPolicy.id + '.' + latestPolicy.version];
                         if (!userAgreement) {
@@ -298,15 +298,15 @@ define([
         }
 
         function updateUI() {
-            Object.keys(vm.login.vm).forEach(function (loginId) {
+            Object.keys(vm.login.vm).forEach(function(loginId) {
                 var login = vm.login.vm[loginId];
                 var disableLogin = false;
-                login.value.policiesToResolve.missing.forEach(function (policy) {
+                login.value.policiesToResolve.missing.forEach(function(policy) {
                     if (!policy.agreed) {
                         disableLogin = true;
                     }
                 });
-                login.value.policiesToResolve.outdated.forEach(function (policy) {
+                login.value.policiesToResolve.outdated.forEach(function(policy) {
                     if (!policy.agreed) {
                         disableLogin = true;
                     }
@@ -319,15 +319,15 @@ define([
 
             });
 
-            Object.keys(vm.create.vm).forEach(function (id) {
+            Object.keys(vm.create.vm).forEach(function(id) {
                 var create = vm.create.vm[id];
                 var disableButton = false;
-                create.value.policiesToResolve.missing.forEach(function (policy) {
+                create.value.policiesToResolve.missing.forEach(function(policy) {
                     if (!policy.agreed) {
                         disableButton = true;
                     }
                 });
-                create.value.policiesToResolve.outdated.forEach(function (policy) {
+                create.value.policiesToResolve.outdated.forEach(function(policy) {
                     if (!policy.agreed) {
                         disableButton = true;
                     }
@@ -361,7 +361,7 @@ define([
 
         function renderPolicies(node, policiesToResolve) {
             var content = [
-                
+
             ];
             var events = DomEvent.make({
                 node: node
@@ -377,7 +377,7 @@ define([
                         'The following KBase account policies will need to be agreed to before you can create a KBase account.',
                     ]),
                     div({}, [
-                        policiesToResolve.missing.map(function (missingPolicy) {
+                        policiesToResolve.missing.map(function(missingPolicy) {
                             var policy = policies.getPolicy(missingPolicy.id);
                             var version = policies.getPolicyVersion(missingPolicy.id, missingPolicy.version);
                             var resolverId = html.genId();
@@ -403,8 +403,7 @@ define([
                                     }
                                 }, 'Published on: ' + version.date),
                                 div({
-                                    style: {
-                                    }
+                                    style: {}
                                 }, [
                                     div({
                                         style: {
@@ -418,7 +417,7 @@ define([
                                         dataMinMax: 'max',
                                         id: events.addEvent({
                                             type: 'click',
-                                            handler: function (e) {
+                                            handler: function(e) {
                                                 var n = e.currentTarget;
                                                 if (n.getAttribute('data-min-max') === 'min') {
                                                     n.style.height = '400px';
@@ -447,7 +446,7 @@ define([
                                         }),
                                         id: events.addEvent({
                                             type: 'click',
-                                            handler: function (e) {
+                                            handler: function(e) {
                                                 if (e.target.checked) {
                                                     missingPolicy.agreed = true;
                                                     minifyResolver(resolverId);
@@ -479,7 +478,7 @@ define([
                         'You may log into this account after you have agreed to these policies by checking the box at the bottom of each.'
                     ]),
                     div({}, [
-                        policiesToResolve.outdated.map(function (missingPolicy) {
+                        policiesToResolve.outdated.map(function(missingPolicy) {
                             var policy = policies.getPolicy(missingPolicy.id);
                             var version = policies.getPolicyVersion(missingPolicy.id, missingPolicy.version);
                             var resolverId = html.genId();
@@ -530,7 +529,7 @@ define([
                                         dataMinMax: 'max',
                                         id: events.addEvent({
                                             type: 'click',
-                                            handler: function (e) {
+                                            handler: function(e) {
                                                 var n = e.currentTarget;
                                                 if (n.getAttribute('data-min-max') === 'min') {
                                                     n.style.height = '400px';
@@ -557,7 +556,7 @@ define([
                                         }),
                                         id: events.addEvent({
                                             type: 'click',
-                                            handler: function (e) {
+                                            handler: function(e) {
                                                 if (e.target.checked) {
                                                     missingPolicy.agreed = true;
                                                     minifyResolver(resolverId);
@@ -592,7 +591,7 @@ define([
                     body: div({}, [
                         div({}, p('You may log into the following KBase accounts:')),
                         div({},
-                            choiceResponse.login.map(function (login) {
+                            choiceResponse.login.map(function(login) {
                                 var formId = html.genId();
                                 vm.login.vm[login.id] = {
                                     value: login,
@@ -621,7 +620,7 @@ define([
                                             form({
                                                 id: events.addEvent({
                                                     type: 'submit',
-                                                    handler: function (e) {
+                                                    handler: function(e) {
                                                         e.preventDefault();
                                                         var linkAllControl = document.getElementById(formId)
                                                             .querySelector('[name="linkall"]');
@@ -639,7 +638,7 @@ define([
                                                     }, 'Continue to the KBase account <b>' + login.username + '</b>'),
                                                     ' via ' + choiceResponse.provider + ' account linked identity ',
                                                     i(login.prov_usernames[0]) + '.'),
-                                                (function () {
+                                                (function() {
                                                     if (choiceResponse.create.length > 0) {
                                                         return div({
                                                             style: {
@@ -667,16 +666,16 @@ define([
                                                                     }
                                                                 }, 'Link The Following Identities ')
                                                             ]),
-                                                            ul({}, choiceResponse.create                                                            
-                                                            .map(function (create) {
-                                                                return li(create.prov_username);
-                                                            }).join('\n'))
+                                                            ul({}, choiceResponse.create
+                                                                .map(function(create) {
+                                                                    return li(create.prov_username);
+                                                                }).join('\n'))
                                                         ]);
                                                     }
                                                     return '';
                                                 }()),
                                                 div({
-                                                    id: deferUI.defer(function (node) {
+                                                    id: deferUI.defer(function(node) {
                                                         renderPolicies(node, login.policiesToResolve);
                                                     })
                                                 })
@@ -693,7 +692,7 @@ define([
             getElement(container, 'login').innerHTML = content;
             deferUI.resolve();
             // sync the vm
-            Object.keys(vm.login.vm).forEach(function (loginId) {
+            Object.keys(vm.login.vm).forEach(function(loginId) {
                 var login = vm.login.vm[loginId];
                 login.vm.button.node = document.getElementById(login.vm.button.id);
 
@@ -715,7 +714,7 @@ define([
                             class: 'btn btn-primary',
                             id: events.addEvent({
                                 type: 'click',
-                                handler: function () {
+                                handler: function() {
                                     doRedirect(redirectUrl);
                                 }
                             })
@@ -741,7 +740,7 @@ define([
             }
 
             function resolve() {
-                deferred.forEach(function (defer) {
+                deferred.forEach(function(defer) {
                     var node = document.getElementById(defer.id);
                     try {
                         defer.fun(node);
@@ -757,8 +756,7 @@ define([
         }
 
         function getOrganizations() {
-            return [
-                {
+            return [{
                     id: 'org1',
                     label: 'Organization One'
                 },
@@ -775,7 +773,7 @@ define([
                 showNumber = true;
             }
             var deferUI = DeferUI();
-            var content = choiceResponse.create.map(function (create, index) {
+            var content = choiceResponse.create.map(function(create, index) {
                 var numberPrefix = '';
                 if (showNumber) {
                     numberPrefix = String(index + 1) + '. ';
@@ -836,7 +834,7 @@ define([
                                     dataElement: 'signup-form',
                                     id: events.addEvent({
                                         type: 'submit',
-                                        handler: function (e) {
+                                        handler: function(e) {
                                             e.preventDefault();
 
                                             var linkAllControl = document.getElementById(createVm.vm.form.id)
@@ -902,7 +900,7 @@ define([
                                         }, 'Organization'),
                                         select({
                                             class: 'form-control'
-                                        }, getOrganizations().map(function (org) {
+                                        }, getOrganizations().map(function(org) {
                                             return option({
                                                 value: org.id
                                             }, org.label);
@@ -989,8 +987,8 @@ define([
                             ])
                         ]),
 
-                        (function () {
-                            var additionalCreates = choiceResponse.create.filter(function (create2) {
+                        (function() {
+                            var additionalCreates = choiceResponse.create.filter(function(create2) {
                                 return (create2.prov_username !== create.prov_username);
                             });
                             if (additionalCreates.length > 0) {
@@ -1022,9 +1020,9 @@ define([
                                         }, 'Link The Following Additional Identities ')
                                     ]),
                                     ul({}, additionalCreates
-                                    .map(function (create) {
-                                        return li(create.prov_username);
-                                    }).join('\n'))
+                                        .map(function(create) {
+                                            return li(create.prov_username);
+                                        }).join('\n'))
                                 ]);
                             }
                             return '';
@@ -1037,7 +1035,7 @@ define([
                                 class: 'col-md-12'
                             }, [
                                 div({
-                                    id: deferUI.defer(function (node) {
+                                    id: deferUI.defer(function(node) {
                                         renderPolicies(node, create.policiesToResolve);
                                     })
                                 })
@@ -1048,7 +1046,7 @@ define([
             }).join('\n');
             getElement(container, 'create').innerHTML = content;
             deferUI.resolve();
-            Object.keys(vm.create.vm).forEach(function (id) {
+            Object.keys(vm.create.vm).forEach(function(id) {
                 var create = vm.create.vm[id];
                 create.vm.button.node = document.getElementById(create.vm.button.id);
                 create.vm.form.node = document.getElementById(create.vm.form.id);
@@ -1083,10 +1081,10 @@ define([
                         class: 'col-md-12'
                     }, [
                         div({
-                            style: {
-                                display: 'none'
-                            }
-                        },
+                                style: {
+                                    display: 'none'
+                                }
+                            },
                             h3({
                                 dataElement: 'main-title'
                             }, 'KBase Signup')
@@ -1161,30 +1159,29 @@ define([
                 window.history.pushState({}, document.title, newUrl.toString());
             }
 
-            return Promise.try(function () {
+            return Promise.try(function() {
                 var events = DomEvent.make({
                     node: container
                 });
                 renderLayout();
                 return policies.start()
-                    .then(function () {
+                    .then(function() {
                         return runtime.service('session').getClient().getClient().getLoginChoice();
                     })
-                    .then(function (choice) {
-                        console.log('choice', choice);
+                    .then(function(choice) {
                         var fixing = [];
                         if (choice.login) {
-                            fixing = fixing.concat(choice.login.map(function (login) {
+                            fixing = fixing.concat(choice.login.map(function(login) {
                                 return evaluatePolicies(login.policy_ids)
-                                    .then(function (policiesToResolve) {
+                                    .then(function(policiesToResolve) {
                                         login.policiesToResolve = policiesToResolve;
                                     });
                             }));
                         }
                         if (choice.create) {
-                            fixing = fixing.concat(choice.create.map(function (create) {
+                            fixing = fixing.concat(choice.create.map(function(create) {
                                 return evaluatePolicies([])
-                                    .then(function (policiesToResolve) {
+                                    .then(function(policiesToResolve) {
                                         create.policiesToResolve = policiesToResolve;
                                     });
                             }));
@@ -1192,7 +1189,7 @@ define([
 
                         return Promise.all([choice, Promise.all(fixing)]);
                     })
-                    .spread(function (choice) {
+                    .spread(function(choice) {
                         // Two possible outcomes here:
 
                         // 1. user does not have an account yet, signalled by the 
@@ -1345,29 +1342,29 @@ define([
                         // });
                         // container.querySelector('[data-element="debug"]').innerHTML = debug;
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         if (err.code) {
                             console.error('ERROR', err);
                             // appCode is the specific error code from auth2
                             switch (err.code) {
-                            case 10010:
-                                showError({
-                                    title: 'Error',
-                                    message: 'No authentication token or token has expired',
-                                    detail: div([
-                                        p([
-                                            'This error can occur when visiting this page without logging in first, ',
-                                            'or if the previous login page was unattended for more than 30 minutes'
+                                case 10010:
+                                    showError({
+                                        title: 'Error',
+                                        message: 'No authentication token or token has expired',
+                                        detail: div([
+                                            p([
+                                                'This error can occur when visiting this page without logging in first, ',
+                                                'or if the previous login page was unattended for more than 30 minutes'
+                                            ])
                                         ])
-                                    ])
-                                });
-                                break;
-                            default:
-                                showError({
-                                    title: 'Error fetching login choices',
-                                    message: err.message,
-                                    detail: BS.buildPresentableJson(err)
-                                });
+                                    });
+                                    break;
+                                default:
+                                    showError({
+                                        title: 'Error fetching login choices',
+                                        message: err.message,
+                                        detail: BS.buildPresentableJson(err)
+                                    });
                             }
 
                         } else {
@@ -1402,7 +1399,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make: function(config) {
             return widget(config);
         }
     };
