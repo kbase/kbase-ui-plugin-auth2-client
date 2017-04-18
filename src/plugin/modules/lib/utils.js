@@ -3,15 +3,15 @@ define([
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'bootstrap'
-], function(
+], function (
     Promise,
     html,
     DomEvents,
     BS,
-    Auth2,
+    Auth2Error,
     Plugin
 ) {
     var t = html.tag,
@@ -24,17 +24,17 @@ define([
 
         function doLogin(providerId, state) {
             runtime.service('session').getClient().loginCancel()
-                .catch(Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
                     // ignore this specific error...
                     if (err.code !== '10010') {
                         throw err;
                     }
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     // TODO: show error.
                     console.error('Skipping error', err);
                 })
-                .finally(function() {
+                .finally(function () {
                     //  don 't care whether it succeeded or failed.
                     return runtime.service('session').loginStart({
                         // TODO: this should be either the redirect url passed in 
@@ -84,7 +84,7 @@ define([
                     fontSize: '110%',
                     fontWeight: 'bold'
                 },
-                id: events.addEvent('click', function() {
+                id: events.addEvent('click', function () {
                     runtime.service('session').getClient().setLastProvider(provider.id);
                     doLogin(provider.id, state);
                 })
@@ -92,7 +92,7 @@ define([
         }
 
         function parsePolicyAgreements(policyIds) {
-            return policyIds.map(function(policyId) {
+            return policyIds.map(function (policyId) {
                 var id = policyId.id.split('.');
                 return {
                     id: id[0],
@@ -125,11 +125,11 @@ define([
                 attribs.class = arg.classes.join(' ');
             }
             return table(attribs, [
-                thead(tr(arg.columns.map(function(x) {
+                thead(tr(arg.columns.map(function (x) {
                     return th(x.label);
                 }))),
-                tbody(arg.rows.map(function(row) {
-                    return tr(row.map(function(x, index) {
+                tbody(arg.rows.map(function (row) {
+                    return tr(row.map(function (x, index) {
                         var col = arg.columns[index];
                         var value = x;
                         if (col.format) {
@@ -197,7 +197,7 @@ define([
             if (names.length === 0) {
                 return container;
             }
-            var selector = names.map(function(name) {
+            var selector = names.map(function (name) {
                 return '[data-element="' + name + '"]';
             }).join(' ');
 
@@ -220,7 +220,7 @@ define([
 
         function bindAll() {
             function bindModel(model) {
-                Object.keys(model).forEach(function(key) {
+                Object.keys(model).forEach(function (key) {
                     bindVmNode(model[key]);
                     if (model[key].model) {
                         bindModel(model[key].model);
@@ -272,7 +272,7 @@ define([
         }
 
         function resolve() {
-            deferred.forEach(function(defer) {
+            deferred.forEach(function (defer) {
                 var node = document.getElementById(defer.id);
                 try {
                     defer.fun(node);
@@ -287,7 +287,7 @@ define([
         };
     }
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         },
         ViewModel: ViewModel,

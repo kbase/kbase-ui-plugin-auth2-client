@@ -3,15 +3,15 @@ define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_common/domEvent2',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     './policyComponent',
     './errorView'
-], function(
+], function (
     ko,
     html,
     BS,
     DomEvent,
-    Auth2
+    Auth2Error
 ) {
     var t = html.tag,
         div = t('div'),
@@ -467,7 +467,7 @@ define([
     function doSubmitSignup(runtime, create, realName, username, email, policiesToResolve) {
         var agreementsToSubmit = [];
         // missing policies
-        policiesToResolve.missing.forEach(function(policy) {
+        policiesToResolve.missing.forEach(function (policy) {
             if (!policy.agreed()) {
                 throw new Error('Cannot submit with missing policies not agreed to');
             }
@@ -477,7 +477,7 @@ define([
             });
         });
         // outdated policies.
-        policiesToResolve.outdated.forEach(function(policy) {
+        policiesToResolve.outdated.forEach(function (policy) {
             if (!policy.agreed()) {
                 throw new Error('Cannot submit with missing policies not agreed to');
             }
@@ -494,7 +494,7 @@ define([
             display: realName,
             email: email,
             linkall: false,
-            policy_ids: agreementsToSubmit.map(function(a) {
+            policy_ids: agreementsToSubmit.map(function (a) {
                 return [a.id, a.version].join('.');
             })
         };
@@ -504,7 +504,7 @@ define([
 
     function component() {
         return {
-            viewModel: function(params) {
+            viewModel: function (params) {
                 var choice = params.choice;
                 var create = choice.create[0];
                 var runtime = params.runtime;
@@ -518,7 +518,7 @@ define([
                     maxLength: 100
                 });
                 ko.validation.rules['usernameStartsWithLetter'] = {
-                    validator: function(val) {
+                    validator: function (val) {
                         if (!/^[a-zA-Z]/.test(val)) {
                             return false;
                         }
@@ -527,7 +527,7 @@ define([
                     message: 'A username must start with an alphabetic letter'
                 };
                 ko.validation.rules['usernameNoSpaces'] = {
-                    validator: function(val) {
+                    validator: function (val) {
                         if (/\s/.test(val)) {
                             return false;
                         }
@@ -536,7 +536,7 @@ define([
                     message: 'A username must not contain spaces'
                 };
                 ko.validation.rules['usernameValidChars'] = {
-                    validator: function(val) {
+                    validator: function (val) {
                         if (!/^[a-z0-9_]+$/.test(val)) {
                             return false;
                         }
@@ -546,9 +546,9 @@ define([
                 };
                 ko.validation.rules['usernameMustBeUnique'] = {
                     async: true,
-                    validator: function(val, params, callback) {
+                    validator: function (val, params, callback) {
                         runtime.service('session').getClient().loginUsernameSuggest(username())
-                            .then(function(results) {
+                            .then(function (results) {
                                 if (results.name !== username()) {
                                     callback({
                                         isValid: results.available,
@@ -560,7 +560,7 @@ define([
                                     });
                                 }
                             })
-                            .catch(function(err) {
+                            .catch(function (err) {
                                 console.error('err', err);
                                 callback({
                                     isValid: false,
@@ -596,7 +596,7 @@ define([
                     required: true
                 });
 
-                var allValid = ko.pureComputed(function() {
+                var allValid = ko.pureComputed(function () {
                     var valid = (realname.isValid() &&
                         email.isValid() &&
                         username.isValid() &&
@@ -614,14 +614,14 @@ define([
                 };
 
 
-                var canSubmit = ko.pureComputed(function() {
+                var canSubmit = ko.pureComputed(function () {
                     if (!allValid()) {
                         return false;
                     }
 
-                    if (policiesToResolve.missing.some(function(item) {
+                    if (policiesToResolve.missing.some(function (item) {
                             return !item.agreed();
-                        }) || policiesToResolve.outdated.some(function(item) {
+                        }) || policiesToResolve.outdated.some(function (item) {
                             return !item.agreed();
                         })) {
                         return false;
@@ -629,7 +629,7 @@ define([
                     return true;
                 });
 
-                canSubmit.subscribe(function(newCanSubmit) {
+                canSubmit.subscribe(function (newCanSubmit) {
                     if (newCanSubmit) {
                         signupState('complete');
                     } else {
@@ -643,17 +643,17 @@ define([
                 function submitSignup() {
                     // validateAll();
                     doSubmitSignup(runtime, create, realname(), username(), email(), policiesToResolve)
-                        .then(function(response) {
+                        .then(function (response) {
                             signupState('success');
                         })
-                        .catch(Auth2.AuthError, function(err) {
+                        .catch(Auth2Error.AuthError, function (err) {
                             error.code(err.code);
                             error.message(err.message);
                             error.detail(err.detail);
                             error.data(err.data);
                             signupState('error');
                         })
-                        .catch(function(err) {
+                        .catch(function (err) {
                             signupState('error');
                             error.code(err.name);
                             error.message(err.message);
@@ -692,7 +692,7 @@ define([
                 // make policy resolution structure.
 
                 var policiesToResolve = {
-                    missing: params.policiesToResolve.missing.map(function(item) {
+                    missing: params.policiesToResolve.missing.map(function (item) {
                         return {
                             id: item.id,
                             version: item.version,
@@ -701,7 +701,7 @@ define([
                             agreed: ko.observable(false)
                         };
                     }),
-                    outdated: params.policiesToResolve.outdated.map(function(item) {
+                    outdated: params.policiesToResolve.outdated.map(function (item) {
                         return {
                             id: item.id,
                             version: item.version,

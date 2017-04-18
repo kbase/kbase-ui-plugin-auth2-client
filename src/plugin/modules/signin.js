@@ -3,22 +3,21 @@ define([
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     './lib/utils',
     'bootstrap'
-], function(
+], function (
     Promise,
     html,
     DomEvents,
     BS,
-    Auth2,
+    Auth2Error,
     Plugin,
     Utils
 ) {
     var t = html.tag,
         div = t('div'),
-        span = t('span'),
         a = t('a'),
         b = t('b'),
         button = t('button'),
@@ -38,7 +37,7 @@ define([
             nextRequest;
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
@@ -52,11 +51,11 @@ define([
 
         function doSignup() {
             runtime.service('session').getClient().loginCancel()
-                .catch(Auth2.AuthError, function(err) {
+                .catch(Auth2Error.AuthError, function (err) {
                     // ignore this specific error...
                     console.warn('Skipping error', err);
                 })
-                .finally(function() {
+                .finally(function () {
                     // don't care whether it succeeded or failed.
                     runtime.send('app', 'navigate', {
                         path: 'auth2/signup'
@@ -96,7 +95,7 @@ define([
                     //         });
                     //     })
                     // }, 'Legacy Login')
-                ].concat(providers.map(function(provider) {
+                ].concat(providers.map(function (provider) {
                     return utils.buildLoginButton(events, provider, {
                         nextrequest: nextRequest,
                         origin: 'login'
@@ -134,7 +133,7 @@ define([
                 }, [
                     input({
                         type: 'checkbox',
-                        checked: (function() {
+                        checked: (function () {
                             return runtime.service('session').getClient().isSessionPersistent();
                         }()),
                         id: events.addEvent('change', doStaySignedIn)
@@ -187,7 +186,7 @@ define([
 
         function doLogout() {
             runtime.service('session').logout()
-                .then(function(result) {
+                .then(function (result) {
                     if (result.status === 'error') {
                         console.error('ERROR', result);
                     } else {
@@ -323,7 +322,7 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 // if is logged in, just redirect to the nextrequest,
                 // or the nexturl, or dashboard.
                 runtime.send('ui', 'setTitle', 'KBase Sign In');
@@ -342,13 +341,13 @@ define([
         }
 
         function stop() {
-            return Promise.try(function() {
+            return Promise.try(function () {
 
             });
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -365,7 +364,7 @@ define([
 
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };
