@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     '../userAgreements'
-], function(
+], function (
     html,
     DomEvents,
     BS,
@@ -120,10 +120,10 @@ define([
                     id: agreement.id,
                     version: agreement.version
                 })
-                .then(function(result) {
+                .then(function (result) {
                     vm.agreement.node.innerHTML = result;
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('Boo', err);
                     vm.agreement.node.innerHTML = 'ERROR: ' + err.message;
                 });
@@ -158,7 +158,7 @@ define([
                         padding: '4px'
                     }
                 }, vm.agreements.value
-                .map(function(agreement) {
+                .map(function (agreement) {
                     var policy = userAgreements.getPolicy(agreement.id);
                     var policyVersion = userAgreements.getPolicyVersion(agreement.id, agreement.version);
                     return {
@@ -167,7 +167,7 @@ define([
                         version: policyVersion
                     };
                 })
-                .sort(function(a, b) {
+                .sort(function (a, b) {
                     if (a.policy.id < b.policy.id) {
                         return -1;
                     } else if (a.policy.id > b.policy.id) {
@@ -182,7 +182,7 @@ define([
                         }
                     }
                 })
-                .map(function(agreement) {
+                .map(function (agreement) {
                     // var agreement = vm.agreements.value[name];
                     //var policy = userAgreements.getPolicy(agreement.id); //vm.index.value[agreement.id];
                     //var policyVersion = userAgreements.getPolicyVersion(agreement.id, agreement.version); // policy.versions[agreement.version];
@@ -196,7 +196,7 @@ define([
                         },
                         id: events.addEvent({
                             type: 'click',
-                            handler: function(e) {
+                            handler: function (e) {
                                 var buttons = document.querySelectorAll('.agreements .agreement.btn');
                                 for (var i = 0; i < buttons.length; i += 1) {
                                     buttons[i].classList.remove('active');
@@ -233,18 +233,18 @@ define([
 
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                     renderLayout();
                     return userAgreements.start();
                 })
-                .then(function(result) {
+                .then(function (result) {
                     vm.latestPolicies.value = userAgreements.getLatestPolicies();
                     vm.agreements.value = userAgreements.getUserAgreements();
                     return (render());
@@ -252,11 +252,11 @@ define([
         }
 
         function stop() {
-            return Promise.try(function() {});
+            return Promise.try(function () {});
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
@@ -274,7 +274,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

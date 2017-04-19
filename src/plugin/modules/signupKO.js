@@ -11,7 +11,6 @@ define([
     './lib/utilsKO',
     './widgets/errorWidget',
     './lib/policies',
-    './lib/format',
     // loaded for effect
     'bootstrap',
     './components/signupComponent',
@@ -29,15 +28,13 @@ define([
     Auth2Error,
     Utils,
     ErrorWidget,
-    Policies,
-    format
+    Policies
 ) {
     var t = html.tag,
         div = t('div'),
         span = t('span'),
         input = t('input'),
         label = t('label'),
-        button = t('button'),
         p = html.tag('p');
 
     function getProviders() {
@@ -239,7 +236,7 @@ define([
                     ' account ',
                     span({
                         dataBind: {
-                            text: 'choice.create[0].prov_username'
+                            text: 'choice.create[0].provusername'
                         },
                         style: {
                             fontWeight: 'bold'
@@ -277,7 +274,7 @@ define([
                     ' account ',
                     span({
                         dataBind: {
-                            text: 'choice.login[0].prov_username'
+                            text: 'choice.login[0].provusername'
                         },
                         style: {
                             fontWeight: 'bold'
@@ -547,34 +544,6 @@ define([
         ]);
     }
 
-    function buildClock() {
-        return div({
-            dataBind: {
-                if: 'choice'
-            }
-
-        }, [
-            'This sign-up session will expire in ',
-            span({
-                style: {
-                    fontFamily: 'monospace'
-                },
-                dataBind: {
-                    text: 'expiresIn()'
-                }
-            }),
-            button({
-                class: 'btn btn-danger',
-                style: {
-                    marginLeft: '10px'
-                },
-                dataBind: {
-                    click: 'doCancelChoiceSession'
-                }
-            }, 'Cancel Sign-up Session')
-        ]);
-    }
-
     function buildError() {
         return div({
             dataBind: {
@@ -626,7 +595,6 @@ define([
                         backgroundColor: 'white',
                     }
                 }, [
-                    buildClock(),
                     buildError(),
                     buildStep1(),
                     buildStep2()
@@ -651,26 +619,6 @@ define([
                 var nextRequest = data.nextRequest; // JSON.stringify(nextRequest);
 
                 var staySignedIn = ko.observable(true);
-
-                // EXPIRATION
-
-                if (data.choice) {
-                    var now = ko.observable(new Date().getTime());
-                    var clienttime = new Date().getTime();
-                    var expires = choice.expires;
-                    var servertime = choice.servertime;
-                    var expiresIn = ko.pureComputed(function () {
-                        if (!expires) {
-                            return '';
-                        }
-                        return format.niceDuration((expires - now() + (servertime - clienttime)));
-                    });
-                    // start clock... improve
-                    var t = window.setInterval(function () {
-                        now(new Date().getTime());
-                    }, 500);
-                }
-
 
                 // UI state
 
@@ -715,17 +663,6 @@ define([
                     return false;
                 });
 
-                function doCancelChoiceSession() {
-                    runtime.service('session').getClient().loginCancel()
-                        .then(function () {
-                            runtime.send('app', 'navigate', {
-                                path: 'login'
-                            });
-                        })
-                        .catch(function (err) {
-                            error(err);
-                        });
-                }
 
                 // no assumptions ... this is set by the signup component, if any.
                 var signupState = ko.observable();
@@ -740,8 +677,6 @@ define([
                     policiesToResolve: policiesToResolve,
                     doProviderSignin: doProviderSignin,
                     signupState: signupState,
-                    expiresIn: expiresIn,
-                    doCancelChoiceSession: doCancelChoiceSession,
                     error: error,
                     isError: isError
                 };
@@ -751,28 +686,7 @@ define([
     }
     ko.components.register('signup-view', component());
 
-    function showError(node, err) {
-        var viewModel = {
-            code: ko.observable(err.code),
-            message: ko.observable(err.message),
-            detail: ko.observable(err.detail),
-            data: ko.observable(err.data)
-        };
-        hostNode.innerHTML = div({
-            dataBind: {
-                component: {
-                    name: '"error-view"',
-                    params: {
-                        code: 'code',
-                        message: 'message',
-                        detail: 'detail',
-                        data: 'data'
-                    }
-                }
-            }
-        });
-        ko.applyBindings(viewModel, node);
-    }
+
 
     function factory(config) {
         var hostNode, container,
@@ -801,6 +715,29 @@ define([
             vm.error.node = document.getElementById(vm.error.id);
         }
 
+        function showError(node, err) {
+            var viewModel = {
+                code: ko.observable(err.code),
+                message: ko.observable(err.message),
+                detail: ko.observable(err.detail),
+                data: ko.observable(err.data)
+            };
+            hostNode.innerHTML = div({
+                dataBind: {
+                    component: {
+                        name: '"error-view"',
+                        params: {
+                            code: 'code',
+                            message: 'message',
+                            detail: 'detail',
+                            data: 'data'
+                        }
+                    }
+                }
+            });
+            ko.applyBindings(viewModel, node);
+        }
+
         // LIFECYCLE API
 
         function attach(node) {
@@ -827,7 +764,7 @@ define([
                     return policies.start()
                         .then(function () {
                             if (choice.login && choice.login.length === 1) {
-                                return policies.evaluatePolicies(choice.login[0].policy_ids);
+                                return policies.evaluatePolicies(choice.login[0].policyids);
                             } else if (choice.create && choice.create.length === 1) {
                                 // just pass empty policy ids, since this user has none yet.
                                 return policies.evaluatePolicies([]);

@@ -4,6 +4,7 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common/domEvent2',
     'kb_common_ts/Auth2Error',
+    '../lib/format',
     './policyComponent',
     './errorView'
 ], function (
@@ -11,10 +12,12 @@ define([
     html,
     BS,
     DomEvent,
-    Auth2Error
+    Auth2Error,
+    format
 ) {
     var t = html.tag,
         div = t('div'),
+        a = t('a'),
         span = t('span'),
         p = t('p'),
         label = t('label'),
@@ -207,6 +210,37 @@ define([
                         ])
                     ])
                 ]),
+                div({
+                    class: 'row'
+                }, [
+                    div({
+                        class: 'col-md-5'
+                    }, div({
+                        class: 'form-group'
+                    }, [
+                        label(['Title / Role', requiredIcon('role')]),
+                        input({
+                            class: 'form-control',
+                            name: 'role',
+                            dataBind: {
+                                value: 'role',
+                                valueUpdate: '"input"'
+                            }
+                        }),
+                        div({
+                            class: 'alert alert-danger',
+                            dataBind: {
+                                validationMessage: 'role'
+                            }
+                        })
+                    ])),
+                    div({
+                        class: 'col-md-7',
+                        style: {
+                            paddingTop: '20px'
+                        }
+                    })
+                ]),
                 form({
                     dataElement: 'form',
                     autocomplete: 'off'
@@ -251,37 +285,7 @@ define([
                         }, buildUsernameField().info)
                     ]),
 
-                    div({
-                        class: 'row'
-                    }, [
-                        div({
-                            class: 'col-md-5'
-                        }, div({
-                            class: 'form-group'
-                        }, [
-                            label(['Title / Role', requiredIcon('role')]),
-                            input({
-                                class: 'form-control',
-                                name: 'role',
-                                dataBind: {
-                                    value: 'role',
-                                    valueUpdate: '"input"'
-                                }
-                            }),
-                            div({
-                                class: 'alert alert-danger',
-                                dataBind: {
-                                    validationMessage: 'role'
-                                }
-                            })
-                        ])),
-                        div({
-                            class: 'col-md-7',
-                            style: {
-                                paddingTop: '20px'
-                            }
-                        })
-                    ]),
+
                     div({
                         class: 'row'
                     }, [
@@ -447,6 +451,57 @@ define([
         ]);
     }
 
+    function buildExpired() {
+        return div({
+            dataBind: {
+                if: 'expired'
+            }
+        }, [
+            p([
+                'Your sign-up session has expired.'
+            ]),
+            p([
+                'You should visit the ',
+                a({
+                    href: '#login'
+                }, 'sign-in page '),
+                ' and follow the sign-up link again.'
+            ])
+        ]);
+    }
+
+    function buildClock() {
+        return div({
+            dataBind: {
+                if: 'expiresIn() > 0'
+            },
+            style: {
+                marginBottom: '12px',
+                textAlign: 'center'
+            }
+
+        }, [
+            'This sign-up session will expire in ',
+            span({
+                style: {
+                    fontFamily: 'monospace'
+                },
+                dataBind: {
+                    text: 'expiresMessage()'
+                }
+            }),
+            button({
+                class: 'btn btn-danger',
+                style: {
+                    marginLeft: '10px'
+                },
+                dataBind: {
+                    click: 'doCancelChoiceSession'
+                }
+            }, 'Cancel Sign-up Session')
+        ]);
+    }
+
     function template() {
         return div({
             dataBind: {
@@ -460,6 +515,8 @@ define([
             }),
             buildSuccessResponse(),
             buildErrorResponse(),
+            buildClock(),
+            buildExpired(),
             buildSignupForm()
         ]);
     }
@@ -494,7 +551,7 @@ define([
             display: realName,
             email: email,
             linkall: false,
-            policy_ids: agreementsToSubmit.map(function (a) {
+            policyids: agreementsToSubmit.map(function (a) {
                 return [a.id, a.version].join('.');
             })
         };
@@ -510,9 +567,11 @@ define([
                 var runtime = params.runtime;
                 var nextRequest = params.nextRequest;
 
+                //console.log('choice', choice);
+
                 // SIGNUP FORM
 
-                var realname = ko.observable(create.prov_fullname).extend({
+                var realname = ko.observable(create.provfullname).extend({
                     required: true,
                     minLength: 2,
                     maxLength: 100
@@ -549,10 +608,10 @@ define([
                     validator: function (val, params, callback) {
                         runtime.service('session').getClient().loginUsernameSuggest(username())
                             .then(function (results) {
-                                if (results.name !== username()) {
+                                if (results.availablename !== username()) {
                                     callback({
                                         isValid: results.available,
-                                        message: 'This username is not available: a suggested available username is ' + results.name
+                                        message: 'This username is not available: a suggested available username is ' + results.availablename
                                     });
                                 } else {
                                     callback({
@@ -581,7 +640,7 @@ define([
                     usernameValidChars: true,
                     usernameMustBeUnique: true
                 });
-                var email = ko.observable(create.prov_email).extend({
+                var email = ko.observable(create.provemail).extend({
                     required: true,
                     email: true
                 });
@@ -713,6 +772,71 @@ define([
                     })
                 };
 
+
+                // EXPIRATION
+
+                var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+
+                var now = ko.observable(new Date().getTime());
+
+                // var servertime = choice.servertime;
+                var expiresIn = ko.pureComputed(function () {
+                    if (!choice.expires) {
+                        return '';
+                    }
+                    return choice.expires - now() - timeOffset - (27 * 60 * 1000);
+                });
+                var expiresMessage = ko.pureComputed(function () {
+                    return format.niceDuration(expiresIn());
+                });
+                var expired = ko.pureComputed(function () {
+                    return (expiresIn() <= 0);
+                });
+
+                expired.subscribe(function (newExpired) {
+                    if (newExpired) {
+                        signupState('expired');
+                    }
+                });
+
+                // start clock... improve
+                var timer = window.setInterval(function () {
+                    now(new Date().getTime());
+                }, 500);
+
+                function doCancelChoiceSession() {
+                    runtime.service('session').getClient().loginCancel()
+                        .then(function () {
+                            runtime.send('app', 'navigate', {
+                                path: 'login'
+                            });
+                        })
+                        .catch(Auth2Error.AuthError, function (err) {
+                            console.error('ERROR1', err);
+                            // Setting the error triggers the error component to be 
+                            // displayed and populated.
+                            // TODO: I think the error object needs to be fully observable and 
+                            // updated here in order to propogate the values into the component....
+                            // Otherwise those properties will be stuck at the original value.
+                            error({
+                                code: err.code,
+                                message: err.message,
+                                detail: err.detail,
+                                data: err.data
+                            });
+                        })
+                        .catch(function (err) {
+                            console.error('ERROR2', err);
+                            error({
+                                code: err.name,
+                                message: err.message,
+                                detail: '',
+                                data: ko.observable({})
+                            });
+                        });
+                }
+
+
                 return {
                     choice: choice,
                     create: create,
@@ -729,8 +853,13 @@ define([
 
                     canSubmit: canSubmit,
                     submitSignup: submitSignup,
-                    doSignupSuccess: doSignupSuccess
-                        // validationStatus: validationStatus
+                    doSignupSuccess: doSignupSuccess,
+                    doCancelChoiceSession: doCancelChoiceSession,
+                    // validationStatus: validationStatus
+                    //expiration, clock, etc.
+                    expired: expired,
+                    expiresIn: expiresIn,
+                    expiresMessage: expiresMessage
                 };
             },
             template: template()

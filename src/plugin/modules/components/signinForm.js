@@ -8,7 +8,7 @@ define([
     'kb_common_ts/Auth2',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils'
-], function(
+], function (
     ko,
     Promise,
     html,
@@ -72,7 +72,7 @@ define([
                             'Continue to the KBase account ',
                             span({
                                 dataBind: {
-                                    text: 'username'
+                                    text: 'user'
                                 },
                                 style: {
                                     textWeight: 'bold'
@@ -148,7 +148,7 @@ define([
                         fontWeight: 'bold'
                     },
                     dataBind: {
-                        text: 'login.prov_usernames[0]'
+                        text: 'login.provusername'
                     }
                 }),
                 ' is associated with the KBase account ',
@@ -157,7 +157,7 @@ define([
                         fontWeight: 'bold'
                     },
                     dataBind: {
-                        text: 'login.username'
+                        text: 'login.user'
                     }
                 })
             ]),
@@ -170,7 +170,7 @@ define([
     function getAgreements(policiesToResolve) {
         var agreementsToSubmit = [];
         // missing policies
-        policiesToResolve.missing.forEach(function(policy) {
+        policiesToResolve.missing.forEach(function (policy) {
             if (!policy.agreed()) {
                 throw new Error('Cannot submit with missing policies not agreed to');
             }
@@ -180,7 +180,7 @@ define([
             });
         });
         // outdated policies.
-        policiesToResolve.outdated.forEach(function(policy) {
+        policiesToResolve.outdated.forEach(function (policy) {
             if (!policy.agreed()) {
                 throw new Error('Cannot submit with missing policies not agreed to');
             }
@@ -200,7 +200,7 @@ define([
         var runtime = params.runtime;
 
         var policiesToResolve = {
-            missing: params.policiesToResolve.missing.map(function(item) {
+            missing: params.policiesToResolve.missing.map(function (item) {
                 return {
                     id: item.id,
                     version: item.version,
@@ -209,7 +209,7 @@ define([
                     agreed: ko.observable(false)
                 };
             }),
-            outdated: params.policiesToResolve.outdated.map(function(item) {
+            outdated: params.policiesToResolve.outdated.map(function (item) {
                 return {
                     id: item.id,
                     version: item.version,
@@ -221,10 +221,10 @@ define([
             })
         };
 
-        var canSignin = ko.pureComputed(function() {
-            if (policiesToResolve.missing.some(function(item) {
+        var canSignin = ko.pureComputed(function () {
+            if (policiesToResolve.missing.some(function (item) {
                     return !item.agreed();
-                }) || policiesToResolve.outdated.some(function(item) {
+                }) || policiesToResolve.outdated.some(function (item) {
                     return !item.agreed();
                 })) {
                 return false;
@@ -241,10 +241,10 @@ define([
                     linkAll: false,
                     agreements: agreements
                 })
-                .then(function() {
+                .then(function () {
                     doSigninSuccess();
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('Error', err);
                     // showError(err);
                 });

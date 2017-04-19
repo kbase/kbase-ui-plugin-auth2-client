@@ -3,7 +3,7 @@ define([
     'marked',
     'kb_common_ts/HttpClient',
     'kb_plugin_auth2-client'
-], function(
+], function (
     marked,
     M_HttpClient,
     Plugin
@@ -32,7 +32,7 @@ define([
                     method: 'GET',
                     url: url
                 })
-                .then(function(result) {
+                .then(function (result) {
                     if (result.status === 200) {
                         try {
                             return marked(result.response);
@@ -58,7 +58,7 @@ define([
                     method: 'GET',
                     url: url
                 })
-                .then(function(result) {
+                .then(function (result) {
                     if (result.status === 200) {
                         return JSON.parse(result.response);
                     } else {
@@ -68,13 +68,13 @@ define([
         }
 
         function getLatestPolicies() {
-            var latest = policies.map(function(policy) {
-                var latestVersionId = Math.max.apply(null, policy.versions.map(function(version) {
+            var latest = policies.map(function (policy) {
+                var latestVersionId = Math.max.apply(null, policy.versions.map(function (version) {
                     return version.version;
                 }));
                 // Array.from not supported in IE
                 // TODO: use es6 polyfill lib
-                var latestVersion = policy.versions.filter(function(version) {
+                var latestVersion = policy.versions.filter(function (version) {
                     return (version.version === latestVersionId);
                 })[0];
                 return {
@@ -85,9 +85,9 @@ define([
                     file: latestVersion.file
                 };
             });
-            return Promise.all(latest.map(function(policy) {
+            return Promise.all(latest.map(function (policy) {
                 return getPolicyFile(policy)
-                    .then(function(contents) {
+                    .then(function (contents) {
                         policy.fileContent = contents;
                         return policy;
                     });
@@ -95,7 +95,7 @@ define([
         }
 
         function getPolicy(id) {
-            return policies.filter(function(policy) {
+            return policies.filter(function (policy) {
                 return (policy.id === id);
             })[0];
         }
@@ -105,7 +105,7 @@ define([
             if (!policy) {
                 return;
             }
-            return policy.versions.filter(function(ver) {
+            return policy.versions.filter(function (ver) {
                 return (version === ver.version);
             })[0];
         }
@@ -113,22 +113,22 @@ define([
         function evaluatePolicies(policyIds) {
             var userAgreementMap = {};
             var userAgreementVersionMap = {};
-            policyIds.forEach(function(policyId) {
+            policyIds.forEach(function (policyId) {
                 var id = policyId.id.split('.');
                 var agreement = {
                     id: id[0],
                     version: id[1],
-                    date: new Date(policyId.agreed_on)
+                    date: new Date(policyId.agreedon)
                 };
                 userAgreementMap[agreement.id] = agreement;
                 userAgreementVersionMap[agreement.id + '.' + agreement.version] = agreement;
             });
             return getLatestPolicies()
-                .then(function(latestPolicies) {
+                .then(function (latestPolicies) {
                     var userPolicies = [];
                     var missingPolicies = [];
                     var outdatedPolicies = [];
-                    latestPolicies.forEach(function(latestPolicy) {
+                    latestPolicies.forEach(function (latestPolicy) {
                         var userAgreement = userAgreementMap[latestPolicy.id];
                         var userAgreementVersion = userAgreementVersionMap[latestPolicy.id + '.' + latestPolicy.version];
                         if (!userAgreement) {
@@ -160,14 +160,14 @@ define([
 
         function start(params) {
             return loadPolicies()
-                .then(function(result) {
+                .then(function (result) {
                     policies = result;
                     return null;
                 });
         }
 
         function stop() {
-            return Promise.try(function() {
+            return Promise.try(function () {
 
             });
         }
@@ -188,7 +188,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

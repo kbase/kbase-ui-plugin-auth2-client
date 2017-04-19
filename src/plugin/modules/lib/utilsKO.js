@@ -5,7 +5,7 @@ define([
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client',
     'bootstrap'
-], function(
+], function (
     Promise,
     html,
     DomEvents,
@@ -86,12 +86,12 @@ define([
     }
 
     function parsePolicyAgreements(policyIds) {
-        return policyIds.map(function(policyId) {
+        return policyIds.map(function (policyId) {
             var id = policyId.id.split('.');
             return {
                 id: id[0],
                 version: parseInt(id[1], 10),
-                date: new Date(policyId.agreed_on)
+                date: new Date(policyId.agreedon)
             };
         });
     }
@@ -119,11 +119,11 @@ define([
             attribs.class = arg.classes.join(' ');
         }
         return table(attribs, [
-            thead(tr(arg.columns.map(function(x) {
+            thead(tr(arg.columns.map(function (x) {
                 return th(x.label);
             }))),
-            tbody(arg.rows.map(function(row) {
-                return tr(row.map(function(x, index) {
+            tbody(arg.rows.map(function (row) {
+                return tr(row.map(function (x, index) {
                     var col = arg.columns[index];
                     var value = x;
                     if (col.format) {

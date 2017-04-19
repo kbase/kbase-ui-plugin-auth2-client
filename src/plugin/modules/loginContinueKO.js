@@ -57,6 +57,7 @@ define([
 
         function getStateParam(choice) {
             var q = {};
+            console.log('geting state param', choice);
             if (choice.redirecturl) {
                 var u = new URL(choice.redirecturl);
                 var s = u.search;
@@ -127,7 +128,7 @@ define([
                     return policies.start()
                         .then(function () {
                             if (choice.login && choice.login.length === 1) {
-                                return policies.evaluatePolicies(choice.login[0].policy_ids);
+                                return policies.evaluatePolicies(choice.login[0].policyids);
                             } else if (choice.create && choice.create.length === 1) {
                                 // just pass empty policy ids, since this user has none yet.
                                 return policies.evaluatePolicies([]);
@@ -137,14 +138,15 @@ define([
                             }
                         })
                         .then(function (policiesToResolve) {
-                            var step, nextRequest;
+                            var step;
                             // comes in as "nextrequest" all lower case, but known otherwise
                             // as "nextRequest", camelCase
-                            if (params.nextrequest) {
-                                nextRequest = JSON.parse(params.nextrequest);
-                            } else {
-                                nextRequest = '';
-                            }
+                            // if (params.nextrequest) {
+                            //     nextRequest = JSON.parse(params.nextrequest);
+                            // } else {
+                            //     nextRequest = '';
+                            // }
+                            console.log('state params', stateParams);
 
                             // If no policies to resolve and google auth provider then just
                             // auto-signin.

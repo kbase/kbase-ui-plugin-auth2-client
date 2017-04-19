@@ -2,7 +2,7 @@ define([
     'knockout-plus',
     'kb_common/html',
     'kb_common/bootstrapUtils'
-], function(
+], function (
     ko,
     html,
     BS
@@ -68,11 +68,12 @@ define([
     }
 
     function viewModel(params) {
+        console.log('in error', params);
         return {
             code: params.code,
             message: params.message,
             detail: params.detail,
-            data: BS.buildPresentableJson(params.data())
+            data: BS.buildPresentableJson(params.data)
         };
     }
 
