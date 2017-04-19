@@ -186,7 +186,7 @@ define([
                     }, 'Created'),
                     th({
                         style: {
-                            width: '20%'
+                            width: '10%'
                         }
                     }, 'Expires'),
                     th({
@@ -201,7 +201,12 @@ define([
                     }, 'Operating System'),
                     th({
                         style: {
-                            width: '20%',
+                            width: '20%'
+                        }
+                    }, 'From IP Address'),
+                    th({
+                        style: {
+                            width: '10%',
                             textAlign: 'right'
                         }
                     }, revokeAllButton)
@@ -258,6 +263,11 @@ define([
                         }())),
                         td({
                             style: {
+                                fontFamily: 'monospace'
+                            }
+                        }, token.ip),
+                        td({
+                            style: {
                                 textAlign: 'right'
                             }
                         }, button({
@@ -293,7 +303,7 @@ define([
                     }, 'Created'),
                     th({
                         style: {
-                            width: '20%'
+                            width: '10%'
                         }
                     }, 'Expires'),
                     th({
@@ -309,6 +319,11 @@ define([
                     th({
                         style: {
                             width: '20%'
+                        }
+                    }, 'IP Address'),
+                    th({
+                        style: {
+                            width: '10%'
                         }
                     }, '')
                 ])
@@ -358,6 +373,12 @@ define([
                             }, token.osver)
                         ]);
                     }())),
+                    td({
+                        style: {
+                            fontFamily: 'monospace'
+                        }
+                    }, token.ip),
+
                     td({
                         style: {
                             textAlign: 'right'
