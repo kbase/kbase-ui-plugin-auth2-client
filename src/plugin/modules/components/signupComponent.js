@@ -784,7 +784,8 @@ define([
                     if (!choice.expires) {
                         return '';
                     }
-                    return choice.expires - now() - timeOffset - (27 * 60 * 1000);
+                    // for testing: return choice.expires - now() - timeOffset - (27 * 60 * 1000);
+                    return choice.expires - now() - timeOffset;
                 });
                 var expiresMessage = ko.pureComputed(function () {
                     return format.niceDuration(expiresIn());
