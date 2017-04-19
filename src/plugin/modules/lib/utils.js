@@ -97,7 +97,7 @@ define([
                 return {
                     id: id[0],
                     version: parseInt(id[1], 10),
-                    date: new Date(policyId.agreed_on)
+                    date: new Date(policyId.agreedon)
                 };
             });
         }

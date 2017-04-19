@@ -174,7 +174,7 @@ define([
             });
 
             var content = div({}, [
-                choiceData.ids.map(function (id) {
+                choiceData.idents.map(function (id) {
                     var canLink = true;
                     var message;
                     if (id.may_link === 'no') {
@@ -183,7 +183,7 @@ define([
                     } else {
                         message = div([
                             p([
-                                'You have requested to link the ' + b(choiceData.provider) + ' account ' + b(id.prov_username),
+                                'You have requested to link the ' + b(choiceData.provider) + ' account ' + b(id.provusername),
                                 ' to your KBase account ' + b(choiceData.user)
                             ])
                         ]);
@@ -206,7 +206,7 @@ define([
                                             doLink(id.id);
                                         }
                                     })
-                                }, 'Link ' + b(id.prov_username)),
+                                }, 'Link ' + b(id.provusername)),
                                 button({
                                     class: 'btn btn-default',
                                     type: 'button',

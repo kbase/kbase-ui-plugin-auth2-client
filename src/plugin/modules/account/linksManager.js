@@ -4,7 +4,7 @@ define([
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client'
-], function(
+], function (
     html,
     DomEvents,
     BS,
@@ -83,7 +83,7 @@ define([
                 vm.error.node.classList.add('hidden');
                 return;
             }
-            Object.keys(vm.error.value).forEach(function(name) {
+            Object.keys(vm.error.value).forEach(function (name) {
                 setContent(vm.error.node, name, vm.error.value[name]);
             });
         }
@@ -116,11 +116,11 @@ define([
             runtime.service('session').getClient().removeLink({
                     identityId: identityId
                 })
-                .then(function(result) {
+                .then(function (result) {
                     reload();
                     return null;
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error('ERROR', err);
                 });
         }
@@ -131,7 +131,7 @@ define([
             var providerMenuId = html.genId();
             var providerMenuLabelId = html.genId();
             var selectedProviderId = 'Globus';
-            var selectedProvider = providers.filter(function(provider) {
+            var selectedProvider = providers.filter(function (provider) {
                 return (provider.id === selectedProviderId);
             })[0];
             return form({
@@ -161,7 +161,7 @@ define([
                         button({
                             class: 'btn btn-default dropdown-toggle',
                             type: 'button',
-                            id: events.addEvent('click', function() {
+                            id: events.addEvent('click', function () {
                                 var n = document.getElementById(providerMenuId);
                                 if (n.style.display === 'none') {
                                     n.style.display = 'block';
@@ -197,7 +197,7 @@ define([
                             },
                             id: providerMenuId,
                             xariaLabelledby: providerMenuId
-                        }, providers.map(function(provider) {
+                        }, providers.map(function (provider) {
                             return li({
                                 class: 'login-provider',
                                 style: {
@@ -208,7 +208,7 @@ define([
                                     whiteSpace: 'nowrap'
                                 }
                             }, div({
-                                id: events.addEvent('click', function() {
+                                id: events.addEvent('click', function () {
                                     // var controlNode = document.getElementById(providerControlId);
                                     var providerInput = document.querySelector('[data-element="link-form"] [name="provider"]')
                                     providerInput.value = provider.id;
@@ -256,7 +256,7 @@ define([
                                     th('Action')
                                 ])
                             ].concat(
-                                vm.identities.value.map(function(identity) {
+                                vm.identities.value.map(function (identity) {
                                     var tooltip;
                                     if (canUnlink) {
                                         tooltip = 'Unlink this  ' + identity.provider + ' account from your KBase account';
@@ -266,7 +266,7 @@ define([
                                     return tr([
                                         td(buildProviderLabel(runtime.service('session').getClient().getClient().getProvider(identity.provider))),
                                         // td(identity.id),
-                                        td(identity.username),
+                                        td(identity.provusername),
                                         td(button({
                                             class: 'btn btn-danger',
                                             type: 'button',
@@ -274,7 +274,7 @@ define([
                                             dataToggle: 'tooltip',
                                             dataPlacement: 'top',
                                             title: tooltip,
-                                            id: events.addEvent('click', function() {
+                                            id: events.addEvent('click', function () {
                                                 doUnlink(identity.id);
                                             })
                                         }, 'Unlink'))
@@ -316,7 +316,7 @@ define([
                             maxWidth: '60em',
                             marginTop: '10px'
                         }
-                    }, (function() {
+                    }, (function () {
                         var content = [
                             p([
                                 'This tab provides access to all of the the external accounts which you have set up sign in to your KBase account.',
@@ -371,7 +371,7 @@ define([
 
         function reload() {
             return runtime.service('session').getClient().getMe()
-                .then(function(account) {
+                .then(function (account) {
                     vm.identities.value = account.idents;
                     render();
                     return null;
@@ -381,28 +381,28 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                     return reload();
                 })
-                .then(function() {
+                .then(function () {
                     BS.activateTooltips(container);
                     return null;
                 });
         }
 
         function stop() {
-            return Promise.try(function() {});
+            return Promise.try(function () {});
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                     hostNode.innerHTML = '';
@@ -420,7 +420,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

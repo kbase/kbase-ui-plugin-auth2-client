@@ -13,7 +13,7 @@ define([
     './signupComponent',
     './signinForm',
     './globusProviders'
-], function(
+], function (
     Promise,
     ko,
     html,
@@ -143,7 +143,7 @@ define([
                             ' account ',
                             span({
                                 dataBind: {
-                                    text: 'create.prov_username'
+                                    text: 'create.provusername'
                                 },
                                 style: {
                                     fontWeight: 'bold'
@@ -315,12 +315,14 @@ define([
     // }
     function component() {
         return {
-            viewModel: function(data) {
+            viewModel: function (data) {
                 var runtime = data.runtime;
 
                 var choice = data.choice;
 
                 var policiesToResolve = data.policiesToResolve;
+
+                console.log('hmm next request', data);
 
                 var nextRequest = data.nextRequest;
 
