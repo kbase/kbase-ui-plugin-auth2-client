@@ -4,15 +4,18 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common/domEvent2',
     'kb_common_ts/Auth2Error',
+    'kb_service/client/userProfile',
     '../lib/format',
     './policyComponent',
-    './errorView'
+    './errorView',
+    './typeaheadInput'
 ], function (
     ko,
     html,
     BS,
     DomEvent,
     Auth2Error,
+    UserProfileService,
     format
 ) {
     var t = html.tag,
@@ -219,14 +222,26 @@ define([
                         class: 'form-group'
                     }, [
                         label(['Title / Role', requiredIcon('role')]),
-                        input({
-                            class: 'form-control',
-                            name: 'role',
+
+                        div({
                             dataBind: {
-                                value: 'role',
-                                valueUpdate: '"input"'
+                                component: {
+                                    name: '"typeahead-input"',
+                                    params: {
+                                        inputValue: 'role',
+                                        availableValues: 'roles'
+                                    }
+                                }
                             }
                         }),
+                        // input({
+                        //     class: 'form-control',
+                        //     name: 'role',
+                        //     dataBind: {
+                        //         value: 'role',
+                        //         valueUpdate: '"input"'
+                        //     }
+                        // }),
                         div({
                             class: 'alert alert-danger',
                             dataBind: {
@@ -380,7 +395,7 @@ define([
                             type: 'submit',
                             dataElement: 'submit-button',
                             dataBind: {
-                                click: 'submitSignup',
+                                click: 'doSubmitSignup',
                                 disable: '!canSubmit()'
                             }
                         }, 'Create KBase Account')),
@@ -414,7 +429,7 @@ define([
                             dataBind: {
                                 click: 'doSignupSuccess'
                             }
-                        }, 'Continue to Destination')
+                        }, 'Continue')
                     ])
                 ])
             })
@@ -473,6 +488,10 @@ define([
     function buildClock() {
         return div({
             dataBind: {
+                if: 'signupState() === "incomplete" || signupState() === "complete"'
+            }
+        }, div({
+            dataBind: {
                 if: 'expiresIn() > 0'
             },
             style: {
@@ -499,7 +518,7 @@ define([
                     click: 'doCancelChoiceSession'
                 }
             }, 'Cancel Sign-up Session')
-        ]);
+        ]));
     }
 
     function template() {
@@ -521,43 +540,8 @@ define([
         ]);
     }
 
-    function doSubmitSignup(runtime, create, realName, username, email, policiesToResolve) {
-        var agreementsToSubmit = [];
-        // missing policies
-        policiesToResolve.missing.forEach(function (policy) {
-            if (!policy.agreed()) {
-                throw new Error('Cannot submit with missing policies not agreed to');
-            }
-            agreementsToSubmit.push({
-                id: policy.id,
-                version: policy.version
-            });
-        });
-        // outdated policies.
-        policiesToResolve.outdated.forEach(function (policy) {
-            if (!policy.agreed()) {
-                throw new Error('Cannot submit with missing policies not agreed to');
-            }
-            // agreementsToSubmit.push([policy.id, policy.version].join('.'));
-            agreementsToSubmit.push({
-                id: policy.id,
-                version: policy.version
-            });
-        });
 
-        var data = {
-            id: create.id,
-            user: username,
-            display: realName,
-            email: email,
-            linkall: false,
-            policyids: agreementsToSubmit.map(function (a) {
-                return [a.id, a.version].join('.');
-            })
-        };
 
-        return runtime.service('session').getClient().loginCreate(data);
-    }
 
     function component() {
         return {
@@ -699,12 +683,101 @@ define([
                 var signupState = params.signupState;
                 signupState('incomplete');
 
+
+                function createProfile(response) {
+                    console.log('creating profile with ', response);
+                    return runtime.service('session').getClient().getClient().getMe(response.token.token)
+                        .then(function (accountInfo) {
+                            console.log('still trying...', accountInfo);
+                            var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
+                                token: response.token.token
+                            });
+                            // first just recreate the stub profile experience.
+                            // var newProfile = profile.makeProfile({
+                            //     username: accountInfo.user,
+                            //     realname: accountInfo.fullname,
+                            //     account: {},
+                            //     createdBy: 'userprofile_ui_service'
+                            // });
+                            var newProfile = {
+                                user: {
+                                    username: accountInfo.user
+                                },
+                                profile: {
+                                    metadata: {
+                                        createdBy: 'userprofile_ui_service',
+                                        created: new Date().toISOString()
+                                    },
+                                    // was globus info, no longer used
+                                    account: {},
+                                    preferences: {},
+                                    // when auto-creating a profile, there is nothing to put here het.
+                                    userdata: {
+                                        title: role(),
+                                        organization: organization(),
+                                        department: department()
+                                    }
+                                }
+                            };
+                            console.log('creating user profile...', newProfile);
+                            return userProfileClient.set_user_profile({
+                                profile: newProfile
+                            });
+                        });
+
+                    // console.log('Creating profile with ', response, role, organization, department);
+                }
+
                 function submitSignup() {
-                    // validateAll();
-                    doSubmitSignup(runtime, create, realname(), username(), email(), policiesToResolve)
-                        .then(function (response) {
-                            signupState('success');
+                    var agreementsToSubmit = [];
+                    // missing policies
+                    policiesToResolve.missing.forEach(function (policy) {
+                        if (!policy.agreed()) {
+                            throw new Error('Cannot submit with missing policies not agreed to');
+                        }
+                        agreementsToSubmit.push({
+                            id: policy.id,
+                            version: policy.version
+                        });
+                    });
+                    // outdated policies.
+                    policiesToResolve.outdated.forEach(function (policy) {
+                        if (!policy.agreed()) {
+                            throw new Error('Cannot submit with missing policies not agreed to');
+                        }
+                        // agreementsToSubmit.push([policy.id, policy.version].join('.'));
+                        agreementsToSubmit.push({
+                            id: policy.id,
+                            version: policy.version
+                        });
+                    });
+
+                    var data = {
+                        id: create.id,
+                        user: username(),
+                        display: realname(),
+                        email: email(),
+                        linkall: false,
+                        policyids: agreementsToSubmit.map(function (a) {
+                            return [a.id, a.version].join('.');
                         })
+                    };
+
+                    return runtime.service('session').getClient().loginCreate(data)
+                        .then(function (result) {
+                            return createProfile(result)
+                                .then(function () {
+                                    return runtime.service('session').getClient().initializeSession(result.token);
+                                });
+                        })
+                        .then(function () {
+                            signupState('success');
+                        });
+                }
+
+                function doSubmitSignup() {
+                    // validateAll();
+                    submitSignup()
                         .catch(Auth2Error.AuthError, function (err) {
                             error.code(err.code);
                             error.message(err.message);
@@ -723,7 +796,12 @@ define([
                     if (nextRequest) {
                         runtime.send('app', 'navigate', nextRequest);
                     } else {
-                        runtime.send('app', 'navigate', { path: 'dashboard' });
+                        runtime.send('app', 'navigate', {
+                            path: 'auth2/account',
+                            params: {
+                                tab: 'profile'
+                            }
+                        });
                     }
                 }
 
@@ -784,7 +862,8 @@ define([
                     if (!choice.expires) {
                         return '';
                     }
-                    return choice.expires - now() - timeOffset - (27 * 60 * 1000);
+                    // for testing: return choice.expires - now() - timeOffset - (27 * 60 * 1000);
+                    return choice.expires - now() - timeOffset;
                 });
                 var expiresMessage = ko.pureComputed(function () {
                     return format.niceDuration(expiresIn());
@@ -836,6 +915,29 @@ define([
                         });
                 }
 
+                var roles = [{
+                    id: 'mr',
+                    label: 'Mr'
+                }, {
+                    id: 'ms',
+                    label: 'Ms'
+                }, {
+                    id: 'miss',
+                    label: 'Miss'
+                }, {
+                    id: 'mrs',
+                    label: 'Mrs'
+                }, {
+                    id: 'dr',
+                    label: 'Dr'
+                }, {
+                    id: 'sr',
+                    label: 'Sr'
+                }, {
+                    id: 'director',
+                    label: 'Director'
+                }];
+
 
                 return {
                     choice: choice,
@@ -844,6 +946,7 @@ define([
                     realname: realname,
                     email: email,
                     role: role,
+                    roles: roles,
                     organization: organization,
                     department: department,
                     policiesToResolve: policiesToResolve,
@@ -852,7 +955,7 @@ define([
                     signupState: params.signupState,
 
                     canSubmit: canSubmit,
-                    submitSignup: submitSignup,
+                    doSubmitSignup: doSubmitSignup,
                     doSignupSuccess: doSignupSuccess,
                     doCancelChoiceSession: doCancelChoiceSession,
                     // validationStatus: validationStatus

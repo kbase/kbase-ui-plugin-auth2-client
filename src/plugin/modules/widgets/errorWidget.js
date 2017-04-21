@@ -3,7 +3,7 @@ define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
     '../lib/utils'
-], function(
+], function (
     html,
     BS,
     Utils
@@ -110,42 +110,48 @@ define([
         // API 
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
+                return api;
             });
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 render();
                 update(params.error);
+                return api;
             });
         }
 
         function stop() {
-            return Promise.try(function() {});
+            return Promise.try(function () {
+                return api;
+            });
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
+                return api;
             });
         }
 
 
-        return {
+        var api = {
             attach: attach,
             start: start,
             stop: stop,
             detach: detach
         };
+        return api;
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

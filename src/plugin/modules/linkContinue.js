@@ -7,7 +7,9 @@ define([
     'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
-    './lib/utils'
+    './widgets/errorWidget',
+    './lib/utils',
+    './lib/format'
 ], function (
     Promise,
     html,
@@ -17,15 +19,19 @@ define([
     Auth2Error,
     Plugin,
     BS,
-    Utils
+    ErrorWidget,
+    Utils,
+    Format
 ) {
     'use strict';
 
     var t = html.tag,
         div = t('div'),
+        span = t('span'),
         p = t('p'),
         b = t('b'),
         button = t('button'),
+        a = t('a'),
         h1 = t('h1');
 
     function widget(config) {
@@ -40,6 +46,9 @@ define([
             model: {
                 error: {
                     id: html.genId(),
+                    title: {
+                        id: html.genId()
+                    },
                     message: {
                         id: html.genId()
                     },
@@ -63,26 +72,30 @@ define([
             });
         }
 
-        function getElement(node, name) {
-            return node.querySelector('[data-element="' + name + '"]')
-        }
+        // function getElement(node, name) {
+        //     return node.querySelector('[data-element="' + name + '"]');
+        // }
 
-        function hideError() {
-            var node = container.querySelector('[data-element="error"]');
-            node.classList.add('hidden');
-        }
+        // function hideError() {
+        //     var node = container.querySelector('[data-element="error"]');
+        //     node.classList.add('hidden');
+        // }
 
         function setContent(id, selector, content) {
             document.getElementById(id).querySelector(selector).innerHTML = content;
         }
 
-        function showError(error) {
-            var node = ui.getElement('error');
-            node.classList.remove('hidden');
-            setContent(vm.error.id, '[data-element="title"]', error.title);
-            setContent(vm.error.message.id, '[data-element="body"]', error.message);
-            setContent(vm.error.detail.id, '[data-element="body"]', error.detail);
-        }
+        // function renderError() {
+        //     var node = ui.getElement('error');
+        // }
+
+        // function showError(error) {
+        //     var node = ui.getElement('error');
+        //     node.classList.remove('hidden');
+        //     setContent(vm.error.id, '[data-element="title"]', error.code);
+        //     setContent(vm.error.message.id, '[data-element="body"]', error.message);
+        //     setContent(vm.error.detail.id, '[data-element="body"]', error.detail);
+        // }
 
         function hideResponse(response) {
             var node = container.querySelector('[data-element="response"]');
@@ -96,6 +109,87 @@ define([
             node.innerHTML = BS.buildPresentableJson(response);
         }
 
+        function showMessage(message) {
+            var node = ui.getElement('message');
+            node.innerHTML = BS.buildPanel({
+                type: message.type,
+                title: message.title,
+                body: message.message
+            });
+        }
+
+
+        function CountDownClock(config) {
+            var targetTime = config.time;
+            // var startTime;
+            var tick = config.tick || 1000;
+            var onTick = config.onTick;
+            var timer;
+
+            function start() {
+                // startTime = new Date().getTime();
+
+                function runAgain() {
+                    timer = window.setTimeout(function () {
+                        var now = new Date().getTime();
+                        var remaining = targetTime - now;
+
+                        try {
+                            onTick(remaining);
+                        } catch (ex) {
+                            console.error('clock onRun: ' + ex.message);
+                        }
+                        if (timer && remaining > 0) {
+                            runAgain();
+                        }
+                    }, tick);
+                }
+                runAgain();
+            }
+
+            function stop() {
+                timer = null;
+            }
+
+            return {
+                start: start,
+                stop: stop
+            };
+        }
+
+
+        var clock;
+
+        function createTimer(response) {
+            var node = ui.getElement('timer');
+            console.log('response', response);
+            node.innerHTML = p([
+                'You have ',
+                span({ dataElement: 'clock' }),
+                ' to complete the linking process.'
+            ]);
+            var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+
+            clock = CountDownClock({
+                tick: 1000,
+                time: response.expires - timeOffset,
+                onTick: function (remaining) {
+                    updateTimer(remaining);
+                }
+            });
+            clock.start();
+        }
+
+        function updateTimer(remainingTime) {
+            var node = ui.getElement('timer.clock');
+            node.innerHTML = Format.niceDuration(remainingTime);
+        }
+
+        function destroyTimer() {
+            var node = ui.getElement('timer');
+            node.innerHTML = '';
+        }
+
         function renderLayout() {
             container.innerHTML = div({
                 class: 'container-fluid'
@@ -106,13 +200,16 @@ define([
                     div({
                         class: 'col-md-12'
                     }, [
-                        div(
-                            h1({
-                                dataElement: 'main-title'
-                            }, 'Link to External Account')
-                        ),
+                        // div(
+                        //     h1({
+                        //         dataElement: 'main-title'
+                        //     }, 'Link to External Account')
+                        // ),
                         div({
                             dataElement: 'introduction'
+                        }),
+                        div({
+                            dataElement: 'timer'
                         }),
                         div({
                             dataElement: 'link'
@@ -121,7 +218,10 @@ define([
                             dataElement: 'response'
                         }),
                         div({
-                            id: vm.get('error').id
+                            dataElement: 'error'
+                        }),
+                        div({
+                            dataElement: 'message'
                         })
                     ])
                 ])
@@ -154,6 +254,9 @@ define([
                     }
                 })
                 .then(function () {
+                    if (clock) {
+                        clock.stop();
+                    }
                     runtime.send('app', 'navigate', {
                         path: 'auth2/account',
                         params: {
@@ -166,7 +269,6 @@ define([
                 });
         }
 
-
         function renderLinkChoice(choiceData) {
             var node = ui.getElement('link');
             var events = DomEvent.make({
@@ -177,7 +279,7 @@ define([
                 choiceData.idents.map(function (id) {
                     var canLink = true;
                     var message;
-                    if (id.may_link === 'no') {
+                    if (id.maylink === 'no') {
                         canLink = false;
                         message = 'I\'m sorry, this ' + choiceData.provider + ' account may not be linked - it is already linked to another KBase account';
                     } else {
@@ -226,7 +328,10 @@ define([
                     ]);
                 })
             ]);
-            node.innerHTML = content;
+            node.innerHTML = BS.buildPanel({
+                title: 'Ready to Link',
+                body: content
+            });
             events.attachEvents();
         }
 
@@ -255,15 +360,64 @@ define([
                 // var events = DomEvent.make({
                 //     node: container
                 // });
+                runtime.send('ui', 'setTitle', 'Link to External Identity');
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
                     .then(function (result) {
                         renderLinkChoice(result);
+                        createTimer(result);
                     })
                     .catch(function (err) {
                         // TODO: use the error component here.
-                        container.innerHTML = err.message;
-                        console.error('ERROR', err);
+                        switch (err.code) {
+                        case '10010':
+                            showMessage({
+                                type: 'danger',
+                                title: 'Link Session Expired',
+                                message: div([
+                                    p([
+                                        'Sorry, your linking session has expired.'
+                                    ]),
+                                    p([
+                                        'You may ',
+                                        a({
+                                            href: '#auth2/account?tab=links'
+                                        }, 'return to the linking tab'),
+                                        ' and try again.'
+                                    ])
+                                ])
+                            });
+                            break;
+                        case '60000':
+                            showMessage({
+                                type: 'danger',
+                                title: 'Identity already linked',
+                                message: div([
+                                    p([
+                                        'Sorry, the identity ',
+
+                                        'is already linked to this account'
+                                    ]),
+                                    p([
+                                        'You may ',
+                                        a({
+                                            href: '#auth2/account?tab=links'
+                                        }, 'return to the linking tab'),
+                                        ' and start again, this time choosing a different identity to link.'
+                                    ])
+                                ])
+                            });
+                            break;
+                        default:
+                            return ErrorWidget.make({
+                                    runtime: runtime
+                                }).attach(ui.getElement('error'))
+                                .then(function (w) {
+                                    return w.start({
+                                        error: err
+                                    });
+                                });
+                        }
                     });
             });
         }

@@ -9,8 +9,9 @@ define([
     './developerTokenManager',
     './serviceTokenManager',
     './agreementsManager',
-    './signinManager'
-], function(
+    './signinManager',
+    './profileManager'
+], function (
     $,
     Html,
     html,
@@ -20,7 +21,8 @@ define([
     DeveloperTokenManager,
     ServiceTokenManager,
     AgreementsManager,
-    SigninManager
+    SigninManager,
+    ProfileManager
 ) {
     // var html = new Html.Html();
     var // t = html.tagMaker(),
@@ -104,41 +106,13 @@ define([
             ]));
         }
 
-        function buildSimpleForm(def) {
-            var content = div([
-                form(def.fields.map(function(field) {
-                    var id = html.genId();
-                    return div({
-                        class: 'form-group'
-                    }, [
-                        label({
-                            for: id
-                        }, field.label),
-                        input({
-                            type: field.type | 'text',
-                            class: 'form-control',
-                            id: id,
-                            placeholder: field.placeholder
-                        })
-                    ])
-                }).concat([
-                    button({
-                        class: 'btn btn-primary',
-                        type: 'button'
-                    }, 'Save')
-                ]))
-
-            ]);
-            return content;
-        }
-
         function renderTabs(arg, node) {
             var tabsId = arg.id,
                 tabsAttribs = {},
                 tabClasses = ['nav', 'nav-tabs'],
                 tabStyle = {},
                 activeIndex, tabTabs,
-                tabs = arg.tabs.filter(function(tab) {
+                tabs = arg.tabs.filter(function (tab) {
                     return (tab ? true : false);
                 }),
                 selectedTab = arg.initialTab,
@@ -155,7 +129,7 @@ define([
                 tabsAttribs.id = tabsId;
             }
 
-            tabs.forEach(function(tab, index) {
+            tabs.forEach(function (tab, index) {
                 tab.panelId = html.genId();
                 tab.tabId = html.genId();
                 if (tab.selected === true && selectedTab === undefined) {
@@ -168,28 +142,28 @@ define([
                         id: tab.tabId,
                         jquery: true,
                         type: 'show.bs.tab',
-                        handler: function(e) {
+                        handler: function (e) {
                             // var panelId = e.target.getAttribute('data-target');
                             var panel = document.getElementById(tab.panelId);
                             // close any active panels.
-                            Promise.all(arg.tabs.map(function(tab) {
+                            Promise.all(arg.tabs.map(function (tab) {
                                     if (tab && tab.panel && tab.panel.instance) {
                                         return tab.panel.instance.stop()
-                                            .then(function() {
+                                            .then(function () {
                                                 return tab.panel.instance.detach();
                                             })
-                                            .then(function() {
+                                            .then(function () {
                                                 tab.panel.instance = null;
                                             });
                                     }
                                 }))
-                                .then(function() {
+                                .then(function () {
                                     tab.panel.instance = tab.panel.factory.make({
                                         runtime: runtime
                                     });
                                     return tab.panel.instance.attach(panel)
                                 })
-                                .then(function() {
+                                .then(function () {
                                     tab.panel.instance.start();
                                 });
                         }
@@ -210,7 +184,7 @@ define([
             }
             content = div(tabsAttribs, [
                 ul({ class: tabClasses.join(' '), role: 'tablist' },
-                    tabTabs.map(function(tab, index) {
+                    tabTabs.map(function (tab, index) {
                         if (tab.name) {
                             tabMap[tab.name] = tab;
                         }
@@ -244,7 +218,7 @@ define([
                         return li(tabAttribs, a(linkAttribs, [icon, label].join(' ')));
                     })),
                 div({ class: 'tab-content' },
-                    tabs.map(function(tab, index) {
+                    tabs.map(function (tab, index) {
                         var attribs = {
                             role: 'tabpanel',
                             class: panelClasses.join(' '),
@@ -273,7 +247,7 @@ define([
 
             node.innerHTML = content;
 
-            events.forEach(function(event) {
+            events.forEach(function (event) {
                 if (event.jquery) {
                     $(document.getElementById(event.id)).on(event.type, event.handler);
                 } else {
@@ -293,18 +267,26 @@ define([
                     paddingTop: '10px'
                 },
                 tabs: [{
-                        name: 'personalInfo',
+                        name: 'account',
                         label: 'Personal',
                         panel: {
                             factory: PersonalInfoEditor
                         }
-                    }, {
+                    },
+                    {
+                        name: 'profile',
+                        label: 'Your Profile',
+                        panel: {
+                            factory: ProfileManager
+                        }
+                    },
+                    {
                         name: 'links',
                         label: 'Linked Sign-In Accounts',
                         panel: {
                             factory: LinksManager
                         }
-                    }, (function() {
+                    }, (function () {
                         if (vm.developerTokens.enabled) {
                             return {
                                 name: 'developer-tokens',
@@ -314,7 +296,7 @@ define([
                                 }
                             };
                         }
-                    }()), (function() {
+                    }()), (function () {
                         if (vm.serviceTokens.enabled) {
                             return {
                                 name: 'service-tokens',
@@ -360,7 +342,7 @@ define([
             ]);
             var tabs = renderTabs(tabDef, document.getElementById(tabsId));
 
-            var defaultTab = params.tab || 'personalInfo';
+            var defaultTab = params.tab || 'account';
             tabs.showTab(defaultTab);
         }
 
@@ -369,7 +351,7 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
@@ -377,16 +359,16 @@ define([
 
         function start(params) {
             return runtime.service('session').getClient().getMe()
-                .then(function(account) {
+                .then(function (account) {
                     // vm.roles.value = account.roles;
-                    account.roles.forEach(function(role) {
+                    account.roles.forEach(function (role) {
                         switch (role.id) {
-                            case 'ServToken':
-                                vm.serviceTokens.enabled = true;
-                                break;
-                            case 'DevToken':
-                                vm.developerTokens.enabled = true;
-                                break;
+                        case 'ServToken':
+                            vm.serviceTokens.enabled = true;
+                            break;
+                        case 'DevToken':
+                            vm.developerTokens.enabled = true;
+                            break;
                         }
                     });
 
@@ -402,11 +384,11 @@ define([
         }
 
         function stop() {
-            return Promise.try(function() {});
+            return Promise.try(function () {});
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -422,7 +404,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     }

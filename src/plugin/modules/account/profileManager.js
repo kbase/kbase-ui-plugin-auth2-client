@@ -2,11 +2,13 @@
 define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
+    'kb_service/client/userProfile',
     'knockout',
-    './components/userInfoEditor'
+    './components/profileEditor'
 ], function (
     html,
     BS,
+    UserProfileService,
     ko
 ) {
     var // t = html.tagMaker(),
@@ -32,7 +34,7 @@ define([
                         },
                         dataBind: {
                             component: {
-                                name: '"user-info-editor"',
+                                name: '"profile-editor"',
                                 params: (function () {
                                     var params = {};
                                     Object.keys(vm).forEach(function (k) {
@@ -43,6 +45,10 @@ define([
                             }
                         }
                     })
+                }, {
+                    label: 'Preview',
+                    name: 'preview',
+                    content: 'preview it here'
                 }, {
                     label: 'About',
                     name: 'about',
@@ -64,10 +70,23 @@ define([
                 }
             }, [
                 p([
-                    'Note: The account editor is under active development -- it works but is not in its final form'
+                    'Note: The profile editor is under active development -- it does not work yet!'
                 ]),
                 tabs.content
             ]);
+        }
+
+        function getProfile() {
+            var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
+                token: runtime.service('session').getAuthToken()
+            });
+            return userProfileClient.get_user_profile([runtime.service('session').getUsername()])
+                .then(function (profiles) {
+                    if (profiles.length === 0) {
+                        throw new Error('Profile not found');
+                    }
+                    return profiles[0];
+                });
         }
 
         function attach(node) {
@@ -78,17 +97,38 @@ define([
         }
 
         function start() {
-            return runtime.service('session').getClient().getMe()
-                .then(function (account) {
+            return Promise.all([
+                    runtime.service('session').getClient().getMe(),
+                    getProfile()
+                ])
+                .spread(function (account, profile) {
                     var id = html.genId();
+                    console.log('profile', profile);
+                    var gravatarDefault;
+                    if (profile.profile.userdata.avatar) {
+                        gravatarDefault = profile.profile.userdata.avatar.gravatar_default;
+                    }
                     vm = {
+                        // from account, for display ... or not?
                         realname: account.display,
                         email: account.email,
                         created: account.created,
                         lastLogin: account.lastlogin,
                         username: account.user,
+
+                        // from profile.
+                        title: profile.profile.userdata.title,
+                        suffix: profile.profile.userdata.suffix,
+                        organization: profile.profile.userdata.organization,
+                        location: profile.profile.userdata.location,
+                        department: profile.profile.userdata.department,
+                        gravatarDefault: profile.profile.userdata.avatar,
+                        affiliations: profile.profile.userdata.affiliations,
+                        personalStatement: profile.profile.userdata.personalStatement,
+
                         doSave: function (data) {
-                            return runtime.service('session').getClient().putMe(data);
+                            // return runtime.service('session').getClient().putMe(data);
+                            console.log('saving ...', data);
                         }
                     };
                     container.innerHTML = render(id);

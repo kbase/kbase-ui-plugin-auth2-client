@@ -122,7 +122,7 @@ define([
                                 whiteSpace: 'normal'
                             },
                         }, [
-                            'New sign-in process as of 5/1/17'
+                            'New sign-in process as of 5/15/17'
                         ])
                     ])
                 ]))),
@@ -242,7 +242,7 @@ define([
                         }, [
                             h3('Sign in Changes'),
                             p([
-                                'On 4/15/17 KBase launched a new authentication and authorization system. ',
+                                'On 5/15/17 KBase launched a new authentication and authorization system. ',
                                 'One of the changes is to replace a direct login to KBase with an authorization ',
                                 'system using Google and Globus for user identification.'
                             ]),
@@ -264,7 +264,7 @@ define([
                                 'If you are a ',
                                 b('new user'),
                                 ' you may simply use the identity provider more convenient for you. ',
-                                a({ href: '', target: '_blank' }, 'This blog post'), ' describes the advantages of each.'
+                                a({ href: 'http://kbase.us/help/identity-providers', target: '_blank' }, 'Read more'), ' about our identity providers.'
                             ]),
                             p([
                                 'For more detailed information and instructions for see ',
