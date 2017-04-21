@@ -551,8 +551,6 @@ define([
                 var runtime = params.runtime;
                 var nextRequest = params.nextRequest;
 
-                //console.log('choice', choice);
-
                 // SIGNUP FORM
 
                 var realname = ko.observable(create.provfullname).extend({
@@ -685,10 +683,8 @@ define([
 
 
                 function createProfile(response) {
-                    console.log('creating profile with ', response);
                     return runtime.service('session').getClient().getClient().getMe(response.token.token)
                         .then(function (accountInfo) {
-                            console.log('still trying...', accountInfo);
                             var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
                                 token: response.token.token
                             });
@@ -719,13 +715,10 @@ define([
                                     }
                                 }
                             };
-                            console.log('creating user profile...', newProfile);
                             return userProfileClient.set_user_profile({
                                 profile: newProfile
                             });
                         });
-
-                    // console.log('Creating profile with ', response, role, organization, department);
                 }
 
                 function submitSignup() {

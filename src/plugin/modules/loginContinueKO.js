@@ -57,7 +57,6 @@ define([
 
         function getStateParam(choice) {
             var q = {};
-            console.log('geting state param', choice);
             if (choice.redirecturl) {
                 var u = new URL(choice.redirecturl);
                 var s = u.search;
@@ -146,7 +145,6 @@ define([
                             // } else {
                             //     nextRequest = '';
                             // }
-                            console.log('state params', stateParams);
 
                             // If no policies to resolve and google auth provider then just
                             // auto-signin.
@@ -181,7 +179,6 @@ define([
                         });
                 })
                 .catch(Auth2Error.AuthError, function (err) {
-                    console.log('ERROR 1', err);
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
                     var viewModel = {
@@ -207,7 +204,6 @@ define([
                 })
 
             .catch(function (err) {
-                console.log('ERROR 2', err);
                 var viewModel = {
                     code: err.code,
                     message: err.message,
