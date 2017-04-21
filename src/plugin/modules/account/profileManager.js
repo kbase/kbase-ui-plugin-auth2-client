@@ -103,7 +103,6 @@ define([
                 ])
                 .spread(function (account, profile) {
                     var id = html.genId();
-                    console.log('profile', profile);
                     var gravatarDefault;
                     if (profile.profile.userdata.avatar) {
                         gravatarDefault = profile.profile.userdata.avatar.gravatar_default;

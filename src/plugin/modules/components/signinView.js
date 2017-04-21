@@ -322,8 +322,6 @@ define([
 
                 var policiesToResolve = data.policiesToResolve;
 
-                console.log('hmm next request', data);
-
                 var nextRequest = data.nextRequest;
 
                 var staySignedIn = ko.observable(true);

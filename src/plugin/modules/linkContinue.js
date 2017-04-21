@@ -162,7 +162,6 @@ define([
 
         function createTimer(response) {
             var node = ui.getElement('timer');
-            console.log('response', response);
             node.innerHTML = p([
                 'You have ',
                 span({ dataElement: 'clock' }),
