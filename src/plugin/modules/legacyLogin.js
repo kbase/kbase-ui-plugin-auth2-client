@@ -5,7 +5,7 @@ define([
     'kb_plugin_auth2-client',
     './lib/utils',
     'yaml!./config.yml'
-], function(
+], function (
     Html,
     DomEvent,
     Plugin,
@@ -92,7 +92,7 @@ define([
                             ])
                         ]),
                         p([
-                            'Before 4/15/17, KBase required and ',
+                            'Before 5/15/17, KBase required and ',
                             'only supported direct entry of a ', i('username'), ' and ', i('password'), '. ',
                             ' Behind the scenes, we used Globus to ',
                             'authenticate the username and password. (You may remember Globus from your initial KBase sign-up process.)'
@@ -180,7 +180,7 @@ define([
                         ),
                         p([
                             '4. After signing in you will be returned to the KBase log in page. If this is the first time ',
-                            'accessing your account after 4/15/17, you will be prompted to agree to the KBase terms and conditions. ',
+                            'accessing your account after 5/15/17, you will be prompted to agree to the KBase terms and conditions. ',
                             'When you originally signed up through Globus, you would have agreed to Globus as well as KBase terms. ',
                             'Since we have no way of tracking which users agreed to which terms, we are asking that users now re-agree ',
                             'to the KBase usage policies'
@@ -222,25 +222,25 @@ define([
         }
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 nextRequest = params.nextRequest || null;
                 render();
             });
         }
 
         function stop() {
-            return Promise.try(function() {});
+            return Promise.try(function () {});
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -256,7 +256,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

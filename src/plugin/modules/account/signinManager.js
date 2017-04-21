@@ -172,6 +172,18 @@ define([
                     disabled: true
                 }, 'Revoke All');
             }
+
+            if (vm.allTokens.value.length === 0) {
+                vm.allTokens.node.innerHTML = div({
+                    style: {
+                        fontStyle: 'italic',
+                        textAlign: 'center'
+                    }
+                }, 'You do not have any additional active sign-ins.');
+                return;
+            }
+
+
             vm.allTokens.node.innerHTML = table({
                 class: 'table table-striped',
                 style: {
