@@ -103,11 +103,9 @@ define([
                 ])
                 .spread(function (account, profile) {
                     var id = html.genId();
-                    var gravatarDefault;
-                    if (profile.profile.userdata.avatar) {
-                        gravatarDefault = profile.profile.userdata.avatar.gravatar_default;
-                    }
                     vm = {
+                        runtime: runtime,
+
                         // from account, for display ... or not?
                         realname: account.display,
                         email: account.email,
@@ -121,14 +119,10 @@ define([
                         organization: profile.profile.userdata.organization,
                         location: profile.profile.userdata.location,
                         department: profile.profile.userdata.department,
-                        gravatarDefault: profile.profile.userdata.avatar,
+                        gravatarDefault: profile.profile.userdata.gravatarDefault,
                         affiliations: profile.profile.userdata.affiliations,
                         personalStatement: profile.profile.userdata.personalStatement,
 
-                        doSave: function (data) {
-                            // return runtime.service('session').getClient().putMe(data);
-                            console.log('saving ...', data);
-                        }
                     };
                     container.innerHTML = render(id);
                     ko.applyBindings(vm, document.getElementById(id));
