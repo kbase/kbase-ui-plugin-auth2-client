@@ -4,6 +4,7 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common/format',
     'kb_service/userProfile',
+    'kb_service/client/userProfile',
     '../../components/typeaheadInput'
 ], function (
     ko,
@@ -11,6 +12,7 @@ define([
     BS,
     Format,
     UserProfile,
+    UserProfileService,
     TypeaheadInput
 ) {
     var t = html.tag,
@@ -203,6 +205,19 @@ define([
         return result;
     }
 
+    function dirtyIcon(field) {
+        var result = span({
+            class: 'glyphicon',
+            dataBind: {
+                css: '{"glyphicon-flash text-muted": ' + field.name + '.isDirty() !== true, "glyphicon-flash text-warning":' + field.name + '.isDirty()}'
+            },
+            style: {
+                marginLeft: '4px'
+            }
+        });
+        return result;
+    }
+
     function fieldDoc(description, content, name) {
         return div({
             dataElement: 'more'
@@ -265,7 +280,7 @@ define([
                     class: 'col-md-12'
                 }, label({
                     for: id
-                }, [field.label, requiredIcon(field)]))
+                }, [field.label, requiredIcon(field), dirtyIcon(field)]))
             ]),
             div({
                 class: 'row'
@@ -279,8 +294,8 @@ define([
                         id: id,
                         placeholder: field.placeholder,
                         dataBind: {
-                            value: field.vmId || field.name,
-                            valueUpdate: wrapString('afterkeydown')
+                            textInput: field.vmId || field.name,
+                            // valueUpdate: wrapString('afterkeydown')
                         }
                     }),
                     div({
@@ -324,8 +339,8 @@ define([
                         id: id,
                         placeholder: field.placeholder,
                         dataBind: {
-                            value: field.vmId || field.name,
-                            valueUpdate: wrapString('afterkeydown')
+                            textInput: field.vmId || field.name
+                                // valueUpdate: wrapString('afterkeydown')
                         }
                     }),
                     div({
@@ -412,22 +427,20 @@ define([
                     class: 'col-md-6'
                 }, [
                     select({
-                            class: 'form-control',
-                            id: id,
-                            dataBind: {
-                                value: field.vmId || field.name
-                            }
-                        }, field.availableValues.map(function (value) {
-                            return option({
-                                value: value.id
-                            }, value.label);
-                        }),
-                        div({
-                            class: 'alert alert-danger',
-                            dataBind: {
-                                validationMessage: field.vmId || field.name
-                            }
-                        })),
+                        class: 'form-control',
+                        id: id,
+                        dataBind: {
+                            value: field.vmId || field.name,
+                            options: field.name + 'Values',
+                            optionsText: '"label"',
+                            optionsValue: '"id"'
+                        }
+                    }),
+                    div({
+                        dataBind: {
+                            text: field.name
+                        }
+                    }),
                     div({
                         class: 'alert alert-danger',
                         dataBind: {
@@ -667,6 +680,9 @@ define([
 
     function buildForm() {
         var content = div({
+            style: {
+                marginBottom: '12px'
+            },
             dataBind: {
                 validationOptions: {
                     insertMessages: 'false'
@@ -708,7 +724,7 @@ define([
                 class: 'btn btn-primary',
                 type: 'button',
                 dataBind: {
-                    click: 'save'
+                    click: 'doSaveProfile'
                 }
             }, 'Save'),
             buildMessageDisplay()
@@ -719,7 +735,7 @@ define([
     function component() {
         return {
             viewModel: function (params) {
-                var doSave = params.doSave;
+                var runtime = params.runtime;
 
                 var email = ko.observable(params.email)
                     .extend({
@@ -737,7 +753,8 @@ define([
                 var title = ko.observable(params.title).extend({
                     required: true,
                     minLength: 2,
-                    maxLength: 100
+                    maxLength: 100,
+                    dirty: false
                 });
 
                 var titles = fields.title.availableValues;
@@ -745,33 +762,57 @@ define([
                 var suffix = ko.observable(params.suffix).extend({
                     required: false,
                     minLength: 2,
-                    maxLength: 100
+                    maxLength: 100,
+                    dirty: false
                 });
 
 
                 var organization = ko.observable(params.organization).extend({
                     required: true,
                     minLength: 2,
-                    maxLength: 100
+                    maxLength: 100,
+                    dirty: false
                 });
 
                 var department = ko.observable(params.department).extend({
                     required: true,
                     minLength: 2,
-                    maxLength: 100
+                    maxLength: 100,
+                    dirty: false
                 });
 
                 var location = ko.observable(params.location).extend({
                     required: true,
                     minLength: 2,
-                    maxLength: 100
+                    maxLength: 100,
+                    dirty: false
                 });
 
-                var gravatarDefault = ko.observable(params.gravatarDefault).extend({
+                var gravatarDefault = ko.observable(params.gravatarDefault || 'monsterid').extend({
                     required: false,
                     minLength: 2,
-                    maxLength: 100
+                    maxLength: 100,
+                    dirty: false
                 });
+                var gravatarDefaultValues = [{
+                    id: 'mm',
+                    label: 'Mystery Man - simple, cartoon-style silhouetted outline'
+                }, {
+                    id: 'identicon',
+                    label: 'Identicon - a geometric pattern based on an email hash'
+                }, {
+                    id: 'monsterid',
+                    label: 'MonsterID - generated "monster" with different colors, faces, etc'
+                }, {
+                    id: 'wavatar',
+                    label: 'Wavatar - generated faces with differing features and backgrounds'
+                }, {
+                    id: 'retro',
+                    label: 'Retro - 8-bit arcade-style pixelated faces'
+                }, {
+                    id: 'blank',
+                    label: 'Blank - A Blank Space'
+                }];
 
                 ko.validation.rules['year'] = {
                     validator: function (val) {
@@ -789,23 +830,29 @@ define([
                         title: ko.observable(affil.title).extend({
                             required: true,
                             minLength: 2,
-                            maxLength: 100
+                            maxLength: 100,
+                            dirty: false
                         }),
                         institution: ko.observable(affil.institution).extend({
                             required: true,
                             minLength: 2,
-                            maxLength: 100
+                            maxLength: 100,
+                            dirty: false
                         }),
                         start_year: ko.observable(affil.start_year).extend({
                             required: true,
-                            year: true
+                            year: true,
+                            dirty: false
                         }),
                         end_year: ko.observable(affil.end_year).extend({
                             required: false,
-                            year: true
+                            year: true,
+                            dirty: false
                         })
                     };
-                }));
+                })).extend({
+                    dirty: false
+                });
 
                 var personalStatement = ko.observable(params.personalStatement).extend({
                     required: false,
@@ -814,7 +861,7 @@ define([
                 });
 
 
-                var username = ko.observable(params.username);
+                var username = params.username;
                 var created = ko.observable(params.created);
                 var lastLogin = ko.observable(params.lastLogin);
 
@@ -848,11 +895,72 @@ define([
                     }
                 }
 
-                function save() {
-                    doSave({
-                            display: realname(),
-                            email: email()
-                        })
+                function saveProfile() {
+                    var client = new UserProfileService(runtime.config('services.user_profile.url'), {
+                        token: runtime.service('session').getAuthToken()
+                    });
+
+                    // get the profile, then update it, then save it.
+                    // TODO profile service should accept just change set.
+
+                    return client.get_user_profile([username])
+                        .then(function (result) {
+                            var profile = result[0];
+                            // build the update object.
+                            // TODO: detect changed fields - knockout?
+
+                            if (title.isDirty()) {
+                                profile.profile.userdata.title = title();
+                                title.markClean();
+                            }
+                            if (suffix.isDirty()) {
+                                profile.profile.userdata.suffix = suffix();
+                                suffix.markClean();
+                            }
+                            if (location.isDirty()) {
+                                profile.profile.userdata.location = location();
+                                location.markClean();
+                            }
+
+                            if (organization.isDirty()) {
+                                profile.profile.userdata.organization = organization();
+                                organization.markClean();
+                            }
+
+                            if (department.isDirty()) {
+                                profile.profile.userdata.department = department();
+                                department.markClean();
+                            }
+
+                            if (gravatarDefault.isDirty()) {
+                                profile.profile.userdata.gravatarDefault = gravatarDefault();
+                                gravatarDefault.markClean();
+                            }
+
+                            if (affiliations.isDirty()) {
+                                // just bundle the whole thing up...
+                                var newAffiliations = affiliations().map(function (af) {
+                                    return {
+                                        title: af.title(),
+                                        institution: af.institution(),
+                                        start_year: af.start_year(),
+                                        end_year: af.end_year()
+                                    };
+                                });
+                                profile.profile.userdata.affiliations = newAffiliations;
+                                affiliations.markClean();
+                            }
+
+                            return client.set_user_profile({
+                                profile: profile
+                            });
+                        });
+                }
+
+
+
+                function doSaveProfile() {
+                    saveProfile()
                         .then(function () {
                             message('Successfully Saved');
                             messageType({
@@ -862,6 +970,11 @@ define([
                         })
                         .catch(function (err) {
                             console.error('boo', err);
+                            message('Error saving');
+                            messageType({
+                                'alert-danger': true,
+                                hidden: false
+                            });
                         });
                 }
 
@@ -873,7 +986,7 @@ define([
                 }
 
                 function addAffiliation() {
-                    affiliations.unshift({
+                    affiliations.push({
                         title: ko.observable(),
                         institution: ko.observable(),
                         start_year: ko.observable(),
@@ -891,6 +1004,7 @@ define([
                     department: department,
                     location: location,
                     gravatarDefault: gravatarDefault,
+                    gravatarDefaultValues: gravatarDefaultValues,
                     affiliations: affiliations,
                     personalStatement: personalStatement,
 
@@ -906,7 +1020,7 @@ define([
 
                     showMore: showMore,
                     more: more,
-                    save: save,
+                    doSaveProfile: doSaveProfile,
                     message: message,
                     messageType: messageType,
 
