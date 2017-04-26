@@ -8,7 +8,7 @@ define([
     'kb_common/bootstrapUtils',
     '../lib/policies',
     '../lib/utils'
-], function(
+], function (
     html,
     DomEvent,
     UI,
@@ -78,10 +78,10 @@ define([
                         'The following KBase account policies have not yet been agreed to by this account. ',
                     ]),
                     p([
-                        'You may log into this account after you have agreed to these policies by checking the box at the bottom of each.'
+                        'You may log into this account after you have agreed to these policies by checking the box at the top of each.'
                     ]),
                     div({}, [
-                        policiesToResolve.get().missing.map(function(missingPolicy) {
+                        policiesToResolve.get().missing.map(function (missingPolicy) {
                             var policy = policies.getPolicy(missingPolicy.id);
                             var version = policies.getPolicyVersion(missingPolicy.id, missingPolicy.version);
                             var resolverId = html.genId();
@@ -125,7 +125,7 @@ define([
                                                 name: 'viewer-button',
                                                 id: events.addEvent({
                                                     type: 'click',
-                                                    handler: function(e) {
+                                                    handler: function (e) {
                                                         var viewer = document.getElementById(resolverId).querySelector('[name="agreement-viewer"]');
                                                         var viewerButton = e.currentTarget;
                                                         //var viewerButtonLabel = viewerButton.querySelector('[name="label"]');
@@ -167,7 +167,7 @@ define([
                                                         }),
                                                         id: events.addEvent({
                                                             type: 'click',
-                                                            handler: function(e) {
+                                                            handler: function (e) {
                                                                 var viewer = document.getElementById(resolverId);
                                                                 var viewerButton = document.getElementById(resolverId).querySelector('[name="viewer-button"]');
                                                                 var viewerButtonLabel = viewerButton.querySelector('[name="label"]');
@@ -236,10 +236,10 @@ define([
                         'The following KBase User Agreements have been updated and you need to re-agree to them. ',
                     ]),
                     p([
-                        'You may log into this account after you have agreed to these policies by checking the box at the bottom of each.'
+                        'You may log into this account after you have agreed to these policies by checking the box at the top of each.'
                     ]),
                     div({}, [
-                        policiesToResolve.map(function(missingPolicy) {
+                        policiesToResolve.map(function (missingPolicy) {
                             var policy = policies.getPolicy(missingPolicy.id);
                             var version = policies.getPolicyVersion(missingPolicy.id, missingPolicy.version);
                             var resolverId = html.genId();
@@ -290,7 +290,7 @@ define([
                                         dataMinMax: 'max',
                                         id: events.addEvent({
                                             type: 'click',
-                                            handler: function(e) {
+                                            handler: function (e) {
                                                 var n = e.currentTarget;
                                                 if (n.getAttribute('data-min-max') === 'min') {
                                                     n.style.height = '400px';
@@ -317,7 +317,7 @@ define([
                                         }),
                                         id: events.addEvent({
                                             type: 'click',
-                                            handler: function(e) {
+                                            handler: function (e) {
                                                 if (e.target.checked) {
                                                     missingPolicy.agreed = true;
                                                     minifyResolver(resolverId);
@@ -341,7 +341,7 @@ define([
         }
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
@@ -349,7 +349,7 @@ define([
 
         function start() {
             return policies.start()
-                .then(function() {
+                .then(function () {
                     return renderPolicies();
                 });
         }
@@ -373,7 +373,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

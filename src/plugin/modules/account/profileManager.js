@@ -79,7 +79,6 @@ define([
                     if (profiles.length === 0) {
                         throw new Error('Profile not found');
                     }
-                    console.log('profile', profiles[0]);
                     return profiles[0];
                 });
         }
@@ -100,28 +99,7 @@ define([
                     var id = html.genId();
                     vm = {
                         runtime: runtime,
-
-                        // from account, for display ... or not?
-                        realname: account.display,
-                        email: account.email,
-                        created: account.created,
-                        lastLogin: account.lastlogin,
-                        username: account.user,
-
-                        // from profile.
-                        title: profile.profile.userdata.title,
-                        suffix: profile.profile.userdata.suffix,
-                        organization: profile.profile.userdata.organization,
-                        location: profile.profile.userdata.location,
-                        department: profile.profile.userdata.department,
-                        avatarOption: profile.profile.userdata.avatarOption,
-                        gravatarDefault: profile.profile.userdata.gravatarDefault,
-                        affiliations: profile.profile.userdata.affiliations,
-                        personalStatement: profile.profile.userdata.personalStatement,
-                        gravatarHash: profile.profile.userdata.gravatarHash,
-                        jobTitle: profile.profile.userdata.jobTitle,
-                        researchInterests: profile.profile.userdata.researchInterests,
-
+                        profile: profile
                     };
                     container.innerHTML = render(id);
                     ko.applyBindings(vm, document.getElementById(id));

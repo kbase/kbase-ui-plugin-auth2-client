@@ -71,8 +71,6 @@ define([
                 avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
             }
 
-            console.log('signin widget', profile, avatarUrl, profile.profile.userdata.gravatarDefault, profile.profile.userdata.avatarOption);
-
             return img({
                 src: avatarUrl,
                 style: {
