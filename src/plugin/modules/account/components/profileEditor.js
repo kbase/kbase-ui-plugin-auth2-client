@@ -839,7 +839,6 @@ define([
                     dirty: false
                 });
                 ko.extenders.export = function (target, args) {
-
                     target.exportDisplay = function () {
                         if (args.display) {
                             return args.display(target);
