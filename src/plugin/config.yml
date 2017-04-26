@@ -8,6 +8,9 @@ package:
     version: 0.0.1
 source:
     modules:
+    styles:
+        -
+            file: main.css
 install:
     widgets:
         -

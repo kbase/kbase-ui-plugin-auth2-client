@@ -52,38 +52,49 @@ define([
                 });
         }
 
-        function getAvatarUrl(emailAddress) {
-            return runtime.service('userprofile').getItem('profile.userdata.gravatarDefault', 'monsterid')
-                .then(function (gravatarDefault) {
-                    return Gravatar.make().makeGravatarUrl(emailAddress, 32, 'g', gravatarDefault);
-                });
-        }
-
-        function renderAvatar(account) {
-            var defaultAvatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png',
-                avatarUrl;
-            return getAvatarUrl(account.email)
-                .then(function (gravatarUrl) {
-                    if (account && account.email) {
-                        avatarUrl = gravatarUrl || defaultAvatarUrl;
-                        return img({ src: avatarUrl, style: 'width: 40px;', class: 'login-button-avatar', 'data-element': 'avatar' });
-                    }
-                    return img({ src: defaultAvatarUrl, style: 'width: 40px;', class: 'login-button-avatar', 'data-element': 'avatar' });
-                });
-        }
-
-        function handleAccount() {
-            runtime.send('ui', 'navigate', ['auth2', 'account']);
-        }
-
-        function hasRole(account, role) {
-            for (var i = 0; i < account.roles.length; i += 1) {
-                if (account.roles[i].id === role) {
-                    return true;
-                }
+        function buildAvatar(profile) {
+            if (!profile || !profile.profile) {
+                console.warn('no profile?', profile);
+                return '';
             }
-            return false;
+            var avatarUrl;
+            switch (profile.profile.userdata.avatarOption || 'gravatar') {
+            case 'gravatar':
+                var gravatarDefault = profile.profile.userdata.gravatarDefault;
+                var gravatarHash = profile.profile.userdata.gravatarHash;
+                if (gravatarHash) {
+                    avatarUrl = 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
+                    break;
+                }
+            case 'mysteryman':
+            default:
+                avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
+
+            console.log('signin widget', profile, avatarUrl, profile.profile.userdata.gravatarDefault, profile.profile.userdata.avatarOption);
+
+            return img({
+                src: avatarUrl,
+                style: {
+                    width: '40px;'
+                },
+                class: 'login-button-avatar',
+                dataElement: 'avatar'
+            });
         }
+
+        // function handleAccount() {
+        //     runtime.send('ui', 'navigate', ['auth2', 'account']);
+        // }
+
+        // function hasRole(account, role) {
+        //     for (var i = 0; i < account.roles.length; i += 1) {
+        //         if (account.roles[i].id === role) {
+        //             return true;
+        //         }
+        //     }
+        //     return false;
+        // }
 
         function renderLogin(events) {
             return Promise.try(function () {
@@ -91,95 +102,93 @@ define([
                     /* TODO: fix dependencies like this -- realname is not available until, and unless, the                     
                     profile is loaded, which happens asynchronously.            
                     */
-                    /// ar profile = widget.get('userProfile'), realname;
-                    return runtime.service('session').getMe()
-                        .then(function (account) {
-                            if (!account) {
+                    // var profile = widget.get('userProfile'),
+                    //     realname;
+                    return runtime.service('userprofile').getProfile()
+                        .then(function (profile) {
+                            if (!profile) {
                                 // Don't bother rendering yet if the profile is not ready 
                                 // yet.
                                 return;
                             }
-                            return renderAvatar(account)
-                                .then(function (avatar) {
-                                    var realname = account.display;
-                                    var username = account.user;
-                                    return div({ class: 'dropdown', style: 'display:inline-block' }, [
-                                        button({ type: 'button', class: 'btn btn-default dropdown-toggle', 'data-toggle': 'dropdown', 'aria-expanded': 'false' }, [
-                                            avatar,
-                                            span({ class: 'caret', style: 'margin-left: 5px;' })
-                                        ]),
-                                        ul({ class: 'dropdown-menu', role: 'menu' }, [
-                                            li({}, [
-                                                div({
-                                                    display: 'inline-block',
-                                                    dataElement: 'user-label',
-                                                    style: {
-                                                        textAlign: 'center'
-                                                    }
-                                                }, [
-                                                    realname,
-                                                    br(),
-                                                    i({}, username)
-                                                ])
-                                            ]),
-                                            li({ class: 'divider' }),
-                                            li({}, [
-                                                a({ href: '#people/' + username, 'data-menu-item': 'userlabel' }, [
-                                                    div({ style: 'display:inline-block; width: 34px; vertical-align: top;' }, [
-                                                        span({ class: 'fa fa-address-card-o', style: 'font-size: 150%; margin-right: 10px;' })
-                                                    ]),
-                                                    div({ style: 'display: inline-block', 'data-element': 'user-label' }, 'Profile')
-                                                ])
-                                            ]),
-                                            li({}, [
-                                                a({
-                                                    href: '#auth2/account',
-                                                    'data-menu-item': 'account'
-                                                }, [
-                                                    div({ style: 'display: inline-block; width: 34px;' }, [
-                                                        span({ class: 'fa fa-user', style: 'font-size: 150%; margin-right: 10px;' })
-                                                    ]),
-                                                    'Account'
-                                                ])
-                                            ]),
-                                            // DISABLE ADMIN
-                                            // For now. There is in actuality no back-end admin support yet other than for
-                                            // the auth2 built-in ui.
-                                            // (function() {
-                                            //     if (!hasRole(account, 'Admin')) {
-                                            //         return;
-                                            //     }
-                                            //     return li({}, [
-                                            //         a({
-                                            //             href: '#auth2/admin',
-                                            //             'data-menu-item': 'account'
-                                            //         }, [
-                                            //             div({ style: 'display: inline-block; width: 34px;' }, [
-                                            //                 span({ class: 'fa fa-unlock', style: 'font-size: 150%; margin-right: 10px;' })
-                                            //             ]),
-                                            //             'Admin'
-                                            //         ])
-                                            //     ]);
-                                            // }()),
-                                            li({ class: 'divider' }),
-                                            li({}, [
-                                                a({
-                                                    href: '#',
-                                                    'data-menu-item': 'logout',
-                                                    id: events.addEvent({
-                                                        type: 'click',
-                                                        handler: handleSignout
-                                                    })
-                                                }, [
-                                                    div({ style: 'display: inline-block; width: 34px;' }, [
-                                                        span({ class: 'fa fa-sign-out', style: 'font-size: 150%; margin-right: 10px;' })
-                                                    ]),
-                                                    'Sign Out'
-                                                ])
-                                            ])
+                            var realname = profile.user.realname;
+                            var username = profile.user.username;
+                            return div({ class: 'dropdown', style: 'display:inline-block' }, [
+                                button({ type: 'button', class: 'btn btn-default dropdown-toggle', 'data-toggle': 'dropdown', 'aria-expanded': 'false' }, [
+                                    buildAvatar(profile),
+                                    span({ class: 'caret', style: 'margin-left: 5px;' })
+                                ]),
+                                ul({ class: 'dropdown-menu', role: 'menu' }, [
+                                    li({}, [
+                                        div({
+                                            display: 'inline-block',
+                                            dataElement: 'user-label',
+                                            style: {
+                                                textAlign: 'center'
+                                            }
+                                        }, [
+                                            realname,
+                                            br(),
+                                            i({}, username)
                                         ])
-                                    ]);
-                                });
+                                    ]),
+                                    li({ class: 'divider' }),
+                                    // li({}, [
+                                    //     a({ href: '#people/' + username, 'data-menu-item': 'userlabel' }, [
+                                    //         div({ style: 'display:inline-block; width: 34px; vertical-align: top;' }, [
+                                    //             span({ class: 'fa fa-address-card-o', style: 'font-size: 150%; margin-right: 10px;' })
+                                    //         ]),
+                                    //         div({ style: 'display: inline-block', 'data-element': 'user-label' }, 'Profile')
+                                    //     ])
+                                    // ]),
+                                    li({}, [
+                                        a({
+                                            href: '#auth2/account',
+                                            'data-menu-item': 'account'
+                                        }, [
+                                            div({ style: 'display: inline-block; width: 34px;' }, [
+                                                span({ class: 'fa fa-user', style: 'font-size: 150%; margin-right: 10px;' })
+                                            ]),
+                                            'Account'
+                                        ])
+                                    ]),
+                                    // DISABLE ADMIN
+                                    // For now. There is in actuality no back-end admin support yet other than for
+                                    // the auth2 built-in ui.
+                                    // (function() {
+                                    //     if (!hasRole(account, 'Admin')) {
+                                    //         return;
+                                    //     }
+                                    //     return li({}, [
+                                    //         a({
+                                    //             href: '#auth2/admin',
+                                    //             'data-menu-item': 'account'
+                                    //         }, [
+                                    //             div({ style: 'display: inline-block; width: 34px;' }, [
+                                    //                 span({ class: 'fa fa-unlock', style: 'font-size: 150%; margin-right: 10px;' })
+                                    //             ]),
+                                    //             'Admin'
+                                    //         ])
+                                    //     ]);
+                                    // }()),
+                                    li({ class: 'divider' }),
+                                    li({}, [
+                                        a({
+                                            href: '#',
+                                            'data-menu-item': 'logout',
+                                            id: events.addEvent({
+                                                type: 'click',
+                                                handler: handleSignout
+                                            })
+                                        }, [
+                                            div({ style: 'display: inline-block; width: 34px;' }, [
+                                                span({ class: 'fa fa-sign-out', style: 'font-size: 150%; margin-right: 10px;' })
+                                            ]),
+                                            'Sign Out'
+                                        ])
+                                    ])
+                                ])
+                            ]);
                         });
                 }
                 return a({ class: 'btn btn-primary navbar-btn kb-nav-btn', 'data-button': 'signin', href: '#login' }, [
@@ -214,14 +223,15 @@ define([
         function start(params) {
             return Promise.try(function () {
                 // this.set('loggedin', runtime.service('session').isLoggedIn());
-                // runtime.service('userprofile').onChange(function (data) {
-                //     this.set('userProfile', data);
-                // }.bind(this));
-
-                runtime.service('session').onChange(function () {
-                    // hmm, also take it upon ourselves to visit the logged out page if we are indeed logged out.
+                runtime.service('userprofile').onChange(function (data) {
+                    // this.set('userProfile', data);
                     render();
-                });
+                }.bind(this));
+
+                // runtime.service('session').onChange(function () {
+                //     // hmm, also take it upon ourselves to visit the logged out page if we are indeed logged out.
+                //     render();
+                // });
                 return render();
 
             });

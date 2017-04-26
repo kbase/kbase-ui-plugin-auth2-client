@@ -268,7 +268,7 @@ define([
                 },
                 tabs: [{
                         name: 'account',
-                        label: 'Personal',
+                        label: 'Account',
                         panel: {
                             factory: PersonalInfoEditor
                         }

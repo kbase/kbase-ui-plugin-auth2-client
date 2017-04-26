@@ -46,10 +46,6 @@ define([
                         }
                     })
                 }, {
-                    label: 'Preview',
-                    name: 'preview',
-                    content: 'preview it here'
-                }, {
                     label: 'About',
                     name: 'about',
                     content: div({
@@ -69,9 +65,7 @@ define([
                     marginTop: '10px'
                 }
             }, [
-                p([
-                    'Note: The profile editor is under active development -- it does not work yet!'
-                ]),
+                p([]),
                 tabs.content
             ]);
         }
@@ -85,6 +79,7 @@ define([
                     if (profiles.length === 0) {
                         throw new Error('Profile not found');
                     }
+                    console.log('profile', profiles[0]);
                     return profiles[0];
                 });
         }
@@ -119,9 +114,13 @@ define([
                         organization: profile.profile.userdata.organization,
                         location: profile.profile.userdata.location,
                         department: profile.profile.userdata.department,
+                        avatarOption: profile.profile.userdata.avatarOption,
                         gravatarDefault: profile.profile.userdata.gravatarDefault,
                         affiliations: profile.profile.userdata.affiliations,
                         personalStatement: profile.profile.userdata.personalStatement,
+                        gravatarHash: profile.profile.userdata.gravatarHash,
+                        jobTitle: profile.profile.userdata.jobTitle,
+                        researchInterests: profile.profile.userdata.researchInterests,
 
                     };
                     container.innerHTML = render(id);

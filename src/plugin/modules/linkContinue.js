@@ -393,7 +393,7 @@ define([
                                 title: 'Identity already linked',
                                 message: div([
                                     p([
-                                        'Sorry, the identity ',
+                                        'Sorry, this identity ',
 
                                         'is already linked to this account'
                                     ]),

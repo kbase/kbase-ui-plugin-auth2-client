@@ -1,3 +1,4 @@
+/* global Promise*/
 define([
     'knockout-plus',
     'kb_common/html',
@@ -5,7 +6,9 @@ define([
     'kb_common/format',
     'kb_service/userProfile',
     'kb_service/client/userProfile',
-    '../../components/typeaheadInput'
+    '../../components/typeaheadInput',
+    'kb_plugin_auth2-client',
+    'csv!../../../resources/data/institutions.csv'
 ], function (
     ko,
     html,
@@ -13,7 +16,9 @@ define([
     Format,
     UserProfile,
     UserProfileService,
-    TypeaheadInput
+    TypeaheadInput,
+    Plugin,
+    Institutions
 ) {
     var t = html.tag,
         div = t('div'),
@@ -26,7 +31,11 @@ define([
         button = t('button'),
         select = t('select'),
         option = t('option'),
-        img = t('img');
+        img = t('img'),
+        h2 = t('h2'),
+        h3 = t('h3'),
+        ul = t('ul'),
+        li = t('li');
 
     var fields = {
         title: {
@@ -93,6 +102,65 @@ define([
                 ])
             ])
         },
+        jobTitle: {
+            name: 'jobTitle',
+            required: true,
+            label: 'Job Title',
+            description: 'Your job title',
+            more: div([
+                p([
+                    'What you do where you are'
+                ])
+            ])
+        },
+        researchInterests: {
+            name: 'researchInterests',
+            required: true,
+            label: 'Research Interests',
+            description: 'Please indicate one or more areas of research interest',
+            more: div([
+                p([
+                    'Blah blah'
+                ])
+            ]),
+            availableValues: [{
+                    value: 'annotation',
+                    label: 'Genome Annotation'
+                },
+                {
+                    value: 'assembly',
+                    label: 'Genome Assembly'
+                },
+                {
+                    value: 'communities',
+                    label: 'Microbial Communities'
+                },
+                {
+                    value: 'comparative_genomics',
+                    label: 'Comparative Genomics'
+                },
+                {
+                    value: 'expression',
+                    label: 'Expression'
+                },
+                {
+                    value: 'metabolic_modeling',
+                    label: 'Metabolic Modeling'
+                },
+                {
+                    value: 'reads',
+                    label: 'Read Processing'
+                },
+                {
+                    value: 'sequence',
+                    label: 'Sequence Analysis'
+                },
+                {
+                    value: 'util',
+                    label: 'Utilities'
+                }
+            ]
+        },
         location: {
             name: 'location',
             required: true,
@@ -107,8 +175,11 @@ define([
         gravatarDefault: {
             name: 'gravatarDefault',
             label: 'Gravatar',
-            description: 'A generated or custom avatar displayed throughout the KBase interface to identify you',
+            description: 'A generated or custom avatar displayed throughout the KBase interface to identify you.',
             more: div([
+                p([
+                    'Note that if you have a gravatar image set up, this option will have no effect on your gravatar display. '
+                ]),
                 p([
                     'Your gravatar is based on an image you have associated with your email address at ',
                     a({
@@ -116,7 +187,7 @@ define([
                         target: '_blank'
                     }, 'Gravatar'),
                     ' a free public profile service from Automattic, the same people who brought us Wordpress. ',
-                    'If you have a persona gravatar associated with the email address in this profile, we will display it within KBase.'
+                    'If you have a personal gravatar associated with the email address in this profile, it will be displayed within KBase.'
                 ]),
                 p([
                     'If you don\'t have a personal gravator, you may select one of the ',
@@ -147,17 +218,40 @@ define([
             }]
         },
 
+        avatarOption: {
+            name: 'avatarOption',
+            label: 'Avatar Option',
+            description: 'Choose to use gravatar, or one of the KBase default avatars',
+            more: div([
+                p([
+                    'More stuff here...'
+                ])
+            ]),
+            availableValues: [{
+                id: 'gravatar',
+                label: 'Gravatar - Use your Gravatar image otherwise random generator selected below'
+            }, {
+                id: 'mysteryman',
+                label: 'Mystery Man - simple, anonymous, cartoon-style silhouetted outline'
+            }]
+        },
+
         affiliations: {
             name: 'affiliations',
             vmId: 'affiliations',
             label: 'Affiliations',
-            description: 'Your affiliations',
-            more: 'more here...'
+            description: 'Your history of organizational affiliations ',
+            more: div([
+                p([
+                    'Maintaining your history of orgzniational affiliations can help other users identify you.',
+                ])
+            ])
         },
 
 
         realname: {
             name: 'realname',
+            required: true,
             label: 'Name',
             type: 'text',
             placeholder: 'Your Name',
@@ -171,7 +265,11 @@ define([
                     'This includes the Dashboard, User Profile, App Catalog, and Narrative Interface.'
                 ]),
                 p([
-                    'You may edit this field in the "Personal" tab.'
+                    'You may edit this field in the ',
+                    a({
+                        href: '#auth2/account?tab=account'
+                    }, 'Account tab'),
+                    '.'
                 ]),
             ])
         },
@@ -179,8 +277,11 @@ define([
         personalStatement: {
             name: 'personalStatement',
             required: false,
-            label: 'Personal Statement',
+            label: 'Research or Personal Statement',
             type: 'textarea',
+            style: {
+                height: '10em'
+            },
             placeholder: 'Personal Statement',
             description: span([
                 'Describe yourself to fellow Narrators'
@@ -220,7 +321,8 @@ define([
 
     function fieldDoc(description, content, name) {
         return div({
-            dataElement: 'more'
+            dataElement: 'more',
+            class: 'field-doc'
         }, [
             div([
                 span({
@@ -264,29 +366,30 @@ define([
         ]);
     }
 
-    function wrapString(s) {
-        return '"' + s + '"';
-    }
-
     function buildInput(field) {
         var id = html.genId();
         return div({
-            class: 'form-group'
+            class: 'form-group form-row'
         }, [
             div({
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-12'
-                }, label({
-                    for: id
-                }, [field.label, requiredIcon(field), dirtyIcon(field)]))
+                        class: 'col-md-12'
+                    }, [
+                        label({
+                            for: id
+                        }, [field.label, requiredIcon(field), dirtyIcon(field)]),
+                        div({}, fieldDoc(field.description, field.more, field.name))
+                    ]
+
+                )
             ]),
             div({
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-6'
+                    class: 'col-md-12'
                 }, [
                     input({
                         type: 'text',
@@ -304,38 +407,41 @@ define([
                             validationMessage: field.vmId || field.name
                         }
                     })
-                ]),
-                div({
-                    class: 'col-md-6'
-                }, [
-                    fieldDoc(field.description, field.more, field.name)
                 ])
+
             ])
         ]);
     }
 
     function buildTextarea(field) {
         var id = html.genId();
+        var style = field.style || {};
         return div({
-            class: 'form-group'
+            class: 'form-group  form-row'
         }, [
             div({
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-12'
-                }, label({
-                    for: id
-                }, [field.label, requiredIcon(field)]))
+                        class: 'col-md-12'
+                    }, [
+                        label({
+                            for: id
+                        }, [field.label, requiredIcon(field), dirtyIcon(field)]),
+                        div({}, fieldDoc(field.description, field.more, field.name))
+                    ]
+
+                )
             ]),
             div({
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-6'
+                    class: 'col-md-12'
                 }, [
                     textarea({
                         class: 'form-control',
+                        style: style,
                         id: id,
                         placeholder: field.placeholder,
                         dataBind: {
@@ -349,11 +455,6 @@ define([
                             validationMessage: field.vmId || field.name
                         }
                     })
-                ]),
-                div({
-                    class: 'col-md-6'
-                }, [
-                    fieldDoc(field.description, field.more, field.name)
                 ])
             ])
         ]);
@@ -362,22 +463,25 @@ define([
     function buildTypeahead(field) {
         var id = html.genId();
         return div({
-            class: 'form-group'
+            class: 'form-group  form-row'
         }, [
             div({
                 class: 'row'
             }, [
                 div({
                     class: 'col-md-12'
-                }, label({
-                    for: id
-                }, [field.label, requiredIcon(field)]))
+                }, [
+                    label({
+                        for: id
+                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
+                    div({}, fieldDoc(field.description, field.more, field.name))
+                ])
             ]),
             div({
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-6'
+                    class: 'col-md-12'
                 }, [
                     div({
                         dataBind: {
@@ -396,35 +500,39 @@ define([
                             validationMessage: field.vmId || field.name
                         }
                     })
-                ]),
-                div({
-                    class: 'col-md-6'
-                }, [
-                    fieldDoc(field.description, field.more, field.name)
                 ])
             ])
         ]);
     }
 
-    function buildSelect(field) {
+    function buildSelect(field, condition) {
         var id = html.genId();
-        return div({
-            class: 'form-group'
-        }, [
+        var attribs = {
+            class: 'form-group  form-row'
+        };
+        if (condition) {
+            attribs.dataBind = {
+                if: condition
+            };
+        }
+        return div(attribs, [
             div({
                 class: 'row'
             }, [
                 div({
                     class: 'col-md-12'
-                }, label({
-                    for: id
-                }, [field.label, requiredIcon(field)]))
+                }, [
+                    label({
+                        for: id
+                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
+                    fieldDoc(field.description, field.more, field.name)
+                ])
             ]),
             div({
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-6'
+                    class: 'col-md-12'
                 }, [
                     select({
                         class: 'form-control',
@@ -437,21 +545,77 @@ define([
                         }
                     }),
                     div({
+                        class: 'alert alert-danger',
                         dataBind: {
-                            text: field.name
+                            validationMessage: field.vmId || field.name
                         }
-                    }),
+                    })
+                ])
+            ])
+        ]);
+    }
+
+    function buildCheckboxes(field, condition) {
+        var id = html.genId();
+        var attribs = {
+            class: 'form-group  form-row'
+        };
+        if (condition) {
+            attribs.dataBind = {
+                if: condition
+            };
+        }
+        return div(attribs, [
+            div({
+                class: 'row'
+            }, [
+                div({
+                    class: 'col-md-12'
+                }, [
+                    label({
+                        for: id
+                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
+                    fieldDoc(field.description, field.more, field.name)
+                ])
+            ]),
+            div({
+                class: 'row'
+            }, [
+                div({
+                    class: 'col-md-12'
+                }, [
+                    div({
+                        dataBind: {
+                            foreach: field.name
+                        }
+                    }, div({
+                            class: 'checkbox'
+                        },
+                        label({
+                            style: {
+                                marginLeft: '1em'
+                            }
+                        }, [
+                            input({
+                                type: 'checkbox',
+                                dataBind: {
+                                    checked: 'checked',
+                                    value: 'value'
+                                }
+                            }),
+                            span({
+                                dataBind: {
+                                    text: 'label'
+                                }
+                            })
+                        ])
+                    )),
                     div({
                         class: 'alert alert-danger',
                         dataBind: {
                             validationMessage: field.vmId || field.name
                         }
                     })
-                ]),
-                div({
-                    class: 'col-md-6'
-                }, [
-                    fieldDoc(field.description, field.more, field.name)
                 ])
             ])
         ]);
@@ -460,31 +624,29 @@ define([
     function buildDisplay(field) {
         var id = html.genId();
         return div({
-            class: 'form-group'
+            class: 'form-group  form-row'
         }, [
             div({
                 class: 'row'
             }, [
                 div({
                     class: 'col-md-12'
-                }, label({
-                    for: id
-                }, field.label))
+                }, [
+                    label({
+                        for: id
+                    }, field.label),
+                    fieldDoc(field.description, field.more, field.name)
+                ])
             ]),
             div({
                 class: 'row'
             }, [
                 div({
-                    class: 'col-md-6'
+                    class: 'col-md-12'
                 }, [
                     div({
                         dataBind: 'text: ' + (field.vmId || field.name)
                     })
-                ]),
-                div({
-                    class: 'col-md-6'
-                }, [
-                    fieldDoc(field.description, field.more, field.name)
                 ])
             ])
         ]);
@@ -526,106 +688,92 @@ define([
         ]);
     }
 
+    function buildAffiliationForm() {
+        return [
+            div({
+                class: 'row'
+            }, [
+                div({
+                    class: 'col-sm-2'
+                }, 'Title'),
+                div({
+                        class: 'col-sm-10',
+                    },
+                    input({
+                        class: 'form-control',
+                        dataBind: {
+                            textInput: 'title'
+                        }
+                    }))
+            ]),
+            div({
+                class: 'row'
+            }, [
+                div({
+                    class: 'col-sm-2'
+                }, 'Institution'),
+                div({
+                        class: 'col-sm-10',
+                    },
+                    input({
+                        class: 'form-control',
+                        dataBind: {
+                            textInput: 'institution'
+                        }
+                    }))
+            ]),
+            div({
+                class: 'row'
+            }, [
+                div({
+                    class: 'col-sm-2'
+                }, 'Starting in'),
+                div({
+                        class: 'col-sm-4',
+                    },
+                    input({
+                        class: 'form-control',
+                        dataBind: {
+                            textInput: 'start_year'
+                        }
+                    })),
+                div({
+                    class: 'col-sm-2'
+                }, 'Ending in'),
+                div({
+                        class: 'col-sm-4',
+                    },
+                    input({
+                        class: 'form-control',
+                        textInput: {
+                            textInput: 'end_year'
+                        }
+                    }))
+            ])
+        ];
+    }
+
     function buildAffiliation() {
         return div({
+            class: 'container-fluid',
             style: {
-                border: '1px orange blue'
+                marginBottom: '10px'
             }
         }, [
             div({
-                class: 'row',
-                style: {
-                    border: '1px orange dashed'
-                }
+                class: 'row form-sub-row'
             }, [
                 div({
-                    class: 'col-sm-3'
-                }, 'Title'),
+                    class: 'col-md-11'
+                }, buildAffiliationForm()),
                 div({
-                        class: 'col-sm-9',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            value: 'title'
-                        }
-                    }))
-            ]),
-            div({
-                class: 'row',
-                style: {
-                    border: '1px orange dashed'
-                }
-            }, [
-                div({
-                    class: 'col-sm-3'
-                }, 'Institution'),
-                div({
-                        class: 'col-sm-9',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            value: 'institution'
-                        }
-                    }))
-            ]),
-            div({
-                class: 'row',
-                style: {
-                    border: '1px orange dashed'
-                }
-            }, [
-                div({
-                    class: 'col-sm-3'
-                }, 'Starting in'),
-                div({
-                        class: 'col-sm-9',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            value: 'start_year'
-                        }
-                    }))
-            ]),
-            div({
-                class: 'row',
-                style: {
-                    border: '1px orange dashed'
-                }
-            }, [
-                div({
-                    class: 'col-sm-3'
-                }, 'Ending in'),
-                div({
-                        class: 'col-sm-9',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            value: 'end_year'
-                        }
-                    }))
-            ]),
-            div({
-                class: 'row',
-                style: {
-                    border: '1px orange dashed'
-                }
-            }, [
-                div({
-                    class: 'col-sm-3'
-                }),
-                div({
-                        class: 'col-sm-9',
-                    },
-                    button({
-                        class: 'btn btn-danger',
-                        dataBind: {
-                            click: '$parent.deleteAffiliation'
-                        }
-                    }, 'Delete'))
+                    class: 'col-md-1'
+                }, button({
+                    class: 'btn btn-default',
+                    dataBind: {
+                        click: '$parent.deleteAffiliation'
+                    }
+                }, 'X'))
             ])
         ]);
     }
@@ -633,38 +781,35 @@ define([
     function buildAffiliations(field) {
         var id = html.genId();
         return div({
-            class: 'form-group'
+            class: 'form-group form-row'
         }, [
             div({
                 class: 'row'
             }, [
                 div({
                     class: 'col-md-12'
-                }, label({
-                    for: id
-                }, field.label))
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                        class: 'col-md-6'
-                    },
-                    div({
-                        dataBind: {
-                            foreach: 'affiliations'
-                        }
-                    }, buildAffiliation())),
-
-
-                div({
-                    class: 'col-md-6'
                 }, [
+                    label({
+                        for: id
+                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
                     fieldDoc(field.description, field.more, field.name)
                 ])
             ]),
             div({
                 class: 'row'
+            }, [
+                div({
+                        class: 'col-md-12'
+                    },
+                    div({
+                        dataBind: {
+                            foreach: 'affiliations'
+                        }
+                    }, buildAffiliation()))
+            ]),
+            div({
+                class: 'row',
+                border: '1px orange blue'
             }, [
                 div({
                     class: 'col-md-12'
@@ -689,47 +834,212 @@ define([
                 }
             }
         }, [
-            buildTypeahead(fields.title),
-            buildDisplay(fields.realname),
-            buildInput(fields.suffix),
-            buildInput(fields.organization),
+            // buildTypeahead(fields.title),
+            buildInput(fields.realname),
+            // buildInput(fields.suffix),
+            buildTypeahead(fields.organization),
             buildInput(fields.department),
+            buildInput(fields.jobTitle),
             buildInput(fields.location),
-            buildSelect(fields.gravatarDefault),
-            buildContent(div({}, [
-                p([
-                    'Your current gravatar based on your email address ',
-                    span({
-                        dataBind: {
-                            text: 'email'
-                        }
-                    })
-                ]),
-                div({
-                    style: {
-                        textAlign: 'center'
-                    }
-                }, img({
-                    dataBind: {
-                        attr: {
-                            src: 'gravatarUrl'
-                        }
-                    }
-                }))
-            ])),
+
+            buildCheckboxes(fields.researchInterests),
+
+            buildSelect(fields.avatarOption),
+            buildSelect(fields.gravatarDefault, 'avatarOption() === "gravatar"'),
+            // buildContent(div({}, [
+            //     p([
+            //         'Your current gravatar based on your email address ',
+            //         span({
+            //             dataBind: {
+            //                 text: 'email'
+            //             }
+            //         })
+            //     ]),
+            //     div({
+            //         style: {
+            //             textAlign: 'center'
+            //         }
+            //     }, img({
+            //         dataBind: {
+            //             attr: {
+            //                 src: 'gravatarUrl'
+            //             }
+            //         }
+            //     }))
+            // ])),
             buildAffiliations(fields.affiliations),
             buildTextarea(fields.personalStatement),
-
+            div([
+                p({
+                    dataBind: {
+                        visible: 'someDirty'
+                    }
+                }, 'You have changed fields, you should save the form to preserve your changes.'),
+                p({
+                    dataBind: {
+                        visible: 'someInvalid'
+                    }
+                }, 'You have incomplete required or invalid fields, please fix them and then save your profile.')
+            ]),
+            buildMessageDisplay(),
             button({
                 class: 'btn btn-primary',
                 type: 'button',
                 dataBind: {
-                    click: 'doSaveProfile'
+                    click: 'doSaveProfile',
+                    enable: 'formCanSave'
                 }
-            }, 'Save'),
-            buildMessageDisplay()
+            }, 'Save')
         ]);
         return content;
+    }
+
+    function buildPreview() {
+
+        return div([
+            h3('Your Profile - Preview'),
+            p({}, a({
+                href: '#people'
+            }, 'Visit your profile page')),
+            BS.buildPanel({
+                type: 'default',
+                title: span([
+                    span({
+                        dataBind: {
+                            text: 'realname'
+                        }
+                    }),
+                    ' (',
+                    span({
+                        dataBind: {
+                            text: 'username'
+                        }
+                    }),
+                    ')'
+                ]),
+                body: div({
+                    class: 'row'
+                }, [
+                    div({
+                        class: 'col-md-3'
+                    }, img({
+                        style: {
+                            width: '100%'
+                        },
+                        dataBind: {
+                            attr: {
+                                src: 'gravatarUrl'
+                            }
+                        }
+                    })),
+                    div({
+                        class: 'col-md-9'
+                    }, [
+                        div({
+                            style: {
+                                fontWeight: 'bold',
+                                fontSize: '120%'
+                            },
+                            dataBind: {
+                                text: 'realname'
+                            }
+                        }),
+
+                        div({
+                            style: {
+                                fontStyle: 'italic',
+                                marginBottom: '1em'
+                            },
+                            dataBind: {
+                                text: 'jobTitle'
+                            }
+                        }),
+                        div({
+                            dataBind: {
+                                text: 'organization'
+                            }
+                        }),
+                        div({
+                            dataBind: {
+                                text: 'department'
+                            }
+                        }),
+                        div({
+                            dataBind: {
+                                text: 'location'
+                            }
+                        }),
+                        h3('Research Interests'),
+                        ul({
+                            dataBind: {
+                                foreach: 'researchInterests.exportDisplay()'
+                            }
+                        }, li({
+                            dataBind: {
+                                text: '$data'
+                            }
+                        })),
+                        h3('Affiliations'),
+                        div({
+                            dataBind: {
+                                foreach: 'affiliations'
+                            }
+                        }, div([
+                            p({
+                                style: {
+                                    fontWeight: 'bold'
+                                }
+                            }, [
+                                span({
+                                    dataBind: {
+                                        text: 'title'
+                                    }
+                                }),
+                                ' (',
+                                span({
+                                    dataBind: {
+                                        text: 'start_year'
+                                    }
+                                }),
+                                ' - ',
+                                span({
+                                    dataBind: {
+                                        text: 'end_year_display'
+                                    }
+                                }),
+                                ') ',
+                                ' @ ',
+                                span({
+                                    dataBind: {
+                                        text: 'institution'
+                                    }
+                                })
+                            ])
+                        ])),
+                        h3('Research or Personal Statement'),
+                        div({
+                            class: 'well',
+                            dataBind: {
+                                html: 'personalStatementDisplay'
+                            }
+                        })
+                    ])
+                ])
+            })
+        ]);
+    }
+
+    function buildTemplate() {
+        return div({
+            class: 'row'
+        }, [
+            div({
+                class: 'col-md-6'
+            }, buildForm()),
+            div({
+                class: 'col-md-6'
+            }, buildPreview())
+        ]);
     }
 
     function component() {
@@ -747,7 +1057,8 @@ define([
                     .extend({
                         required: true,
                         minLength: 2,
-                        maxLength: 100
+                        maxLength: 100,
+                        dirty: false
                     });
 
                 var title = ko.observable(params.title).extend({
@@ -773,6 +1084,12 @@ define([
                     maxLength: 100,
                     dirty: false
                 });
+                var organizations = Institutions.map(function (item) {
+                    return {
+                        value: item[0],
+                        label: item[1] + ' > ' + item[2] + ', ' + item[3]
+                    };
+                });
 
                 var department = ko.observable(params.department).extend({
                     required: true,
@@ -781,12 +1098,79 @@ define([
                     dirty: false
                 });
 
+                var jobTitle = ko.observable(params.jobTitle).extend({
+                    required: true,
+                    minLength: 2,
+                    maxLength: 100,
+                    dirty: false
+                });
+                ko.extenders.export = function (target, args) {
+
+                    target.exportDisplay = function () {
+                        if (args.display) {
+                            return args.display(target);
+                        } else {
+                            return target();
+                        }
+                    };
+                    target.exportData = function () {
+                        if (args.data) {
+                            return args.data(target);
+                        } else {
+                            return target();
+                        }
+                    };
+
+                };
+                var researchInterests = ko.observableArray(fields.researchInterests.availableValues.map(function (item) {
+                    var checked = false;
+                    if (params.researchInterests &&
+                        params.researchInterests instanceof Array &&
+                        params.researchInterests.indexOf(item.value) >= 0) {
+                        checked = true;
+                    }
+                    return {
+                        value: item.value,
+                        label: item.label,
+                        checked: ko.observable(checked)
+                    };
+                })).extend({
+                    required: true,
+                    dirty: false,
+                    export: {
+                        display: function (target) {
+                            return target().filter(function (item) {
+                                return item.checked();
+                            }).map(function (item) {
+                                return item.label;
+                            });
+                        },
+                        data: function (target) {
+                            return target().filter(function (item) {
+                                return item.checked();
+                            }).map(function (item) {
+                                return item.value;
+                            });
+                        }
+                    }
+                });
+
+                //  console.log('research interests', researchInterests.isDirty, researchInterests.toJSON);
+
                 var location = ko.observable(params.location).extend({
                     required: true,
                     minLength: 2,
                     maxLength: 100,
                     dirty: false
                 });
+
+                var avatarOption = ko.observable(params.avatarOption).extend({
+                    required: false,
+                    minLength: 2,
+                    maxLength: 100,
+                    dirty: false
+                });
+                var avatarOptionValues = fields.avatarOption.availableValues;
 
                 var gravatarDefault = ko.observable(params.gravatarDefault || 'monsterid').extend({
                     required: false,
@@ -825,31 +1209,48 @@ define([
                 };
                 ko.validation.registerExtenders();
                 var affils = params.affiliations || [];
-                var affiliations = ko.observableArray(affils.map(function (affil) {
+
+                function affiliationVm(affil) {
+                    var title = ko.observable(affil && affil.title).extend({
+                        required: true,
+                        minLength: 2,
+                        maxLength: 100,
+                        dirty: false
+                    });
+                    var institution = ko.observable(affil && affil.institution).extend({
+                        required: true,
+                        minLength: 2,
+                        maxLength: 100,
+                        dirty: false
+                    });
+                    var start_year = ko.observable(affil && affil.start_year).extend({
+                        required: true,
+                        year: true,
+                        dirty: false
+                    });
+
+                    var end_year = ko.observable(affil && affil.end_year).extend({
+                        required: false,
+                        year: true,
+                        dirty: false
+                    });
+
+                    var end_year_display = ko.pureComputed(function () {
+                        if (end_year()) {
+                            return end_year();
+                        }
+                        return 'present';
+                    });
                     return {
-                        title: ko.observable(affil.title).extend({
-                            required: true,
-                            minLength: 2,
-                            maxLength: 100,
-                            dirty: false
-                        }),
-                        institution: ko.observable(affil.institution).extend({
-                            required: true,
-                            minLength: 2,
-                            maxLength: 100,
-                            dirty: false
-                        }),
-                        start_year: ko.observable(affil.start_year).extend({
-                            required: true,
-                            year: true,
-                            dirty: false
-                        }),
-                        end_year: ko.observable(affil.end_year).extend({
-                            required: false,
-                            year: true,
-                            dirty: false
-                        })
+                        title: title,
+                        institution: institution,
+                        start_year: start_year,
+                        end_year: end_year,
+                        end_year_display: end_year_display
                     };
+                }
+                var affiliations = ko.observableArray(affils.map(function (affil) {
+                    return affiliationVm(affil);
                 })).extend({
                     dirty: false
                 });
@@ -857,7 +1258,15 @@ define([
                 var personalStatement = ko.observable(params.personalStatement).extend({
                     required: false,
                     minLength: 2,
-                    maxLength: 400
+                    maxLength: 400,
+                    dirty: false
+                });
+                var personalStatementDisplay = ko.pureComputed(function () {
+                    var text = personalStatement();
+                    if (!text) {
+                        return '';
+                    }
+                    return text.replace(/\n/g, '<br>');
                 });
 
 
@@ -875,8 +1284,15 @@ define([
                         ')';
                 });
 
+                var gravatarHash = params.gravatarHash;
                 var gravatarUrl = ko.pureComputed(function () {
-                    return UserProfile.makeGravatarURL(email(), 200, 'pg', gravatarDefault());
+                    switch (avatarOption()) {
+                    case 'gravatar':
+                        return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault();
+                    case 'mysteryman':
+                        return Plugin.plugin.fullPath + '/images/nouserpic.png';
+                    }
+
                 });
 
                 // var realnameMore = ko.observable(true);
@@ -895,6 +1311,42 @@ define([
                     }
                 }
 
+                var someDirty = ko.pureComputed(function () {
+                    var fields = [
+                        title, realname, suffix, location, organization,
+                        department, avatarOption, gravatarDefault, affiliations,
+                        personalStatement, jobTitle, researchInterests
+                    ];
+                    // some are dirty
+                    return fields.some(function (field) {
+                        return field.isDirty();
+                    });
+                });
+                var someInvalid = ko.pureComputed(function () {
+                    var fields = [
+                        title, realname, suffix, location, organization,
+                        department, avatarOption, gravatarDefault, affiliations,
+                        personalStatement, jobTitle, researchInterests
+                    ];
+                    return fields.some(function (field) {
+                        if (field.isValid) {
+                            return !field.isValid();
+                        } else {
+                            return false;
+                        }
+                    });
+                });
+
+                var formCanSave = ko.pureComputed(function () {
+                    var fields = [
+                        title, realname, suffix, location, organization,
+                        department, avatarOption, gravatarDefault, affiliations,
+                        personalStatement
+                    ];
+                    // some are dirty
+                    return someDirty() && !someInvalid();
+                });
+
                 function saveProfile() {
                     var client = new UserProfileService(runtime.config('services.user_profile.url'), {
                         token: runtime.service('session').getAuthToken()
@@ -906,35 +1358,57 @@ define([
                     return client.get_user_profile([username])
                         .then(function (result) {
                             var profile = result[0];
+                            var account = {};
+                            var profileChanges = false;
+                            var accountChanges = false;
                             // build the update object.
                             // TODO: detect changed fields - knockout?
 
                             if (title.isDirty()) {
                                 profile.profile.userdata.title = title();
                                 title.markClean();
+                                profileChanges = true;
+                            }
+                            if (realname.isDirty()) {
+                                profile.user.realname = realname();
+                                realname.markClean();
+                                account.display = realname();
+                                accountChanges = true;
+                                profileChanges = true;
                             }
                             if (suffix.isDirty()) {
                                 profile.profile.userdata.suffix = suffix();
                                 suffix.markClean();
+                                accountChanges = true;
                             }
                             if (location.isDirty()) {
                                 profile.profile.userdata.location = location();
                                 location.markClean();
+                                profileChanges = true;
                             }
 
                             if (organization.isDirty()) {
                                 profile.profile.userdata.organization = organization();
                                 organization.markClean();
+                                profileChanges = true;
                             }
 
                             if (department.isDirty()) {
                                 profile.profile.userdata.department = department();
                                 department.markClean();
+                                profileChanges = true;
+                            }
+
+                            if (avatarOption.isDirty()) {
+                                profile.profile.userdata.avatarOption = avatarOption();
+                                avatarOption.markClean();
+                                profileChanges = true;
                             }
 
                             if (gravatarDefault.isDirty()) {
                                 profile.profile.userdata.gravatarDefault = gravatarDefault();
                                 gravatarDefault.markClean();
+                                profileChanges = true;
                             }
 
                             if (affiliations.isDirty()) {
@@ -949,11 +1423,51 @@ define([
                                 });
                                 profile.profile.userdata.affiliations = newAffiliations;
                                 affiliations.markClean();
+                                profileChanges = true;
                             }
 
-                            return client.set_user_profile({
-                                profile: profile
-                            });
+                            if (personalStatement.isDirty()) {
+                                profile.profile.userdata.personalStatement = personalStatement();
+                                personalStatement.markClean();
+                                profileChanges = true;
+                            }
+
+                            if (jobTitle.isDirty()) {
+                                profile.profile.userdata.jobTitle = jobTitle();
+                                jobTitle.markClean();
+                                profileChanges = true;
+                            }
+
+                            if (researchInterests.isDirty()) {
+                                profile.profile.userdata.researchInterests = researchInterests()
+                                    .map(function (item) {
+                                        if (item.checked()) {
+                                            return item.value;
+                                        }
+                                    })
+                                    .filter(function (item) {
+                                        return (typeof item !== 'undefined');
+                                    });
+                                researchInterests.markClean();
+                                profileChanges = true;
+                            }
+
+                            var changes = [];
+                            if (profileChanges) {
+                                changes.push(client.set_user_profile({
+                                    profile: profile
+                                }));
+                            }
+                            if (accountChanges) {
+                                changes.push(runtime.service('session').getClient().putMe(account));
+                            }
+
+                            return Promise.all(changes)
+                                .then(function () {
+                                    if (profileChanges) {
+                                        runtime.send('profile', 'reload');
+                                    }
+                                });
                         });
                 }
 
@@ -986,12 +1500,7 @@ define([
                 }
 
                 function addAffiliation() {
-                    affiliations.push({
-                        title: ko.observable(),
-                        institution: ko.observable(),
-                        start_year: ko.observable(),
-                        end_year: ko.observable()
-                    });
+                    affiliations.push(affiliationVm());
                 }
 
                 return {
@@ -1001,12 +1510,18 @@ define([
                     realname: realname,
                     suffix: suffix,
                     organization: organization,
+                    organizations: organizations,
                     department: department,
                     location: location,
+                    avatarOption: avatarOption,
+                    avatarOptionValues: avatarOptionValues,
                     gravatarDefault: gravatarDefault,
                     gravatarDefaultValues: gravatarDefaultValues,
                     affiliations: affiliations,
                     personalStatement: personalStatement,
+                    personalStatementDisplay: personalStatementDisplay,
+                    jobTitle: jobTitle,
+                    researchInterests: researchInterests,
 
                     email: email,
                     username: username,
@@ -1025,10 +1540,14 @@ define([
                     messageType: messageType,
 
                     deleteAffiliation: deleteAffiliation,
-                    addAffiliation: addAffiliation
+                    addAffiliation: addAffiliation,
+
+                    someDirty: someDirty,
+                    someInvalid: someInvalid,
+                    formCanSave: formCanSave
                 };
             },
-            template: buildForm()
+            template: buildTemplate()
         };
     }
     ko.components.register('profile-editor', component());

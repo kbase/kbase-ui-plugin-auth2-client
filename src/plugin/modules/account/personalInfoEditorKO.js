@@ -1,13 +1,17 @@
 /*global Promise*/
 define([
+    'knockout',
+    'md5',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    'knockout',
+    'kb_service/client/userProfile',
     './components/userInfoEditor'
 ], function (
+    ko,
+    md5,
     html,
     BS,
-    ko
+    UserProfileService
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
@@ -63,9 +67,7 @@ define([
                     marginTop: '10px'
                 }
             }, [
-                p([
-                    'Note: The account editor is under active development -- it works but is not in its final form'
-                ]),
+                p([]),
                 tabs.content
             ]);
         }
@@ -88,8 +90,27 @@ define([
                         lastLogin: account.lastlogin,
                         username: account.user,
                         doSave: function (data) {
-                            return runtime.service('session').getClient().putMe(data);
+                            var client = new UserProfileService(runtime.config('services.user_profile.url'), {
+                                token: runtime.service('session').getAuthToken()
+                            });
+
+                            return client.get_user_profile([account.user])
+                                .then(function (result) {
+                                    var profile = result[0];
+                                    var hashedEmail = md5.hash(data.email.trim().toLowerCase());
+                                    profile.profile.userdata.gravatarHash = hashedEmail;
+                                    return Promise.all([
+                                            runtime.service('session').getClient().putMe(data),
+                                            client.set_user_profile({
+                                                profile: profile
+                                            })
+                                        ])
+                                        .then(function () {
+                                            runtime.send('profile', 'reload');
+                                        });
+                                });
                         }
+
                     };
                     container.innerHTML = render(id);
                     ko.applyBindings(vm, document.getElementById(id));
