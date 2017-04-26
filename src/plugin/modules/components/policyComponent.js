@@ -3,7 +3,7 @@ define([
     'knockout',
     'kb_common/html',
     'kb_common/bootstrapUtils'
-], function(
+], function (
     ko,
     html,
     BS
@@ -276,7 +276,7 @@ define([
                             'The following KBase account policies have not yet been agreed to by this account. ',
                         ]),
                         p([
-                            'You may log into this account after you have agreed to these policies by checking the box at the bottom of each.'
+                            'You may log into this account after you have agreed to these policies by checking the box at the top of each.'
                         ]),
                         // Note: iteration now in the knockout foreach binding rather than in the 
                         // html builder.
@@ -301,7 +301,7 @@ define([
                             'The following KBase User Agreements have been updated and you need to re-agree to them. ',
                         ]),
                         p([
-                            'You may log into this account after you have agreed to these policies by checking the box at the bottom of each.'
+                            'You may log into this account after you have agreed to these policies by checking the box at the top of each.'
                         ]),
                         div({
                             dataBind: {
@@ -317,13 +317,13 @@ define([
     function component() {
         return {
             template: buildTemplate(),
-            viewModel: function(data) {
+            viewModel: function (data) {
                 var policiesToResolve = data.policiesToResolve;
 
                 var haveMissing = ko.observable(data.policiesToResolve.missing.length > 0);
                 var haveOutdated = ko.observable(data.policiesToResolve.outdated.length > 0);
 
-                var doViewPolicy = function(item) {
+                var doViewPolicy = function (item) {
                     if (item.viewPolicy()) {
                         item.viewPolicy(false);
                     } else {

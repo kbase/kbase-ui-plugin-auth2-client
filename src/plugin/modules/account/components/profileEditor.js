@@ -6,9 +6,10 @@ define([
     'kb_common/format',
     'kb_service/userProfile',
     'kb_service/client/userProfile',
-    '../../components/typeaheadInput',
+    '../../lib/fieldBuilders',
     'kb_plugin_auth2-client',
-    'csv!../../../resources/data/institutions.csv'
+    // 'csv!../../../resources/data/institutions.csv'
+    'json!../../../resources/data/institutions.json'
 ], function (
     ko,
     html,
@@ -16,7 +17,7 @@ define([
     Format,
     UserProfile,
     UserProfileService,
-    TypeaheadInput,
+    FieldBuilders,
     Plugin,
     Institutions
 ) {
@@ -27,12 +28,8 @@ define([
         a = t('a'),
         p = t('p'),
         input = t('input'),
-        textarea = t('textarea'),
         button = t('button'),
-        select = t('select'),
-        option = t('option'),
         img = t('img'),
-        h2 = t('h2'),
         h3 = t('h3'),
         ul = t('ul'),
         li = t('li');
@@ -49,22 +46,22 @@ define([
                 ])
             ]),
             availableValues: [{
-                id: 'mr',
+                value: 'mr',
                 label: 'Mr.'
             }, {
-                id: 'ms',
+                value: 'ms',
                 label: 'Ms.'
             }, {
-                id: 'miss',
+                value: 'miss',
                 label: 'Miss'
             }, {
-                id: 'mrs',
+                value: 'mrs',
                 label: 'Mrs.'
             }, {
-                id: 'dr',
+                value: 'dr',
                 label: 'Dr.'
             }, {
-                id: 'prof',
+                value: 'prof',
                 label: 'Prof.'
             }]
         },
@@ -88,6 +85,17 @@ define([
             more: div([
                 p([
                     'additional details here...'
+                ])
+            ])
+        },
+        organizationOther: {
+            name: 'organizationOther',
+            required: false,
+            label: 'Organization Other',
+            description: 'Not in the list? Enter it here',
+            more: div([
+                p([
+                    'more stuff here.'
                 ])
             ])
         },
@@ -198,22 +206,22 @@ define([
                 ])
             ]),
             availableValues: [{
-                id: 'mm',
+                value: 'mm',
                 label: 'Mystery Man - simple, cartoon-style silhouetted outline'
             }, {
-                id: 'identicon',
+                value: 'identicon',
                 label: 'Identicon - a geometric pattern based on an email hash'
             }, {
-                id: 'monsterid',
+                value: 'monsterid',
                 label: 'MonsterID - generated "monster" with different colors, faces, etc'
             }, {
-                id: 'wavatar',
+                value: 'wavatar',
                 label: 'Wavatar - generated faces with differing features and backgrounds'
             }, {
-                id: 'retro',
+                value: 'retro',
                 label: 'Retro - 8-bit arcade-style pixelated faces'
             }, {
-                id: 'blank',
+                value: 'blank',
                 label: 'Blank - A Blank Space'
             }]
         },
@@ -228,10 +236,10 @@ define([
                 ])
             ]),
             availableValues: [{
-                id: 'gravatar',
+                value: 'gravatar',
                 label: 'Gravatar - Use your Gravatar image otherwise random generator selected below'
             }, {
-                id: 'mysteryman',
+                value: 'mysteryman',
                 label: 'Mystery Man - simple, anonymous, cartoon-style silhouetted outline'
             }]
         },
@@ -363,306 +371,6 @@ define([
                     padding: '6px'
                 }
             }, content)
-        ]);
-    }
-
-    function buildInput(field) {
-        var id = html.genId();
-        return div({
-            class: 'form-group form-row'
-        }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                        class: 'col-md-12'
-                    }, [
-                        label({
-                            for: id
-                        }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                        div({}, fieldDoc(field.description, field.more, field.name))
-                    ]
-
-                )
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    input({
-                        type: 'text',
-                        class: 'form-control',
-                        id: id,
-                        placeholder: field.placeholder,
-                        dataBind: {
-                            textInput: field.vmId || field.name,
-                            // valueUpdate: wrapString('afterkeydown')
-                        }
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId || field.name
-                        }
-                    })
-                ])
-
-            ])
-        ]);
-    }
-
-    function buildTextarea(field) {
-        var id = html.genId();
-        var style = field.style || {};
-        return div({
-            class: 'form-group  form-row'
-        }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                        class: 'col-md-12'
-                    }, [
-                        label({
-                            for: id
-                        }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                        div({}, fieldDoc(field.description, field.more, field.name))
-                    ]
-
-                )
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    textarea({
-                        class: 'form-control',
-                        style: style,
-                        id: id,
-                        placeholder: field.placeholder,
-                        dataBind: {
-                            textInput: field.vmId || field.name
-                                // valueUpdate: wrapString('afterkeydown')
-                        }
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId || field.name
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildTypeahead(field) {
-        var id = html.genId();
-        return div({
-            class: 'form-group  form-row'
-        }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                    div({}, fieldDoc(field.description, field.more, field.name))
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    div({
-                        dataBind: {
-                            component: {
-                                name: '"typeahead-input"',
-                                params: {
-                                    inputValue: field.vmId || field.name,
-                                    availableValues: field.name + 's'
-                                }
-                            }
-                        }
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId || field.name
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildSelect(field, condition) {
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row'
-        };
-        if (condition) {
-            attribs.dataBind = {
-                if: condition
-            };
-        }
-        return div(attribs, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                    fieldDoc(field.description, field.more, field.name)
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    select({
-                        class: 'form-control',
-                        id: id,
-                        dataBind: {
-                            value: field.vmId || field.name,
-                            options: field.name + 'Values',
-                            optionsText: '"label"',
-                            optionsValue: '"id"'
-                        }
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId || field.name
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildCheckboxes(field, condition) {
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row'
-        };
-        if (condition) {
-            attribs.dataBind = {
-                if: condition
-            };
-        }
-        return div(attribs, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                    fieldDoc(field.description, field.more, field.name)
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    div({
-                        dataBind: {
-                            foreach: field.name
-                        }
-                    }, div({
-                            class: 'checkbox'
-                        },
-                        label({
-                            style: {
-                                marginLeft: '1em'
-                            }
-                        }, [
-                            input({
-                                type: 'checkbox',
-                                dataBind: {
-                                    checked: 'checked',
-                                    value: 'value'
-                                }
-                            }),
-                            span({
-                                dataBind: {
-                                    text: 'label'
-                                }
-                            })
-                        ])
-                    )),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId || field.name
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildDisplay(field) {
-        var id = html.genId();
-        return div({
-            class: 'form-group  form-row'
-        }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, field.label),
-                    fieldDoc(field.description, field.more, field.name)
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    div({
-                        dataBind: 'text: ' + (field.vmId || field.name)
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildContent(content) {
-        return div({
-            class: 'form-group'
-        }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, content)
-            ])
         ]);
     }
 
@@ -835,51 +543,69 @@ define([
             }
         }, [
             // buildTypeahead(fields.title),
-            buildInput(fields.realname),
+            FieldBuilders.buildInput(fields.realname),
             // buildInput(fields.suffix),
-            buildTypeahead(fields.organization),
-            buildInput(fields.department),
-            buildInput(fields.jobTitle),
-            buildInput(fields.location),
-
-            buildCheckboxes(fields.researchInterests),
-
-            buildSelect(fields.avatarOption),
-            buildSelect(fields.gravatarDefault, 'avatarOption() === "gravatar"'),
-            // buildContent(div({}, [
-            //     p([
-            //         'Your current gravatar based on your email address ',
-            //         span({
-            //             dataBind: {
-            //                 text: 'email'
-            //             }
-            //         })
-            //     ]),
-            //     div({
-            //         style: {
-            //             textAlign: 'center'
-            //         }
-            //     }, img({
-            //         dataBind: {
-            //             attr: {
-            //                 src: 'gravatarUrl'
-            //             }
-            //         }
-            //     }))
-            // ])),
+            FieldBuilders.buildSelect(fields.organization),
+            div({
+                    dataBind: {
+                        if: 'organization() === "other"'
+                    }
+                },
+                FieldBuilders.buildInput(fields.organizationOther)
+            ),
+            FieldBuilders.buildInput(fields.department),
+            FieldBuilders.buildInput(fields.jobTitle),
+            FieldBuilders.buildInput(fields.location),
+            FieldBuilders.buildCheckboxes(fields.researchInterests),
             buildAffiliations(fields.affiliations),
-            buildTextarea(fields.personalStatement),
+            FieldBuilders.buildTextarea(fields.personalStatement),
+
+            FieldBuilders.buildSelect(fields.avatarOption),
+            FieldBuilders.buildSelect(fields.gravatarDefault, {
+                condition: 'avatarOption() === "gravatar"'
+            }),
+            // div([
+            //     p({
+            //         dataBind: {
+            //             visible: 'someDirty'
+            //         },
+            //         class: 'text-warning'
+            //     }, 'You have changed fields, you should save the form to preserve your changes.'),
+            //     p({
+            //         dataBind: {
+            //             visible: 'someInvalid'
+            //         },
+            //         class: 'text-danger'
+            //     }, 'You have incomplete required or invalid fields, please fix them and then save your profile.')
+            // ]),
+            // buildMessageDisplay(),
+            // button({
+            //     class: 'btn btn-primary',
+            //     type: 'button',
+            //     dataBind: {
+            //         click: 'doSaveProfile',
+            //         enable: 'formCanSave'
+            //     }
+            // }, 'Save')
+        ]);
+        return content;
+    }
+
+    function buildSaver() {
+        return div([
             div([
                 p({
                     dataBind: {
                         visible: 'someDirty'
-                    }
-                }, 'You have changed fields, you should save the form to preserve your changes.'),
+                    },
+                    class: 'text-warning'
+                }, 'You have made changes to your profile -- you should save them if you wish to preserve them.'),
                 p({
                     dataBind: {
                         visible: 'someInvalid'
-                    }
-                }, 'You have incomplete required or invalid fields, please fix them and then save your profile.')
+                    },
+                    class: 'text-danger'
+                }, 'You have incomplete required or invalid fields --; please fix them and then save your profile.')
             ]),
             buildMessageDisplay(),
             button({
@@ -891,7 +617,6 @@ define([
                 }
             }, 'Save')
         ]);
-        return content;
     }
 
     function buildPreview() {
@@ -1038,7 +763,10 @@ define([
             }, buildForm()),
             div({
                 class: 'col-md-6'
-            }, buildPreview())
+            }, [
+                buildPreview(),
+                buildSaver()
+            ])
         ]);
     }
 
@@ -1046,14 +774,9 @@ define([
         return {
             viewModel: function (params) {
                 var runtime = params.runtime;
+                var profile = params.profile;
 
-                var email = ko.observable(params.email)
-                    .extend({
-                        required: true,
-                        email: true
-                    });
-
-                var realname = ko.observable(params.realname)
+                var realname = ko.observable(profile.user.realname)
                     .extend({
                         required: true,
                         minLength: 2,
@@ -1061,44 +784,55 @@ define([
                         dirty: false
                     });
 
-                var title = ko.observable(params.title).extend({
+                // var title = ko.observable(profile.profile.userdata.title).extend({
+                //     required: true,
+                //     minLength: 2,
+                //     maxLength: 100,
+                //     dirty: false
+                // });
+
+                // var titles = fields.title.availableValues;
+
+                // var suffix = ko.observable(profile.profile.userdata.suffix).extend({
+                //     required: false,
+                //     minLength: 2,
+                //     maxLength: 100,
+                //     dirty: false
+                // });
+
+
+                var organization = ko.observable(profile.profile.userdata.organization).extend({
                     required: true,
                     minLength: 2,
                     maxLength: 100,
                     dirty: false
                 });
-
-                var titles = fields.title.availableValues;
-
-                var suffix = ko.observable(params.suffix).extend({
+                var organizationValues = Institutions;
+                organizationValues.push({
+                    value: 'other',
+                    label: 'Other'
+                });
+                var organizationOther = ko.observable(profile.profile.userdata.organizationOther).extend({
                     required: false,
                     minLength: 2,
                     maxLength: 100,
                     dirty: false
                 });
+                // var organizations = Institutions.map(function (item) {
+                //     return {
+                //         value: item[0],
+                //         label: item[1] + ' > ' + item[2] + ', ' + item[3]
+                //     };
+                // });
 
-
-                var organization = ko.observable(params.organization).extend({
-                    required: true,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-                var organizations = Institutions.map(function (item) {
-                    return {
-                        value: item[0],
-                        label: item[1] + ' > ' + item[2] + ', ' + item[3]
-                    };
-                });
-
-                var department = ko.observable(params.department).extend({
+                var department = ko.observable(profile.profile.userdata.department).extend({
                     required: true,
                     minLength: 2,
                     maxLength: 100,
                     dirty: false
                 });
 
-                var jobTitle = ko.observable(params.jobTitle).extend({
+                var jobTitle = ko.observable(profile.profile.userdata.jobTitle).extend({
                     required: true,
                     minLength: 2,
                     maxLength: 100,
@@ -1124,9 +858,9 @@ define([
                 };
                 var researchInterests = ko.observableArray(fields.researchInterests.availableValues.map(function (item) {
                     var checked = false;
-                    if (params.researchInterests &&
-                        params.researchInterests instanceof Array &&
-                        params.researchInterests.indexOf(item.value) >= 0) {
+                    if (profile.profile.userdata.researchInterests &&
+                        profile.profile.userdata.researchInterests instanceof Array &&
+                        profile.profile.userdata.researchInterests.indexOf(item.value) >= 0) {
                         checked = true;
                     }
                     return {
@@ -1155,16 +889,14 @@ define([
                     }
                 });
 
-                //  console.log('research interests', researchInterests.isDirty, researchInterests.toJSON);
-
-                var location = ko.observable(params.location).extend({
+                var location = ko.observable(profile.profile.userdata.location).extend({
                     required: true,
                     minLength: 2,
                     maxLength: 100,
                     dirty: false
                 });
 
-                var avatarOption = ko.observable(params.avatarOption).extend({
+                var avatarOption = ko.observable(profile.profile.userdata.avatarOption).extend({
                     required: false,
                     minLength: 2,
                     maxLength: 100,
@@ -1172,29 +904,29 @@ define([
                 });
                 var avatarOptionValues = fields.avatarOption.availableValues;
 
-                var gravatarDefault = ko.observable(params.gravatarDefault || 'monsterid').extend({
+                var gravatarDefault = ko.observable(profile.profile.userdata.gravatarDefault || 'monsterid').extend({
                     required: false,
                     minLength: 2,
                     maxLength: 100,
                     dirty: false
                 });
                 var gravatarDefaultValues = [{
-                    id: 'mm',
+                    value: 'mm',
                     label: 'Mystery Man - simple, cartoon-style silhouetted outline'
                 }, {
-                    id: 'identicon',
+                    value: 'identicon',
                     label: 'Identicon - a geometric pattern based on an email hash'
                 }, {
-                    id: 'monsterid',
+                    value: 'monsterid',
                     label: 'MonsterID - generated "monster" with different colors, faces, etc'
                 }, {
-                    id: 'wavatar',
+                    value: 'wavatar',
                     label: 'Wavatar - generated faces with differing features and backgrounds'
                 }, {
-                    id: 'retro',
+                    value: 'retro',
                     label: 'Retro - 8-bit arcade-style pixelated faces'
                 }, {
-                    id: 'blank',
+                    value: 'blank',
                     label: 'Blank - A Blank Space'
                 }];
 
@@ -1208,7 +940,7 @@ define([
                     message: 'A username may only contain the characters a-z, 0-0, and _.'
                 };
                 ko.validation.registerExtenders();
-                var affils = params.affiliations || [];
+                var affils = profile.profile.userdata.affiliations || [];
 
                 function affiliationVm(affil) {
                     var title = ko.observable(affil && affil.title).extend({
@@ -1255,7 +987,7 @@ define([
                     dirty: false
                 });
 
-                var personalStatement = ko.observable(params.personalStatement).extend({
+                var personalStatement = ko.observable(profile.profile.userdata.personalStatement).extend({
                     required: false,
                     minLength: 2,
                     maxLength: 400,
@@ -1270,21 +1002,21 @@ define([
                 });
 
 
-                var username = params.username;
-                var created = ko.observable(params.created);
-                var lastLogin = ko.observable(params.lastLogin);
+                var username = profile.user.username;
+                // var created = ko.observable(params.created);
+                //var lastLogin = ko.observable(params.lastLogin);
 
-                var createdAt = ko.pureComputed(function () {
-                    return Format.niceTime(created());
-                });
-                var lastLoginAt = ko.pureComputed(function () {
-                    return Format.niceElapsedTime(lastLogin()) +
-                        ' (' +
-                        Format.niceTime(lastLogin()) +
-                        ')';
-                });
+                // var createdAt = ko.pureComputed(function () {
+                //     return Format.niceTime(created());
+                // });
+                // var lastLoginAt = ko.pureComputed(function () {
+                //     return Format.niceElapsedTime(lastLogin()) +
+                //         ' (' +
+                //         Format.niceTime(lastLogin()) +
+                //         ')';
+                // });
 
-                var gravatarHash = params.gravatarHash;
+                var gravatarHash = profile.profile.userdata.gravatarHash;
                 var gravatarUrl = ko.pureComputed(function () {
                     switch (avatarOption()) {
                     case 'gravatar':
@@ -1311,24 +1043,20 @@ define([
                     }
                 }
 
+                var vmFields = [
+                    realname, location, organization, organizationOther,
+                    department, avatarOption, gravatarDefault, affiliations,
+                    personalStatement, jobTitle, researchInterests
+                ];
+
                 var someDirty = ko.pureComputed(function () {
-                    var fields = [
-                        title, realname, suffix, location, organization,
-                        department, avatarOption, gravatarDefault, affiliations,
-                        personalStatement, jobTitle, researchInterests
-                    ];
                     // some are dirty
-                    return fields.some(function (field) {
+                    return vmFields.some(function (field) {
                         return field.isDirty();
                     });
                 });
                 var someInvalid = ko.pureComputed(function () {
-                    var fields = [
-                        title, realname, suffix, location, organization,
-                        department, avatarOption, gravatarDefault, affiliations,
-                        personalStatement, jobTitle, researchInterests
-                    ];
-                    return fields.some(function (field) {
+                    return vmFields.some(function (field) {
                         if (field.isValid) {
                             return !field.isValid();
                         } else {
@@ -1338,12 +1066,6 @@ define([
                 });
 
                 var formCanSave = ko.pureComputed(function () {
-                    var fields = [
-                        title, realname, suffix, location, organization,
-                        department, avatarOption, gravatarDefault, affiliations,
-                        personalStatement
-                    ];
-                    // some are dirty
                     return someDirty() && !someInvalid();
                 });
 
@@ -1364,11 +1086,11 @@ define([
                             // build the update object.
                             // TODO: detect changed fields - knockout?
 
-                            if (title.isDirty()) {
-                                profile.profile.userdata.title = title();
-                                title.markClean();
-                                profileChanges = true;
-                            }
+                            // if (title.isDirty()) {
+                            //     profile.profile.userdata.title = title();
+                            //     title.markClean();
+                            //     profileChanges = true;
+                            // }
                             if (realname.isDirty()) {
                                 profile.user.realname = realname();
                                 realname.markClean();
@@ -1376,11 +1098,11 @@ define([
                                 accountChanges = true;
                                 profileChanges = true;
                             }
-                            if (suffix.isDirty()) {
-                                profile.profile.userdata.suffix = suffix();
-                                suffix.markClean();
-                                accountChanges = true;
-                            }
+                            // if (suffix.isDirty()) {
+                            //     profile.profile.userdata.suffix = suffix();
+                            //     suffix.markClean();
+                            //     accountChanges = true;
+                            // }
                             if (location.isDirty()) {
                                 profile.profile.userdata.location = location();
                                 location.markClean();
@@ -1391,6 +1113,12 @@ define([
                                 profile.profile.userdata.organization = organization();
                                 organization.markClean();
                                 profileChanges = true;
+                            }
+
+                            if (organizationOther.isDirty()) {
+                                profile.profile.userdata.organizationOther = organizationOther();
+                                organizationOther.markClean();
+                                organizationOther = true;
                             }
 
                             if (department.isDirty()) {
@@ -1505,12 +1233,13 @@ define([
 
                 return {
                     // fields being edited or displayed
-                    title: title,
-                    titles: titles,
+                    //title: title,
+                    //titles: titles,
                     realname: realname,
-                    suffix: suffix,
+                    //suffix: suffix,
                     organization: organization,
-                    organizations: organizations,
+                    organizationValues: organizationValues,
+                    organizationOther: organizationOther,
                     department: department,
                     location: location,
                     avatarOption: avatarOption,
@@ -1523,12 +1252,7 @@ define([
                     jobTitle: jobTitle,
                     researchInterests: researchInterests,
 
-                    email: email,
                     username: username,
-                    created: created,
-                    lastLogin: lastLogin,
-                    createdAt: createdAt,
-                    lastLoginAt: lastLoginAt,
 
                     // computed
                     gravatarUrl: gravatarUrl,
