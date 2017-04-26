@@ -3,7 +3,7 @@ define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_common/format'
-], function(
+], function (
     ko,
     html,
     BS,
@@ -47,26 +47,26 @@ define([
             description: 'The date and time you last signed in to KBase',
             more: 'You many not change this information, it is for display only'
         },
-        realname: {
-            name: 'realname',
-            label: 'Name',
-            type: 'text',
-            placeholder: 'Your Name',
-            description: span([
-                'This field contains your name as you wish it to be displayed to other KBase users ',
-                ' as well as KBase staff.'
-            ]),
-            more: div([
-                p([
-                    'In your profile, ',
-                    'you have the option to add additional information, including title, suffix, and affiliations. '
-                ]),
-                p([
-                    'Your name will be displayed in any context within the KBase in which you are identified. ',
-                    'This includes the Dashboard, User Profile, App Catalog, and Narrative Interface.'
-                ])
-            ])
-        },
+        // realname: {
+        //     name: 'realname',
+        //     label: 'Name',
+        //     type: 'text',
+        //     placeholder: 'Your Name',
+        //     description: span([
+        //         'This field contains your name as you wish it to be displayed to other KBase users ',
+        //         ' as well as KBase staff.'
+        //     ]),
+        //     more: div([
+        //         p([
+        //             'In your profile, ',
+        //             'you have the option to add additional information, including title, suffix, and affiliations. '
+        //         ]),
+        //         p([
+        //             'Your name will be displayed in any context within the KBase in which you are identified. ',
+        //             'This includes the Dashboard, User Profile, App Catalog, and Narrative Interface.'
+        //         ])
+        //     ])
+        // },
         email: {
             name: 'email',
             label: 'E-Mail',
@@ -248,7 +248,7 @@ define([
             }
         }, [
             buildDisplay(fields.username),
-            buildInput(fields.realname),
+            // buildInput(fields.realname),
             buildInput(fields.email),
             buildDisplay(fields.created),
             buildDisplay(fields.lastLogin),
@@ -266,7 +266,7 @@ define([
 
     function component() {
         return {
-            viewModel: function(data) {
+            viewModel: function (data) {
                 var doSave = data.doSave;
 
                 var email = ko.observable(data.email)
@@ -275,21 +275,21 @@ define([
                         email: true
                     });
 
-                var realname = ko.observable(data.realname)
-                    .extend({
-                        required: true,
-                        minLength: 2,
-                        maxLength: 100
-                    });
+                // var realname = ko.observable(data.realname)
+                //     .extend({
+                //         required: true,
+                //         minLength: 2,
+                //         maxLength: 100
+                //     });
 
                 var username = ko.observable(data.username);
                 var created = ko.observable(data.created);
                 var lastLogin = ko.observable(data.lastLogin);
 
-                var createdAt = ko.pureComputed(function() {
+                var createdAt = ko.pureComputed(function () {
                     return Format.niceTime(created());
                 });
-                var lastLoginAt = ko.pureComputed(function() {
+                var lastLoginAt = ko.pureComputed(function () {
                     return Format.niceElapsedTime(lastLogin()) +
                         ' (' +
                         Format.niceTime(lastLogin()) +
@@ -300,7 +300,7 @@ define([
                 // var emailMore = ko.observable(true);
 
                 var more = {};
-                Object.keys(fields).forEach(function(key) {
+                Object.keys(fields).forEach(function (key) {
                     more[key] = ko.observable(true);
                 });
 
@@ -314,17 +314,17 @@ define([
 
                 function save() {
                     doSave({
-                            display: realname(),
+                            // display: realname(),
                             email: email()
                         })
-                        .then(function() {
+                        .then(function () {
                             message('Successfully Saved');
                             messageType({
                                 'alert-success': true,
                                 hidden: false
                             });
                         })
-                        .catch(function(err) {
+                        .catch(function (err) {
                             console.error('boo', err);
                         });
                 }
@@ -333,7 +333,7 @@ define([
                 var messageType = ko.observable();
 
                 return {
-                    realname: realname,
+                    // realname: realname,
                     email: email,
                     username: username,
                     created: created,

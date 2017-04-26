@@ -420,6 +420,13 @@ define([
                 });
         }
 
+        function doRevokeAll2() {
+            return runtime.service('session').getClient().revokeAllTokens()
+                .then(function () {
+                    runtime.service('session').getClient().removeSessionCookie();
+                });
+        }
+
         function doRevokeAll() {
             return Promise.all(vm.allTokens.value.map(function (token) {
                     return runtime.service('session').getClient().revokeToken(token.id);
@@ -453,7 +460,7 @@ define([
                         class: 'btn btn-danger',
                         id: events.addEvent({
                             type: 'click',
-                            handler: doRevokeAllAndLogout
+                            handler: doRevokeAll2
                         })
                     }, 'Revoke All and Logout')
                 ])

@@ -1,0 +1,31 @@
+.form-row:hover {
+    background-color: #CCC;
+}
+
+.form-sub-row {
+    border: 1px transparent solid;
+    xborder-bottom: 1px #CCC solid;
+    padding: 3px;
+    box-sizing: border-box;
+}
+
+.form-sub-row:nth-last-child() {
+    xborder-bottom: 1px transparenet solid;
+}
+
+.form-sub-row:hover {
+    border: 1px #EEE solid;
+}
+
+.form-row {
+    padding: 4px;
+}
+
+.field-doc {
+    margin-bottom: 4px;
+    color: #AAA;
+}
+
+.form-row:hover .field-doc {
+    color: #000;
+}
