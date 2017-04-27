@@ -30,7 +30,9 @@ define([
     Policies
 ) {
     var t = html.tag,
-        div = t('div');
+        div = t('div'),
+        p = t('p'),
+        a = t('a');
 
     function factory(config) {
         var hostNode, container,
@@ -117,7 +119,7 @@ define([
 
                     if (stateParams.origin === 'signup') {
                         runtime.send('app', 'navigate', {
-                            path: ['auth2', 'signup']
+                            path: ['signup']
                         });
                         return null;
                     }
@@ -179,13 +181,45 @@ define([
                         });
                 })
                 .catch(Auth2Error.AuthError, function (err) {
+                    // transform error message
+                    var nextErr;
+                    switch (err.code) {
+                    case '10010':
+                        nextErr = {
+                            code: 'no-signin-session',
+                            message: 'No sign-in session present',
+                            detail: div([
+                                p([
+                                    'A sign-in session was not found. ',
+                                    'This may be due to the expiration of the sign-in or sign-up session, ',
+                                    'which is valid for 30 minutes. ',
+                                    'Or it may be because you have visited this path from your browser ',
+                                    'history.'
+                                ]),
+                                p([
+                                    'If you wish to sign-in or sign-up, please revisit the ',
+                                    a({
+                                        href: '#login'
+                                    }, 'sign in page'),
+                                    '.'
+                                ])
+                            ]),
+                            data: err.data
+                        };
+                        break;
+                    default:
+                        nextErr = err;
+                    }
+
+
+
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
                     var viewModel = {
-                        code: err.code,
-                        message: err.message,
-                        detail: err.detail,
-                        data: ko.observable(err.data)
+                        code: nextErr.code,
+                        message: nextErr.message,
+                        detail: nextErr.detail,
+                        data: nextErr.data
                     };
                     main.innerHTML = div({
                         dataBind: {

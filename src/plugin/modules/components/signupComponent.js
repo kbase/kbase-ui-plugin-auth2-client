@@ -19,6 +19,7 @@ define([
     format
 ) {
     var t = html.tag,
+        h1 = t('h1'),
         div = t('div'),
         a = t('a'),
         span = t('span'),
@@ -472,15 +473,21 @@ define([
                 if: 'expired'
             }
         }, [
+            h1([
+                'Expired'
+            ]),
             p([
                 'Your sign-up session has expired.'
+            ]),
+            p([
+                'Once you start the sign-in or sign-up process, you have 30 minutes to complete it.'
             ]),
             p([
                 'You should visit the ',
                 a({
                     href: '#login'
-                }, 'sign-in page '),
-                ' and follow the sign-up link again.'
+                }, 'sign-in page'),
+                ' make another attempt to sign-in or sign-up.'
             ])
         ]);
     }

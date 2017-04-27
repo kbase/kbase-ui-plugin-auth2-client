@@ -31,6 +31,7 @@ define([
         ul = t('ul'),
         li = t('li'),
         a = t('a'),
+        b = t('b'),
         p = html.tag('p');
 
 
@@ -95,6 +96,156 @@ define([
         ]);
     }
 
+    function buildOopsLegacyUser() {
+        return BS.buildCollapsiblePanel({
+            title: 'Already Have a KBase Account?',
+            type: 'default',
+            collapsed: true,
+            classes: ['kb-panel-help'],
+            body: div([
+                p([
+                    'Do you already have a KBase account and just want to log into it?'
+                ]),
+                p([
+                    'If you created a KBase account ',
+                    b('prior to 5/15/17'),
+                    ', we have prepared a ',
+                    a({
+                        href: '#auth2/login/legacy'
+                    }, 'special page for you '),
+                    ' to explain the changes and help you sign in for the first time with this new system.'
+                ]),
+                p([
+                    'Or you may simply have chosen the wrong account to sign in with. ',
+                    'In this case you should just try ',
+                    a({
+                        href: '#login'
+                    }, 'signing in'),
+                    ' again with a different acount.'
+                ]),
+                p([
+                    'If you absolutely cannot remember which account you used to sign in to KBase, ',
+                    'please ',
+                    a({
+                        href: 'http://kbase.us/contact'
+                    }, 'contact us'),
+                    ' and we will help you regain access to your KBase account.'
+                ]),
+                div({
+                    dataBind: {
+                        if: 'choice.provider === "Globus"'
+                    }
+                }, [
+                    p([
+                        'Since you have signed in with Globus, we can let you in on a little secret. ',
+                        'If you try to sign in with Globus under a different account, you will just return to this page ',
+                        'with this same account.'
+                    ]),
+                    p([
+                        'You will need to ',
+                        a({
+                            href: ''
+                        }, 'sign out of Globus'),
+                        ' first.'
+                    ]),
+                    p([
+                        ''
+                    ])
+                ])
+            ])
+        });
+    }
+
+    function buildOopsWrongGoogleAccount() {
+        return BS.buildCollapsiblePanel({
+            title: 'Not the account you were expecting?',
+            type: 'default',
+            collapsed: true,
+            classes: ['kb-panel-help'],
+            body: div([
+                p([
+                    'If this is not the account you were expecting, you may need to sign out of the identity provider ',
+                    'and start the sign-in process again.'
+                ]),
+                p([
+                    'KBase cannot sign out of an identity provider for you, but the links below will allow you ',
+                    'to do so.'
+                ]),
+                ul({
+                    dataBind: {
+                        foreach: 'providers'
+                    }
+                }, li(a({
+                    dataBind: {
+                        attr: {
+                            href: 'logoutUrl'
+                        }
+                    },
+                    target: '_blank'
+                }, [
+                    'Log out from ',
+                    span({
+                        dataBind: {
+                            text: 'label'
+                        }
+                    })
+                ]))),
+                p([
+                    'After signing out you will need to start the ',
+                    a({
+                        href: '#login'
+                    }, 'signin'),
+                    ' process again.'
+                ]),
+            ])
+        });
+    }
+
+    function buildOopsWrongGlobusAccount() {
+        return BS.buildCollapsiblePanel({
+            title: 'Not the account you were expecting?',
+            type: 'default',
+            collapsed: true,
+            classes: ['kb-panel-help'],
+            body: div([
+                p([
+                    'If this is not the account you were expecting, you may need to sign out of the identity provider ',
+                    'and start the sign-in process again.'
+                ]),
+                p([
+                    'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+                    'to do so.'
+                ]),
+                ul({
+                    dataBind: {
+                        foreach: 'providers'
+                    }
+                }, li(a({
+                    dataBind: {
+                        attr: {
+                            href: 'logoutUrl'
+                        }
+                    },
+                    target: '_blank'
+                }, [
+                    'Log out from ',
+                    span({
+                        dataBind: {
+                            text: 'label'
+                        }
+                    })
+                ]))),
+                p([
+                    'After signing out you will need to start the ',
+                    a({
+                        href: '#login'
+                    }, 'signin'),
+                    ' process again.'
+                ]),
+            ])
+        });
+    }
+
     function buildSignupStep() {
         return div({
             class: 'col-sm-10 col-sm-offset-1',
@@ -117,21 +268,9 @@ define([
                             if: 'signupState() === "incomplete"'
                         }
                     }, [
-                        h3('Account not found'),
+                        h3('Sign up for KBase'),
                         p([
-                            'You have attempted to sign in to KBase, but are using a ',
-                            span({
-                                dataBind: {
-                                    text: 'choice.provider'
-                                },
-                                style: {
-                                    fontWeight: 'bold'
-                                }
-                            }),
-                            ' account which is not linked to any KBase account.'
-                        ]),
-                        p([
-                            'You may create a KBase account below, which will be linked to this ',
+                            'Hi, it looks like this is your first time using KBase using your ',
                             span({
                                 dataBind: {
                                     text: 'choice.provider'
@@ -148,51 +287,104 @@ define([
                                 style: {
                                     fontWeight: 'bold'
                                 }
-                            }),
-                            '.'
+                            })
                         ]),
-                        div({
-                            style: {
-                                marginLeft: '20px',
-                                borderLeft: '10px silver solid',
-                                paddingLeft: '10px'
-                            }
-                        }, [
-                            p([
-                                'If this is not what you intended, and rather you have perhaps signed in with the ',
-                                'wrong account, you may need to sign out of the identity provider.'
-                            ]),
-                            p([
-                                'KBase cannot sign you out of an identity provider, but the links below will allow you ',
-                                'to do so.'
-                            ]),
-                            ul({
+                        p([
+                            'If you wish to create a new KBase account, simply complete the form below. You will then ',
+                            'be signed in using this ',
+                            span({
                                 dataBind: {
-                                    foreach: 'providers'
-                                }
-                            }, li(a({
-                                dataBind: {
-                                    attr: {
-                                        href: 'logoutUrl'
-                                    }
+                                    text: 'choice.provider'
                                 },
-                                target: '_blank'
-                            }, [
-                                'Log out from ',
-                                span({
-                                    dataBind: {
-                                        text: 'label'
-                                    }
-                                })
-                            ]))),
-                            p([
-                                'After signing out you will need to start the ',
-                                a({
-                                    href: '#login'
-                                }, 'signin'),
-                                ' process again.'
-                            ]),
-                        ])
+                                style: {
+                                    fontWeight: 'bold'
+                                }
+                            }),
+                            ' account.'
+                        ]),
+                        p(['Otherwise']),
+
+                        buildOopsLegacyUser(),
+                        div({
+                            dataBind: {
+                                if: 'choice.provider === "Globus"'
+                            }
+                        }, buildOopsWrongGlobusAccount()),
+                        div({
+                            dataBind: {
+                                if: 'choice.provider === "Google"'
+                            }
+                        }, buildOopsWrongGoogleAccount()),
+
+                        // p([
+                        //     'If this is a mistake, and you want to sign in to a KBase account you already have, you should probably be ',
+                        //     'signing in with a different account. ',
+                        //     'If you created a KBase account prior to 5/15/17, we have prepared a special page for you ',
+                        //     'to explain the changes and help you sign in for the first time.'
+                        // ]),
+                        // p([
+                        //     'You may create a KBase account below, which will be linked to this ',
+                        //     span({
+                        //         dataBind: {
+                        //             text: 'choice.provider'
+                        //         },
+                        //         style: {
+                        //             fontWeight: 'bold'
+                        //         }
+                        //     }),
+                        //     ' account ',
+                        //     span({
+                        //         dataBind: {
+                        //             text: 'create.provusername'
+                        //         },
+                        //         style: {
+                        //             fontWeight: 'bold'
+                        //         }
+                        //     }),
+                        //     '.'
+                        // ]),
+                        // div({
+                        //     style: {
+                        //         marginLeft: '20px',
+                        //         borderLeft: '10px silver solid',
+                        //         paddingLeft: '10px'
+                        //     }
+                        // }, [
+                        //     p([
+                        //         'If this is not what you intended, and rather you have perhaps signed in with the ',
+                        //         'wrong account, you may need to sign out of the identity provider.'
+                        //     ]),
+                        //     p([
+                        //         'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+                        //         'to do so.'
+                        //     ]),
+                        //     ul({
+                        //         dataBind: {
+                        //             foreach: 'providers'
+                        //         }
+                        //     }, li(a({
+                        //         dataBind: {
+                        //             attr: {
+                        //                 href: 'logoutUrl'
+                        //             }
+                        //         },
+                        //         target: '_blank'
+                        //     }, [
+                        //         'Log out from ',
+                        //         span({
+                        //             dataBind: {
+                        //                 text: 'label'
+                        //             }
+                        //         })
+                        //     ]))),
+                        //     p([
+                        //         'After signing out you will need to start the ',
+                        //         a({
+                        //             href: '#login'
+                        //         }, 'signin'),
+                        //         ' process again.'
+                        //     ]),
+                        // ])
 
                     ]),
                     div({
