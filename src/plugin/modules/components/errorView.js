@@ -43,11 +43,11 @@ define([
                     name: 'detail',
                     title: 'Detail',
                     type: 'danger',
-                    collapsed: true,
+                    collapsed: false,
                     hidden: false,
                     body: div({
                         dataBind: {
-                            text: 'detail'
+                            html: 'detail'
                         }
                     })
                 }),
@@ -59,9 +59,13 @@ define([
                     hidden: false,
                     body: div({
                         dataBind: {
+                            if: 'data'
+                        }
+                    }, div({
+                        dataBind: {
                             html: 'data'
                         }
-                    })
+                    }))
                 })
             ])
         });

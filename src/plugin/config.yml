@@ -112,7 +112,7 @@ install:
             queryParams:
                 in-process-link-token: {}
         -
-            path: ['auth2', 'signup', {type: param, name: step}]
+            path: ['signup', {type: param, name: step}]
             widget: auth2_signup
             queryParams: 
                 nextrequest: {}

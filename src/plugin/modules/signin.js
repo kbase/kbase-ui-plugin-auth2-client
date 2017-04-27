@@ -58,7 +58,7 @@ define([
                 .finally(function () {
                     // don't care whether it succeeded or failed.
                     runtime.send('app', 'navigate', {
-                        path: 'auth2/signup'
+                        path: 'signup'
                     });
                 });
         }
