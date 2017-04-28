@@ -17,6 +17,7 @@ define([
     var t = html.tag,
         div = t('div'),
         img = t('img'),
+        span = t('span'),
         button = t('button');
 
     function factory(config) {
@@ -73,6 +74,43 @@ define([
                     })),
                 provider.label
             ]);
+        }
+
+
+        function buildLoginButton2(events, provider, state) {
+            return button({
+                class: 'btn btn-default',
+                style: {
+                    textAlign: 'center'
+                },
+                id: events.addEvent('click', function () {
+                    runtime.service('session').getClient().setLastProvider(provider.id);
+                    doLogin(provider.id, state);
+                })
+            }, div({
+                style: {
+                    display: 'inline-block',
+                    width: '50%',
+                    textAlign: 'left',
+                    fontWeight: 'bold',
+                    verticalAlign: 'middle'
+                }
+            }, [
+                img({
+                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
+                    style: {
+                        height: '24px',
+                        marginRight: '10px',
+                        verticalAlign: 'middle'
+                    }
+                }),
+                span({
+                    style: {
+                        verticalAlign: 'middle'
+                    }
+                }, provider.label)
+
+            ]));
         }
 
         function buildLoginButton(events, provider, state) {
@@ -149,6 +187,7 @@ define([
 
         return {
             buildLoginButton: buildLoginButton,
+            buildLoginButton2: buildLoginButton2,
             parsePolicyAgreements: parsePolicyAgreements,
             buildTable: buildTable
         };

@@ -98,7 +98,7 @@ define([
                                 .then(function (result) {
                                     var profile = result[0];
                                     var hashedEmail = md5.hash(data.email.trim().toLowerCase());
-                                    profile.profile.userdata.gravatarHash = hashedEmail;
+                                    profile.profile.synced.gravatarHash = hashedEmail;
                                     return Promise.all([
                                             runtime.service('session').getClient().putMe(data),
                                             client.set_user_profile({

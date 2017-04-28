@@ -18,7 +18,7 @@ install:
             id: auth2Info
             type: factory
         -
-            module: signin
+            module: signinKO
             id: auth2Signin
             css: true
             type: factory
