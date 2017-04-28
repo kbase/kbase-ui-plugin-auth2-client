@@ -27,11 +27,7 @@ define([
         legend = t('legend'),
         i = t('i');
 
-    function doStaySignedIn(e) {
-        var checked = e.target.checked;
-        var auth2Client = runtime.service('session').getClient();
-        auth2Client.setSessionPersistent(checked);
-    }
+
 
     function buildLoginButton(action) {
         return button({
@@ -176,7 +172,8 @@ define([
                             input({
                                 type: 'checkbox',
                                 dataBind: {
-                                    checked: 'isSessionPersistent'
+                                    checked: 'isSessionPersistent',
+
                                 },
                                 // checked: (function () {
                                 //     return runtime.service('session').getClient().isSessionPersistent();
@@ -464,7 +461,12 @@ define([
 
         // todo set initial value from sessino service,
         // udpate session service when the value changes.
-        var isSessionPersistent = ko.observable(false);
+        var isSessionPersistent = ko.observable(runtime.service('session').getClient().isSessionPersistent());
+
+        isSessionPersistent.subscribe(function (persist) {
+            runtime.service('session').getClient().setSessionPersistent(persist);
+        });
+
         // TODO; populate from session, as above.
         var username = runtime.service('session').getUsername();
 
@@ -503,6 +505,7 @@ define([
                     });
                 });
         }
+
 
         var mode = ko.observable();
 
