@@ -1,6 +1,7 @@
 /* global Promise*/
 define([
     'knockout-plus',
+    'md5',
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_common/format',
@@ -9,9 +10,11 @@ define([
     '../../lib/fieldBuilders',
     'kb_plugin_auth2-client',
     // 'csv!../../../resources/data/institutions.csv'
-    'json!../../../resources/data/institutions.json'
+    'json!../../../resources/data/institutions.json',
+    'yaml!../../../resources/data/nationalLabs.yaml'
 ], function (
     ko,
+    md5,
     html,
     BS,
     Format,
@@ -19,7 +22,8 @@ define([
     UserProfileService,
     FieldBuilders,
     Plugin,
-    Institutions
+    Institutions,
+    NationalLabs
 ) {
     var t = html.tag,
         div = t('div'),
@@ -92,16 +96,16 @@ define([
             name: 'organizationOther',
             required: false,
             label: 'Organization Other',
-            description: 'Not in the list? Enter it here',
-            more: div([
-                p([
-                    'more stuff here.'
-                ])
-            ])
+            description: 'Your organization not in the list? Enter it here'
+                // more: div([
+                //     p([
+                //         'more stuff here.'
+                //     ])
+                // ])
         },
         department: {
             name: 'department',
-            required: true,
+            required: false,
             label: 'Department',
             description: 'Your department or area of specialization within the organization',
             more: div([
@@ -167,6 +171,52 @@ define([
                     value: 'util',
                     label: 'Utilities'
                 }
+            ]
+        },
+        fundingSource: {
+            name: 'fundingSource',
+            required: false,
+            label: 'Primary funding source',
+            description: 'The primary funding source for your work at KBase',
+            availableValues: [
+                { value: 'DOE Office of Energy Efficiency and Renewable Energy (EERE)', label: 'DOE Office of Energy Efficiency and Renewable Energy (EERE)' },
+                { value: 'DOE Office of Environmental Management (EM)', label: 'DOE Office of Environmental Management (EM)' },
+                { value: 'DOE Office of Fossil Energy (FE)', label: 'DOE Office of Fossil Energy (FE)' },
+                { value: 'DOE Office Nuclear Energy (NE)', label: 'DOE Office Nuclear Energy (NE)' },
+                { value: 'DOE National Nuclear Security Administration (NNSA)', label: 'DOE National Nuclear Security Administration (NNSA)' },
+                { value: 'DOE Small Business Innovation Research/Small Business Technology Transfer (SBIR/STTR)', label: 'DOE Small Business Innovation Research/Small Business Technology Transfer (SBIR/STTR)' },
+                { value: 'DOE Office of Science Advenced Scientific Computing Research (ASCR)', label: 'DOE Office of Science Advenced Scientific Computing Research (ASCR)' },
+                { value: 'DOE Office of Science Basic Energy Sciences (BES)', label: 'DOE Office of Science Basic Energy Sciences (BES)' },
+                { value: 'DOE Office of Science BES Energy Frontier Science Center (EFRC)', label: 'DOE Office of Science BES Energy Frontier Science Center (EFRC)' },
+                { value: 'DOE Office of Science Biological and Environmental Research (BER)', label: 'DOE Office of Science Biological and Environmental Research (BER)' },
+                { value: 'DOE Office of Science Fusion Energy Sciences (FES)', label: 'DOE Office of Science Fusion Energy Sciences (FES)' },
+                { value: 'DOE Office of Science High Energy Physics (HEP)', label: 'DOE Office of Science High Energy Physics (HEP)' },
+                { value: 'DOE Office of Science Nuclear Physics (NP)', label: 'DOE Office of Science Nuclear Physics (NP)' },
+                { value: 'DOE Office of Science Workforce Development for Teachers and Students (WDTS)', label: 'DOE Office of Science Workforce Development for Teachers and Students (WDTS)' },
+                { value: 'DOE Laboratory Directed Research and Development (LDRD)', label: 'DOE Laboratory Directed Research and Development (LDRD)' },
+                { value: 'USDA - Agricultural Research Service (ARS)', label: 'USDA - Agricultural Research Service (ARS)' },
+                { value: 'USDA - Forest Service (FS)', label: 'USDA - Forest Service (FS)' },
+                { value: 'DOC - National Institute of Standards and Technology (NIST)', label: 'DOC - National Institute of Standards and Technology (NIST)' },
+                { value: 'DOC - National Oceanic and Atmospheric Administration (NOAA)', label: 'DOC - National Oceanic and Atmospheric Administration (NOAA)' },
+                { value: 'DOD - Defense Advanced Research Projects Agency (DARPA)', label: 'DOD - Defense Advanced Research Projects Agency (DARPA)' },
+                { value: 'U.S. Department of Education (DOEd)', label: 'U.S. Department of Education (DOEd)' },
+                { value: 'U.S. Department of Health and Human Services (HHS) - Other (excl. NCI and NIH)', label: 'U.S. Department of Health and Human Services (HHS) - Other (excl. NCI and NIH)' },
+                { value: 'HHS - Centers for Disease Control (CDC)', label: 'HHS - Centers for Disease Control (CDC)' },
+                { value: 'HHS - National Institutes of Health (NIH)', label: 'HHS - National Institutes of Health (NIH)' },
+                { value: 'HHS - NIH - National Cancer Institute (NCI)', label: 'HHS - NIH - National Cancer Institute (NCI)' },
+                { value: 'HHS - U.S. United States Food and Drug Administration (FDA)', label: 'HHS - U.S. United States Food and Drug Administration (FDA)' },
+                { value: 'U.S. Department of Homeland Security (DHS)', label: 'U.S. Department of Homeland Security (DHS)' },
+                { value: 'DOI - U.S. Geological Survey (USGS)', label: 'DOI - U.S. Geological Survey (USGS)' },
+                { value: 'DOI - U.S. Fish and Wildlife Service (FWS)', label: 'DOI - U.S. Fish and Wildlife Service (FWS)' },
+                { value: 'U.S. Department of Transportation (DOT)', label: 'U.S. Department of Transportation (DOT)' },
+                { value: 'Environmental Protection Agency (EPA)', label: 'Environmental Protection Agency (EPA)' },
+                { value: 'National Aeronautics and Space Administration (NASA)', label: 'National Aeronautics and Space Administration (NASA)' },
+                { value: 'National Science Foundation (NSF)', label: 'National Science Foundation (NSF)' },
+                { value: 'Nuclear Regulatory Commission (NRC)', label: 'Nuclear Regulatory Commission (NRC)' },
+                { value: 'Small Business Administration (SBA)', label: 'Small Business Administration (SBA)' },
+                { value: 'U.S. Other Federal Agency', label: 'U.S. Other Federal Agency' },
+                { value: 'Federally Funded Research and Development Center (FFRDC) - (Specify)', label: 'Federally Funded Research and Development Center (FFRDC) - (Specify)' },
+                { value: 'other', label: 'Other' }
             ]
         },
         location: {
@@ -246,7 +296,6 @@ define([
 
         affiliations: {
             name: 'affiliations',
-            vmId: 'affiliations',
             label: 'Affiliations',
             description: 'Your history of organizational affiliations ',
             more: div([
@@ -271,14 +320,7 @@ define([
                 p([
                     'Your name will be displayed in any context within the KBase in which you are identified. ',
                     'This includes the Dashboard, User Profile, App Catalog, and Narrative Interface.'
-                ]),
-                p([
-                    'You may edit this field in the ',
-                    a({
-                        href: '#auth2/account?tab=account'
-                    }, 'Account tab'),
-                    '.'
-                ]),
+                ])
             ])
         },
 
@@ -544,8 +586,11 @@ define([
         }, [
             // buildTypeahead(fields.title),
             FieldBuilders.buildInput(fields.realname),
+            FieldBuilders.buildInput(fields.jobTitle),
             // buildInput(fields.suffix),
-            FieldBuilders.buildSelect(fields.organization),
+            FieldBuilders.buildSelect(fields.organization, {
+                optionsCaption: '- select an organization or "other" to enter your own -'
+            }),
             div({
                     dataBind: {
                         if: 'organization() === "other"'
@@ -554,9 +599,11 @@ define([
                 FieldBuilders.buildInput(fields.organizationOther)
             ),
             FieldBuilders.buildInput(fields.department),
-            FieldBuilders.buildInput(fields.jobTitle),
             FieldBuilders.buildInput(fields.location),
             FieldBuilders.buildCheckboxes(fields.researchInterests),
+            FieldBuilders.buildSelect(fields.fundingSource, {
+                optionsCaption: '- optionally select a funding source or "other" -'
+            }),
             buildAffiliations(fields.affiliations),
             FieldBuilders.buildTextarea(fields.personalStatement),
 
@@ -599,13 +646,29 @@ define([
                         visible: 'someDirty'
                     },
                     class: 'text-warning'
-                }, 'You have made changes to your profile -- you should save them if you wish to preserve them.'),
+                }, [
+                    span({
+                        class: 'fa fa-exclamation',
+                        style: {
+                            marginRight: '1em'
+                        }
+                    }),
+                    'You have made changes to your profile -- you should save them if you wish to preserve them.'
+                ]),
                 p({
                     dataBind: {
                         visible: 'someInvalid'
                     },
                     class: 'text-danger'
-                }, 'You have incomplete required or invalid fields --; please fix them and then save your profile.')
+                }, [
+                    span({
+                        class: 'fa fa-exclamation-triangle',
+                        style: {
+                            marginRight: '1em'
+                        }
+                    }),
+                    'You have empty required or invalid fields -- please fix them and then save your profile.'
+                ])
             ]),
             buildMessageDisplay(),
             button({
@@ -681,7 +744,14 @@ define([
                         }),
                         div({
                             dataBind: {
+                                visible: 'organization() !== "other"',
                                 text: 'organization'
+                            }
+                        }),
+                        div({
+                            dataBind: {
+                                visible: 'organization() === "other"',
+                                text: 'organizationOther'
                             }
                         }),
                         div({
@@ -695,6 +765,14 @@ define([
                             }
                         }),
                         h3('Research Interests'),
+                        div({
+                            dataBind: {
+                                visible: 'researchInterests.exportDisplay().length === 0'
+                            },
+                            style: {
+                                fontStyle: 'italic'
+                            }
+                        }, 'No research interests selected'),
                         ul({
                             dataBind: {
                                 foreach: 'researchInterests.exportDisplay()'
@@ -704,7 +782,27 @@ define([
                                 text: '$data'
                             }
                         })),
+                        div({
+                            dataBind: {
+                                if: 'fundingSource'
+                            }
+                        }, [
+                            h3('Primary Funding Source'),
+                            div({
+                                dataBind: {
+                                    text: 'fundingSource'
+                                }
+                            })
+                        ]),
                         h3('Affiliations'),
+                        div({
+                            dataBind: {
+                                visible: 'affiliations().length === 0'
+                            },
+                            style: {
+                                fontStyle: 'italic'
+                            }
+                        }, 'No affiliations provided'),
                         div({
                             dataBind: {
                                 foreach: 'affiliations'
@@ -743,8 +841,17 @@ define([
                         ])),
                         h3('Research or Personal Statement'),
                         div({
+                            dataBind: {
+                                visible: 'personalStatementDisplay().length === 0'
+                            },
+                            style: {
+                                fontStyle: 'italic'
+                            }
+                        }, 'No research statement provided'),
+                        div({
                             class: 'well',
                             dataBind: {
+                                visible: 'personalStatementDisplay().length > 0',
                                 html: 'personalStatementDisplay'
                             }
                         })
@@ -769,6 +876,24 @@ define([
             ])
         ]);
     }
+
+    ko.extenders.export = function (target, args) {
+        target.exportDisplay = function () {
+            if (args.display) {
+                return args.display(target);
+            } else {
+                return target();
+            }
+        };
+        target.exportData = function () {
+            if (args.data) {
+                return args.data(target);
+            } else {
+                return target();
+            }
+        };
+
+    };
 
     function component() {
         return {
@@ -807,7 +932,13 @@ define([
                     maxLength: 100,
                     dirty: false
                 });
-                var organizationValues = Institutions;
+                var organizationalValues = NationalLabs.map(function (lab) {
+                    return {
+                        value: lab.name,
+                        label: lab.name + ' (' + lab.initials + ')'
+                    };
+                });
+                var organizationValues = organizationalValues.concat(Institutions);
                 organizationValues.push({
                     value: 'other',
                     label: 'Other'
@@ -826,7 +957,7 @@ define([
                 // });
 
                 var department = ko.observable(profile.profile.userdata.department).extend({
-                    required: true,
+                    required: false,
                     minLength: 2,
                     maxLength: 100,
                     dirty: false
@@ -838,23 +969,7 @@ define([
                     maxLength: 100,
                     dirty: false
                 });
-                ko.extenders.export = function (target, args) {
-                    target.exportDisplay = function () {
-                        if (args.display) {
-                            return args.display(target);
-                        } else {
-                            return target();
-                        }
-                    };
-                    target.exportData = function () {
-                        if (args.data) {
-                            return args.data(target);
-                        } else {
-                            return target();
-                        }
-                    };
 
-                };
                 var researchInterests = ko.observableArray(fields.researchInterests.availableValues.map(function (item) {
                     var checked = false;
                     if (profile.profile.userdata.researchInterests &&
@@ -887,6 +1002,12 @@ define([
                         }
                     }
                 });
+
+                var fundingSource = ko.observable(profile.profile.userdata.fundingSource).extend({
+                    required: false,
+                    dirty: false
+                });
+                var fundingSourceValues = fields.fundingSource.availableValues;
 
                 var location = ko.observable(profile.profile.userdata.location).extend({
                     required: true,
@@ -1000,22 +1121,9 @@ define([
                     return text.replace(/\n/g, '<br>');
                 });
 
-
                 var username = profile.user.username;
-                // var created = ko.observable(params.created);
-                //var lastLogin = ko.observable(params.lastLogin);
 
-                // var createdAt = ko.pureComputed(function () {
-                //     return Format.niceTime(created());
-                // });
-                // var lastLoginAt = ko.pureComputed(function () {
-                //     return Format.niceElapsedTime(lastLogin()) +
-                //         ' (' +
-                //         Format.niceTime(lastLogin()) +
-                //         ')';
-                // });
-
-                var gravatarHash = profile.profile.userdata.gravatarHash;
+                var gravatarHash = profile.profile.synced.gravatarHash;
                 var gravatarUrl = ko.pureComputed(function () {
                     switch (avatarOption()) {
                     case 'gravatar':
@@ -1045,12 +1153,12 @@ define([
                 var vmFields = [
                     realname, location, organization, organizationOther,
                     department, avatarOption, gravatarDefault, affiliations,
-                    personalStatement, jobTitle, researchInterests
+                    personalStatement, jobTitle, researchInterests, fundingSource
                 ];
 
                 var someDirty = ko.pureComputed(function () {
                     // some are dirty
-                    return vmFields.some(function (field) {
+                    return vmFields.some(function (field, index) {
                         return field.isDirty();
                     });
                 });
@@ -1123,6 +1231,12 @@ define([
                             if (department.isDirty()) {
                                 profile.profile.userdata.department = department();
                                 department.markClean();
+                                profileChanges = true;
+                            }
+
+                            if (fundingSource.isDirty()) {
+                                profile.profile.userdata.fundingSource = fundingSource();
+                                fundingSource.markClean();
                                 profileChanges = true;
                             }
 
@@ -1250,6 +1364,8 @@ define([
                     personalStatementDisplay: personalStatementDisplay,
                     jobTitle: jobTitle,
                     researchInterests: researchInterests,
+                    fundingSource: fundingSource,
+                    fundingSourceValues: fundingSourceValues,
 
                     username: username,
 

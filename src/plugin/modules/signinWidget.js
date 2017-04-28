@@ -60,12 +60,14 @@ define([
             var avatarUrl;
             switch (profile.profile.userdata.avatarOption || 'gravatar') {
             case 'gravatar':
-                var gravatarDefault = profile.profile.userdata.gravatarDefault;
-                var gravatarHash = profile.profile.userdata.gravatarHash;
+                var gravatarDefault = profile.profile.userdata.gravatarDefault || 'monsterid';
+                var gravatarHash = profile.profile.synced.gravatarHash;
                 if (gravatarHash) {
                     avatarUrl = 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
-                    break;
+                } else {
+                    avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
                 }
+                break;
             case 'mysteryman':
             default:
                 avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
@@ -130,7 +132,7 @@ define([
                                             i({}, username)
                                         ])
                                     ]),
-                                    li({ class: 'divider' }),
+                                    //li({ class: 'divider' }),
                                     // li({}, [
                                     //     a({ href: '#people/' + username, 'data-menu-item': 'userlabel' }, [
                                     //         div({ style: 'display:inline-block; width: 34px; vertical-align: top;' }, [
@@ -139,17 +141,17 @@ define([
                                     //         div({ style: 'display: inline-block', 'data-element': 'user-label' }, 'Profile')
                                     //     ])
                                     // ]),
-                                    li({}, [
-                                        a({
-                                            href: '#auth2/account',
-                                            'data-menu-item': 'account'
-                                        }, [
-                                            div({ style: 'display: inline-block; width: 34px;' }, [
-                                                span({ class: 'fa fa-user', style: 'font-size: 150%; margin-right: 10px;' })
-                                            ]),
-                                            'Account'
-                                        ])
-                                    ]),
+                                    // li({}, [
+                                    //     a({
+                                    //         href: '#auth2/account',
+                                    //         'data-menu-item': 'account'
+                                    //     }, [
+                                    //         div({ style: 'display: inline-block; width: 34px;' }, [
+                                    //             span({ class: 'fa fa-user', style: 'font-size: 150%; margin-right: 10px;' })
+                                    //         ]),
+                                    //         'Account'
+                                    //     ])
+                                    // ]),
                                     // DISABLE ADMIN
                                     // For now. There is in actuality no back-end admin support yet other than for
                                     // the auth2 built-in ui.

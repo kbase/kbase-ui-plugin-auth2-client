@@ -89,7 +89,11 @@ define([
                 ]))
             ]),
             div({
-                dataBind: 'css: {hidden: more.' + name + '()}',
+                dataBind: {
+                    css: {
+                        hidden: 'more.' + name + '()'
+                    }
+                },
                 dataElement: 'content',
                 style: {
                     border: '1px silver dashed',
@@ -130,14 +134,14 @@ define([
                         id: id,
                         placeholder: field.placeholder,
                         dataBind: {
-                            textInput: field.vmId || field.name,
+                            textInput: field.name,
                             // valueUpdate: wrapString('afterkeydown')
                         }
                     }),
                     div({
                         class: 'alert alert-danger',
                         dataBind: {
-                            validationMessage: field.vmId || field.name
+                            validationMessage: field.name
                         }
                     })
                 ])
@@ -178,14 +182,14 @@ define([
                         id: id,
                         placeholder: field.placeholder,
                         dataBind: {
-                            textInput: field.vmId || field.name
+                            textInput: field.name
                                 // valueUpdate: wrapString('afterkeydown')
                         }
                     }),
                     div({
                         class: 'alert alert-danger',
                         dataBind: {
-                            validationMessage: field.vmId || field.name
+                            validationMessage: field.name
                         }
                     })
                 ])
@@ -221,7 +225,7 @@ define([
                             component: {
                                 name: '"typeahead-input"',
                                 params: {
-                                    inputValue: field.vmId || field.name,
+                                    inputValue: field.name,
                                     availableValues: field.name + 's'
                                 }
                             }
@@ -230,7 +234,7 @@ define([
                     div({
                         class: 'alert alert-danger',
                         dataBind: {
-                            validationMessage: field.vmId || field.name
+                            validationMessage: field.name
                         }
                     })
                 ])
@@ -248,6 +252,16 @@ define([
             attribs.dataBind = {
                 if: options.condition
             };
+        }
+        var controlBinding = {
+            value: field.name,
+            options: field.name + 'Values',
+            optionsText: '"label"',
+            optionsValue: '"value"'
+        };
+        if (options.optionsCaption) {
+            controlBinding.optionsCaption = '"' + options.optionsCaption.replace(/"/g, '\\"') + '"';
+            // controlBinding.optionsCaption = '"enter a value"';
         }
         return div(attribs, [
             div({
@@ -271,17 +285,12 @@ define([
                     select({
                         class: 'form-control',
                         id: id,
-                        dataBind: {
-                            value: field.vmId || field.name,
-                            options: field.name + 'Values',
-                            optionsText: '"label"',
-                            optionsValue: '"value"'
-                        }
+                        dataBind: controlBinding
                     }),
                     div({
                         class: 'alert alert-danger',
                         dataBind: {
-                            validationMessage: field.vmId || field.name
+                            validationMessage: field.name
                         }
                     })
                 ])
@@ -347,7 +356,7 @@ define([
                     div({
                         class: 'alert alert-danger',
                         dataBind: {
-                            validationMessage: field.vmId || field.name
+                            validationMessage: field.name
                         }
                     })
                 ])
@@ -379,7 +388,7 @@ define([
                     class: 'col-md-12'
                 }, [
                     div({
-                        dataBind: 'text: ' + (field.vmId || field.name)
+                        dataBind: 'text: ' + (field.name)
                     })
                 ])
             ])

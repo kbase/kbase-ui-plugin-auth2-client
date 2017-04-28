@@ -797,7 +797,7 @@ define([
                         runtime.send('app', 'navigate', nextRequest);
                     } else {
                         runtime.send('app', 'navigate', {
-                            path: 'auth2/account',
+                            path: 'dashboard',
                             params: {
                                 tab: 'profile'
                             }
