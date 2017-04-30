@@ -88,20 +88,33 @@ define([
             description: 'Your primary association - organization, institution, business',
             more: div([
                 p([
-                    'additional details here...'
+                    'You may enter any value you wish here. As you type, matching US higher education institutions ',
+                    'and National Labs will be displayed below. If you see yours listed you should click on it to ',
+                    'use that value.'
+                ]),
+                p([
+                    'National Labs derived from: ',
+                    a({
+                        href: 'https://science.energy.gov/laboratories/',
+                        target: '_blank'
+                    }, 'DOE Web Site - Laboratories'),
+                ]),
+                p([
+                    'US highter education instutitions dervied from: ',
+                    a({
+                        href: 'http://carnegieclassifications.iu.edu/index.php',
+                        target: '_blank'
+                    }, 'Carnegie Classification of Institutions of Higher Education ')
                 ])
-            ])
-        },
-        organizationOther: {
-            name: 'organizationOther',
-            required: false,
-            label: 'Organization Other',
-            description: 'Your organization not in the list? Enter it here'
-                // more: div([
-                //     p([
-                //         'more stuff here.'
-                //     ])
-                // ])
+            ]),
+            availableValues: (function () {
+                return NationalLabs.map(function (lab) {
+                    return {
+                        value: lab.name,
+                        label: lab.name + ' (' + lab.initials + ')'
+                    };
+                }).concat(Institutions);
+            }())
         },
         department: {
             name: 'department',
@@ -573,6 +586,47 @@ define([
         ]);
     }
 
+    function organizationDataSource(arg) {
+        var data = arg.data;
+        data.forEach(function (item, index) {
+            item.order = index;
+            item.searchable = {
+                label: item.label.toLowerCase()
+            };
+        });
+
+        function totalCount() {
+            return Promise.try(function () {
+                return data.length;
+            });
+        }
+
+        function search(term) {
+            return Promise.try(function () {
+                if (term) {
+                    var searchTerm = term.toLowerCase();
+                    return data.filter(function (item) {
+                        // Just do a substring search.
+                        return item.searchable.label.indexOf(searchTerm) >= 0;
+                        // return regex.test(item.label);
+                    });
+                } else {
+                    return [];
+                }
+            });
+        }
+
+        function getAll() {
+            return data;
+        }
+
+        return {
+            totalCount: totalCount,
+            search: search,
+            getAll: getAll
+        };
+    }
+
     function buildForm() {
         var content = div({
             style: {
@@ -588,16 +642,7 @@ define([
             FieldBuilders.buildInput(fields.realname),
             FieldBuilders.buildInput(fields.jobTitle),
             // buildInput(fields.suffix),
-            FieldBuilders.buildSelect(fields.organization, {
-                optionsCaption: '- select an organization or "other" to enter your own -'
-            }),
-            div({
-                    dataBind: {
-                        if: 'organization() === "other"'
-                    }
-                },
-                FieldBuilders.buildInput(fields.organizationOther)
-            ),
+            FieldBuilders.buildTypeahead(fields.organization, {}),
             FieldBuilders.buildInput(fields.department),
             FieldBuilders.buildInput(fields.location),
             FieldBuilders.buildCheckboxes(fields.researchInterests),
@@ -671,14 +716,19 @@ define([
                 ])
             ]),
             buildMessageDisplay(),
-            button({
-                class: 'btn btn-primary',
-                type: 'button',
-                dataBind: {
-                    click: 'doSaveProfile',
-                    enable: 'formCanSave'
-                }
-            }, 'Save')
+            div({
+                    style: {
+                        textAlign: 'center'
+                    }
+                },
+                button({
+                    class: 'btn btn-primary',
+                    type: 'button',
+                    dataBind: {
+                        click: 'doSaveProfile',
+                        enable: 'formCanSave'
+                    }
+                }, 'Save'))
         ]);
     }
 
@@ -744,14 +794,7 @@ define([
                         }),
                         div({
                             dataBind: {
-                                visible: 'organization() !== "other"',
                                 text: 'organization'
-                            }
-                        }),
-                        div({
-                            dataBind: {
-                                visible: 'organization() === "other"',
-                                text: 'organizationOther'
                             }
                         }),
                         div({
@@ -895,497 +938,472 @@ define([
 
     };
 
+    function viewModel(params) {
+        var runtime = params.runtime;
+        var profile = params.profile;
+
+        var realname = ko.observable(profile.user.realname)
+            .extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            });
+
+        // var title = ko.observable(profile.profile.userdata.title).extend({
+        //     required: true,
+        //     minLength: 2,
+        //     maxLength: 100,
+        //     dirty: false
+        // });
+
+        // var titles = fields.title.availableValues;
+
+        // var suffix = ko.observable(profile.profile.userdata.suffix).extend({
+        //     required: false,
+        //     minLength: 2,
+        //     maxLength: 100,
+        //     dirty: false
+        // });
+
+
+        var organization = ko.observable(profile.profile.userdata.organization).extend({
+            required: true,
+            minLength: 2,
+            maxLength: 100,
+            dirty: false
+        });
+        var organization_dataSource = organizationDataSource({
+            data: fields.organization.availableValues
+        });
+
+        var department = ko.observable(profile.profile.userdata.department).extend({
+            required: false,
+            minLength: 2,
+            maxLength: 100,
+            dirty: false
+        });
+
+        var jobTitle = ko.observable(profile.profile.userdata.jobTitle).extend({
+            required: true,
+            minLength: 2,
+            maxLength: 100,
+            dirty: false
+        });
+
+        var researchInterests = ko.observableArray(fields.researchInterests.availableValues.map(function (item) {
+            var checked = false;
+            if (profile.profile.userdata.researchInterests &&
+                profile.profile.userdata.researchInterests instanceof Array &&
+                profile.profile.userdata.researchInterests.indexOf(item.value) >= 0) {
+                checked = true;
+            }
+            return {
+                value: item.value,
+                label: item.label,
+                checked: ko.observable(checked)
+            };
+        })).extend({
+            required: true,
+            dirty: false,
+            export: {
+                display: function (target) {
+                    return target().filter(function (item) {
+                        return item.checked();
+                    }).map(function (item) {
+                        return item.label;
+                    });
+                },
+                data: function (target) {
+                    return target().filter(function (item) {
+                        return item.checked();
+                    }).map(function (item) {
+                        return item.value;
+                    });
+                }
+            }
+        });
+
+        var fundingSource = ko.observable(profile.profile.userdata.fundingSource).extend({
+            required: false,
+            dirty: false
+        });
+        var fundingSourceValues = fields.fundingSource.availableValues;
+
+        var location = ko.observable(profile.profile.userdata.location).extend({
+            required: true,
+            minLength: 2,
+            maxLength: 100,
+            dirty: false
+        });
+
+        var avatarOption = ko.observable(profile.profile.userdata.avatarOption).extend({
+            required: false,
+            minLength: 2,
+            maxLength: 100,
+            dirty: false
+        });
+        var avatarOptionValues = fields.avatarOption.availableValues;
+
+        var gravatarDefault = ko.observable(profile.profile.userdata.gravatarDefault || 'monsterid').extend({
+            required: false,
+            minLength: 2,
+            maxLength: 100,
+            dirty: false
+        });
+        var gravatarDefaultValues = [{
+            value: 'mm',
+            label: 'Mystery Man - simple, cartoon-style silhouetted outline'
+        }, {
+            value: 'identicon',
+            label: 'Identicon - a geometric pattern based on an email hash'
+        }, {
+            value: 'monsterid',
+            label: 'MonsterID - generated "monster" with different colors, faces, etc'
+        }, {
+            value: 'wavatar',
+            label: 'Wavatar - generated faces with differing features and backgrounds'
+        }, {
+            value: 'retro',
+            label: 'Retro - 8-bit arcade-style pixelated faces'
+        }, {
+            value: 'blank',
+            label: 'Blank - A Blank Space'
+        }];
+
+        ko.validation.rules['year'] = {
+            validator: function (val) {
+                if (!/^[0-9][0-9][0-9][0-9]$/.test(val)) {
+                    return false;
+                }
+                return true;
+            },
+            message: 'A username may only contain the characters a-z, 0-0, and _.'
+        };
+        ko.validation.registerExtenders();
+        var affils = profile.profile.userdata.affiliations || [];
+
+        function affiliationVm(affil) {
+            var title = ko.observable(affil && affil.title).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            });
+            var institution = ko.observable(affil && affil.institution).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            });
+            var start_year = ko.observable(affil && affil.start_year).extend({
+                required: true,
+                year: true,
+                dirty: false
+            });
+
+            var end_year = ko.observable(affil && affil.end_year).extend({
+                required: false,
+                year: true,
+                dirty: false
+            });
+
+            var end_year_display = ko.pureComputed(function () {
+                if (end_year()) {
+                    return end_year();
+                }
+                return 'present';
+            });
+            return {
+                title: title,
+                institution: institution,
+                start_year: start_year,
+                end_year: end_year,
+                end_year_display: end_year_display
+            };
+        }
+        var affiliations = ko.observableArray(affils.map(function (affil) {
+            return affiliationVm(affil);
+        })).extend({
+            dirty: false
+        });
+
+        var personalStatement = ko.observable(profile.profile.userdata.personalStatement).extend({
+            required: false,
+            minLength: 2,
+            maxLength: 400,
+            dirty: false
+        });
+        var personalStatementDisplay = ko.pureComputed(function () {
+            var text = personalStatement();
+            if (!text) {
+                return '';
+            }
+            return text.replace(/\n/g, '<br>');
+        });
+
+        var username = profile.user.username;
+
+        var gravatarHash = profile.profile.synced.gravatarHash;
+        var gravatarUrl = ko.pureComputed(function () {
+            switch (avatarOption()) {
+            case 'gravatar':
+                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault();
+            case 'mysteryman':
+                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
+
+        });
+
+        // var realnameMore = ko.observable(true);
+        // var emailMore = ko.observable(true);
+
+        var more = {};
+        Object.keys(fields).forEach(function (key) {
+            more[key] = ko.observable(true);
+        });
+
+        function showMore(name) {
+            if (more[name]()) {
+                more[name](false);
+            } else {
+                more[name](true);
+            }
+        }
+
+        var vmFields = [
+            realname, location, organization,
+            department, avatarOption, gravatarDefault, affiliations,
+            personalStatement, jobTitle, researchInterests, fundingSource
+        ];
+
+        var someDirty = ko.pureComputed(function () {
+            // some are dirty
+            return vmFields.some(function (field, index) {
+                return field.isDirty();
+            });
+        });
+        var someInvalid = ko.pureComputed(function () {
+            return vmFields.some(function (field) {
+                if (field.isValid) {
+                    return !field.isValid();
+                } else {
+                    return false;
+                }
+            });
+        });
+
+        var formCanSave = ko.pureComputed(function () {
+            return someDirty() && !someInvalid();
+        });
+
+        function saveProfile() {
+            var client = new UserProfileService(runtime.config('services.user_profile.url'), {
+                token: runtime.service('session').getAuthToken()
+            });
+
+            // get the profile, then update it, then save it.
+            // TODO profile service should accept just change set.
+
+            return client.get_user_profile([username])
+                .then(function (result) {
+                    var profile = result[0];
+                    var account = {};
+                    var profileChanges = false;
+                    var accountChanges = false;
+                    // build the update object.
+                    // TODO: detect changed fields - knockout?
+
+                    // if (title.isDirty()) {
+                    //     profile.profile.userdata.title = title();
+                    //     title.markClean();
+                    //     profileChanges = true;
+                    // }
+                    if (realname.isDirty()) {
+                        profile.user.realname = realname();
+                        realname.markClean();
+                        account.display = realname();
+                        accountChanges = true;
+                        profileChanges = true;
+                    }
+                    // if (suffix.isDirty()) {
+                    //     profile.profile.userdata.suffix = suffix();
+                    //     suffix.markClean();
+                    //     accountChanges = true;
+                    // }
+                    if (location.isDirty()) {
+                        profile.profile.userdata.location = location();
+                        location.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (organization.isDirty()) {
+                        profile.profile.userdata.organization = organization();
+                        organization.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (department.isDirty()) {
+                        profile.profile.userdata.department = department();
+                        department.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (fundingSource.isDirty()) {
+                        profile.profile.userdata.fundingSource = fundingSource();
+                        fundingSource.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (avatarOption.isDirty()) {
+                        profile.profile.userdata.avatarOption = avatarOption();
+                        avatarOption.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (gravatarDefault.isDirty()) {
+                        profile.profile.userdata.gravatarDefault = gravatarDefault();
+                        gravatarDefault.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (affiliations.isDirty()) {
+                        // just bundle the whole thing up...
+                        var newAffiliations = affiliations().map(function (af) {
+                            return {
+                                title: af.title(),
+                                institution: af.institution(),
+                                start_year: af.start_year(),
+                                end_year: af.end_year()
+                            };
+                        });
+                        profile.profile.userdata.affiliations = newAffiliations;
+                        affiliations.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (personalStatement.isDirty()) {
+                        profile.profile.userdata.personalStatement = personalStatement();
+                        personalStatement.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (jobTitle.isDirty()) {
+                        profile.profile.userdata.jobTitle = jobTitle();
+                        jobTitle.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (researchInterests.isDirty()) {
+                        profile.profile.userdata.researchInterests = researchInterests()
+                            .map(function (item) {
+                                if (item.checked()) {
+                                    return item.value;
+                                }
+                            })
+                            .filter(function (item) {
+                                return (typeof item !== 'undefined');
+                            });
+                        researchInterests.markClean();
+                        profileChanges = true;
+                    }
+
+                    var changes = [];
+                    if (profileChanges) {
+                        changes.push(client.set_user_profile({
+                            profile: profile
+                        }));
+                    }
+                    if (accountChanges) {
+                        changes.push(runtime.service('session').getClient().putMe(account));
+                    }
+
+                    return Promise.all(changes)
+                        .then(function () {
+                            if (profileChanges) {
+                                runtime.send('profile', 'reload');
+                            }
+                        });
+                });
+        }
+
+
+
+        function doSaveProfile() {
+            saveProfile()
+                .then(function () {
+                    message('Successfully Saved');
+                    messageType({
+                        'alert-success': true,
+                        hidden: false
+                    });
+                })
+                .catch(function (err) {
+                    console.error('boo', err);
+                    message('Error saving');
+                    messageType({
+                        'alert-danger': true,
+                        hidden: false
+                    });
+                });
+        }
+
+        var message = ko.observable();
+        var messageType = ko.observable();
+
+        function deleteAffiliation(item) {
+            affiliations.remove(item);
+        }
+
+        function addAffiliation() {
+            affiliations.push(affiliationVm());
+        }
+
+        return {
+            // fields being edited or displayed
+            //title: title,
+            //titles: titles,
+            realname: realname,
+            organization: organization,
+            organization_dataSource: organization_dataSource,
+            department: department,
+            location: location,
+            avatarOption: avatarOption,
+            avatarOptionValues: avatarOptionValues,
+            gravatarDefault: gravatarDefault,
+            gravatarDefaultValues: gravatarDefaultValues,
+            affiliations: affiliations,
+            personalStatement: personalStatement,
+            personalStatementDisplay: personalStatementDisplay,
+            jobTitle: jobTitle,
+            researchInterests: researchInterests,
+            fundingSource: fundingSource,
+            fundingSourceValues: fundingSourceValues,
+
+            username: username,
+
+            // computed
+            gravatarUrl: gravatarUrl,
+
+            showMore: showMore,
+            more: more,
+            doSaveProfile: doSaveProfile,
+            message: message,
+            messageType: messageType,
+
+            deleteAffiliation: deleteAffiliation,
+            addAffiliation: addAffiliation,
+
+            someDirty: someDirty,
+            someInvalid: someInvalid,
+            formCanSave: formCanSave
+        };
+    }
+
+
     function component() {
         return {
-            viewModel: function (params) {
-                var runtime = params.runtime;
-                var profile = params.profile;
-
-                var realname = ko.observable(profile.user.realname)
-                    .extend({
-                        required: true,
-                        minLength: 2,
-                        maxLength: 100,
-                        dirty: false
-                    });
-
-                // var title = ko.observable(profile.profile.userdata.title).extend({
-                //     required: true,
-                //     minLength: 2,
-                //     maxLength: 100,
-                //     dirty: false
-                // });
-
-                // var titles = fields.title.availableValues;
-
-                // var suffix = ko.observable(profile.profile.userdata.suffix).extend({
-                //     required: false,
-                //     minLength: 2,
-                //     maxLength: 100,
-                //     dirty: false
-                // });
-
-
-                var organization = ko.observable(profile.profile.userdata.organization).extend({
-                    required: true,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-                var organizationalValues = NationalLabs.map(function (lab) {
-                    return {
-                        value: lab.name,
-                        label: lab.name + ' (' + lab.initials + ')'
-                    };
-                });
-                var organizationValues = organizationalValues.concat(Institutions);
-                organizationValues.push({
-                    value: 'other',
-                    label: 'Other'
-                });
-                var organizationOther = ko.observable(profile.profile.userdata.organizationOther).extend({
-                    required: false,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-                // var organizations = Institutions.map(function (item) {
-                //     return {
-                //         value: item[0],
-                //         label: item[1] + ' > ' + item[2] + ', ' + item[3]
-                //     };
-                // });
-
-                var department = ko.observable(profile.profile.userdata.department).extend({
-                    required: false,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-
-                var jobTitle = ko.observable(profile.profile.userdata.jobTitle).extend({
-                    required: true,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-
-                var researchInterests = ko.observableArray(fields.researchInterests.availableValues.map(function (item) {
-                    var checked = false;
-                    if (profile.profile.userdata.researchInterests &&
-                        profile.profile.userdata.researchInterests instanceof Array &&
-                        profile.profile.userdata.researchInterests.indexOf(item.value) >= 0) {
-                        checked = true;
-                    }
-                    return {
-                        value: item.value,
-                        label: item.label,
-                        checked: ko.observable(checked)
-                    };
-                })).extend({
-                    required: true,
-                    dirty: false,
-                    export: {
-                        display: function (target) {
-                            return target().filter(function (item) {
-                                return item.checked();
-                            }).map(function (item) {
-                                return item.label;
-                            });
-                        },
-                        data: function (target) {
-                            return target().filter(function (item) {
-                                return item.checked();
-                            }).map(function (item) {
-                                return item.value;
-                            });
-                        }
-                    }
-                });
-
-                var fundingSource = ko.observable(profile.profile.userdata.fundingSource).extend({
-                    required: false,
-                    dirty: false
-                });
-                var fundingSourceValues = fields.fundingSource.availableValues;
-
-                var location = ko.observable(profile.profile.userdata.location).extend({
-                    required: true,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-
-                var avatarOption = ko.observable(profile.profile.userdata.avatarOption).extend({
-                    required: false,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-                var avatarOptionValues = fields.avatarOption.availableValues;
-
-                var gravatarDefault = ko.observable(profile.profile.userdata.gravatarDefault || 'monsterid').extend({
-                    required: false,
-                    minLength: 2,
-                    maxLength: 100,
-                    dirty: false
-                });
-                var gravatarDefaultValues = [{
-                    value: 'mm',
-                    label: 'Mystery Man - simple, cartoon-style silhouetted outline'
-                }, {
-                    value: 'identicon',
-                    label: 'Identicon - a geometric pattern based on an email hash'
-                }, {
-                    value: 'monsterid',
-                    label: 'MonsterID - generated "monster" with different colors, faces, etc'
-                }, {
-                    value: 'wavatar',
-                    label: 'Wavatar - generated faces with differing features and backgrounds'
-                }, {
-                    value: 'retro',
-                    label: 'Retro - 8-bit arcade-style pixelated faces'
-                }, {
-                    value: 'blank',
-                    label: 'Blank - A Blank Space'
-                }];
-
-                ko.validation.rules['year'] = {
-                    validator: function (val) {
-                        if (!/^[0-9][0-9][0-9][0-9]$/.test(val)) {
-                            return false;
-                        }
-                        return true;
-                    },
-                    message: 'A username may only contain the characters a-z, 0-0, and _.'
-                };
-                ko.validation.registerExtenders();
-                var affils = profile.profile.userdata.affiliations || [];
-
-                function affiliationVm(affil) {
-                    var title = ko.observable(affil && affil.title).extend({
-                        required: true,
-                        minLength: 2,
-                        maxLength: 100,
-                        dirty: false
-                    });
-                    var institution = ko.observable(affil && affil.institution).extend({
-                        required: true,
-                        minLength: 2,
-                        maxLength: 100,
-                        dirty: false
-                    });
-                    var start_year = ko.observable(affil && affil.start_year).extend({
-                        required: true,
-                        year: true,
-                        dirty: false
-                    });
-
-                    var end_year = ko.observable(affil && affil.end_year).extend({
-                        required: false,
-                        year: true,
-                        dirty: false
-                    });
-
-                    var end_year_display = ko.pureComputed(function () {
-                        if (end_year()) {
-                            return end_year();
-                        }
-                        return 'present';
-                    });
-                    return {
-                        title: title,
-                        institution: institution,
-                        start_year: start_year,
-                        end_year: end_year,
-                        end_year_display: end_year_display
-                    };
-                }
-                var affiliations = ko.observableArray(affils.map(function (affil) {
-                    return affiliationVm(affil);
-                })).extend({
-                    dirty: false
-                });
-
-                var personalStatement = ko.observable(profile.profile.userdata.personalStatement).extend({
-                    required: false,
-                    minLength: 2,
-                    maxLength: 400,
-                    dirty: false
-                });
-                var personalStatementDisplay = ko.pureComputed(function () {
-                    var text = personalStatement();
-                    if (!text) {
-                        return '';
-                    }
-                    return text.replace(/\n/g, '<br>');
-                });
-
-                var username = profile.user.username;
-
-                var gravatarHash = profile.profile.synced.gravatarHash;
-                var gravatarUrl = ko.pureComputed(function () {
-                    switch (avatarOption()) {
-                    case 'gravatar':
-                        return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault();
-                    case 'mysteryman':
-                        return Plugin.plugin.fullPath + '/images/nouserpic.png';
-                    }
-
-                });
-
-                // var realnameMore = ko.observable(true);
-                // var emailMore = ko.observable(true);
-
-                var more = {};
-                Object.keys(fields).forEach(function (key) {
-                    more[key] = ko.observable(true);
-                });
-
-                function showMore(name) {
-                    if (more[name]()) {
-                        more[name](false);
-                    } else {
-                        more[name](true);
-                    }
-                }
-
-                var vmFields = [
-                    realname, location, organization, organizationOther,
-                    department, avatarOption, gravatarDefault, affiliations,
-                    personalStatement, jobTitle, researchInterests, fundingSource
-                ];
-
-                var someDirty = ko.pureComputed(function () {
-                    // some are dirty
-                    return vmFields.some(function (field, index) {
-                        return field.isDirty();
-                    });
-                });
-                var someInvalid = ko.pureComputed(function () {
-                    return vmFields.some(function (field) {
-                        if (field.isValid) {
-                            return !field.isValid();
-                        } else {
-                            return false;
-                        }
-                    });
-                });
-
-                var formCanSave = ko.pureComputed(function () {
-                    return someDirty() && !someInvalid();
-                });
-
-                function saveProfile() {
-                    var client = new UserProfileService(runtime.config('services.user_profile.url'), {
-                        token: runtime.service('session').getAuthToken()
-                    });
-
-                    // get the profile, then update it, then save it.
-                    // TODO profile service should accept just change set.
-
-                    return client.get_user_profile([username])
-                        .then(function (result) {
-                            var profile = result[0];
-                            var account = {};
-                            var profileChanges = false;
-                            var accountChanges = false;
-                            // build the update object.
-                            // TODO: detect changed fields - knockout?
-
-                            // if (title.isDirty()) {
-                            //     profile.profile.userdata.title = title();
-                            //     title.markClean();
-                            //     profileChanges = true;
-                            // }
-                            if (realname.isDirty()) {
-                                profile.user.realname = realname();
-                                realname.markClean();
-                                account.display = realname();
-                                accountChanges = true;
-                                profileChanges = true;
-                            }
-                            // if (suffix.isDirty()) {
-                            //     profile.profile.userdata.suffix = suffix();
-                            //     suffix.markClean();
-                            //     accountChanges = true;
-                            // }
-                            if (location.isDirty()) {
-                                profile.profile.userdata.location = location();
-                                location.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (organization.isDirty()) {
-                                profile.profile.userdata.organization = organization();
-                                organization.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (organizationOther.isDirty()) {
-                                profile.profile.userdata.organizationOther = organizationOther();
-                                organizationOther.markClean();
-                                organizationOther = true;
-                            }
-
-                            if (department.isDirty()) {
-                                profile.profile.userdata.department = department();
-                                department.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (fundingSource.isDirty()) {
-                                profile.profile.userdata.fundingSource = fundingSource();
-                                fundingSource.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (avatarOption.isDirty()) {
-                                profile.profile.userdata.avatarOption = avatarOption();
-                                avatarOption.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (gravatarDefault.isDirty()) {
-                                profile.profile.userdata.gravatarDefault = gravatarDefault();
-                                gravatarDefault.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (affiliations.isDirty()) {
-                                // just bundle the whole thing up...
-                                var newAffiliations = affiliations().map(function (af) {
-                                    return {
-                                        title: af.title(),
-                                        institution: af.institution(),
-                                        start_year: af.start_year(),
-                                        end_year: af.end_year()
-                                    };
-                                });
-                                profile.profile.userdata.affiliations = newAffiliations;
-                                affiliations.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (personalStatement.isDirty()) {
-                                profile.profile.userdata.personalStatement = personalStatement();
-                                personalStatement.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (jobTitle.isDirty()) {
-                                profile.profile.userdata.jobTitle = jobTitle();
-                                jobTitle.markClean();
-                                profileChanges = true;
-                            }
-
-                            if (researchInterests.isDirty()) {
-                                profile.profile.userdata.researchInterests = researchInterests()
-                                    .map(function (item) {
-                                        if (item.checked()) {
-                                            return item.value;
-                                        }
-                                    })
-                                    .filter(function (item) {
-                                        return (typeof item !== 'undefined');
-                                    });
-                                researchInterests.markClean();
-                                profileChanges = true;
-                            }
-
-                            var changes = [];
-                            if (profileChanges) {
-                                changes.push(client.set_user_profile({
-                                    profile: profile
-                                }));
-                            }
-                            if (accountChanges) {
-                                changes.push(runtime.service('session').getClient().putMe(account));
-                            }
-
-                            return Promise.all(changes)
-                                .then(function () {
-                                    if (profileChanges) {
-                                        runtime.send('profile', 'reload');
-                                    }
-                                });
-                        });
-                }
-
-
-
-                function doSaveProfile() {
-                    saveProfile()
-                        .then(function () {
-                            message('Successfully Saved');
-                            messageType({
-                                'alert-success': true,
-                                hidden: false
-                            });
-                        })
-                        .catch(function (err) {
-                            console.error('boo', err);
-                            message('Error saving');
-                            messageType({
-                                'alert-danger': true,
-                                hidden: false
-                            });
-                        });
-                }
-
-                var message = ko.observable();
-                var messageType = ko.observable();
-
-                function deleteAffiliation(item) {
-                    affiliations.remove(item);
-                }
-
-                function addAffiliation() {
-                    affiliations.push(affiliationVm());
-                }
-
-                return {
-                    // fields being edited or displayed
-                    //title: title,
-                    //titles: titles,
-                    realname: realname,
-                    //suffix: suffix,
-                    organization: organization,
-                    organizationValues: organizationValues,
-                    organizationOther: organizationOther,
-                    department: department,
-                    location: location,
-                    avatarOption: avatarOption,
-                    avatarOptionValues: avatarOptionValues,
-                    gravatarDefault: gravatarDefault,
-                    gravatarDefaultValues: gravatarDefaultValues,
-                    affiliations: affiliations,
-                    personalStatement: personalStatement,
-                    personalStatementDisplay: personalStatementDisplay,
-                    jobTitle: jobTitle,
-                    researchInterests: researchInterests,
-                    fundingSource: fundingSource,
-                    fundingSourceValues: fundingSourceValues,
-
-                    username: username,
-
-                    // computed
-                    gravatarUrl: gravatarUrl,
-
-                    showMore: showMore,
-                    more: more,
-                    doSaveProfile: doSaveProfile,
-                    message: message,
-                    messageType: messageType,
-
-                    deleteAffiliation: deleteAffiliation,
-                    addAffiliation: addAffiliation,
-
-                    someDirty: someDirty,
-                    someInvalid: someInvalid,
-                    formCanSave: formCanSave
-                };
-            },
+            viewModel: viewModel,
             template: buildTemplate()
         };
     }
