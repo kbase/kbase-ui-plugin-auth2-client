@@ -197,7 +197,7 @@ define([
         ]);
     }
 
-    function buildTypeahead(field) {
+    function buildTypeahead(field, options) {
         var id = html.genId();
         return div({
             class: 'form-group  form-row'
@@ -226,7 +226,8 @@ define([
                                 name: '"typeahead-input"',
                                 params: {
                                     inputValue: field.name,
-                                    availableValues: field.name + 's'
+                                    dataSource: field.name + '_dataSource'
+                                        // availableValues: field.name + 'Values'
                                 }
                             }
                         }

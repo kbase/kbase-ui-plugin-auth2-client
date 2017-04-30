@@ -485,7 +485,6 @@ define([
         // })
         function doSignin(data) {
             // set last provider...
-            console.log('data?', data);
             loginStart(runtime, data.id, {
                 nextrequest: nextRequest,
                 origin: 'login'
