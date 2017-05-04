@@ -148,7 +148,7 @@ define([
                         fontWeight: 'bold'
                     },
                     dataBind: {
-                        text: 'login.provusername'
+                        text: 'login.provusernames[0]'
                     }
                 }),
                 ' is associated with the KBase account ',

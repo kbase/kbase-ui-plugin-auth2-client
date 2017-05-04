@@ -1,0 +1,7 @@
+ [{
+     "value": "gravatar",
+     "label": "Gravatar - Use your Gravatar image otherwise random generator selected below"
+ }, {
+     "value": "mysteryman",
+     "label": "Mystery Man - simple, anonymous, cartoon-style silhouetted outline"
+ }]

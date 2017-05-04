@@ -214,49 +214,49 @@ define([
                         ])
                     ])
                 ]),
-                div({
-                    class: 'row'
-                }, [
-                    div({
-                        class: 'col-md-5'
-                    }, div({
-                        class: 'form-group'
-                    }, [
-                        label(['Title / Role', requiredIcon('role')]),
+                // div({
+                //     class: 'row'
+                // }, [
+                //     div({
+                //         class: 'col-md-5'
+                //     }, div({
+                //         class: 'form-group'
+                //     }, [
+                //         label(['Title / Role', requiredIcon('role')]),
 
-                        div({
-                            dataBind: {
-                                component: {
-                                    name: '"typeahead-input"',
-                                    params: {
-                                        inputValue: 'role',
-                                        availableValues: 'roles'
-                                    }
-                                }
-                            }
-                        }),
-                        // input({
-                        //     class: 'form-control',
-                        //     name: 'role',
-                        //     dataBind: {
-                        //         value: 'role',
-                        //         valueUpdate: '"input"'
-                        //     }
-                        // }),
-                        div({
-                            class: 'alert alert-danger',
-                            dataBind: {
-                                validationMessage: 'role'
-                            }
-                        })
-                    ])),
-                    div({
-                        class: 'col-md-7',
-                        style: {
-                            paddingTop: '20px'
-                        }
-                    })
-                ]),
+                //         div({
+                //             dataBind: {
+                //                 component: {
+                //                     name: '"typeahead-input"',
+                //                     params: {
+                //                         inputValue: 'role',
+                //                         availableValues: 'roles'
+                //                     }
+                //                 }
+                //             }
+                //         }),
+                //         // input({
+                //         //     class: 'form-control',
+                //         //     name: 'role',
+                //         //     dataBind: {
+                //         //         value: 'role',
+                //         //         valueUpdate: '"input"'
+                //         //     }
+                //         // }),
+                //         div({
+                //             class: 'alert alert-danger',
+                //             dataBind: {
+                //                 validationMessage: 'role'
+                //             }
+                //         })
+                //     ])),
+                //     div({
+                //         class: 'col-md-7',
+                //         style: {
+                //             paddingTop: '20px'
+                //         }
+                //     })
+                // ]),
                 form({
                     dataElement: 'form',
                     autocomplete: 'off'
@@ -547,9 +547,6 @@ define([
         ]);
     }
 
-
-
-
     function component() {
         return {
             viewModel: function (params) {
@@ -634,9 +631,9 @@ define([
                     email: true
                 });
 
-                var role = ko.observable().extend({
-                    required: true
-                });
+                // var role = ko.observable().extend({
+                //     required: true
+                // });
                 var organization = ko.observable().extend({
                     required: true
                 });
@@ -648,7 +645,7 @@ define([
                     var valid = (realname.isValid() &&
                         email.isValid() &&
                         username.isValid() &&
-                        role.isValid() &&
+                        // role.isValid() &&
                         organization.isValid() &&
                         department.isValid());
                     return valid;
@@ -704,7 +701,8 @@ define([
                             // });
                             var newProfile = {
                                 user: {
-                                    username: accountInfo.user
+                                    username: accountInfo.user,
+                                    realname: realname()
                                 },
                                 profile: {
                                     metadata: {
@@ -716,7 +714,7 @@ define([
                                     preferences: {},
                                     // when auto-creating a profile, there is nothing to put here het.
                                     userdata: {
-                                        title: role(),
+                                        // title: role(),
                                         organization: organization(),
                                         department: department()
                                     }
@@ -915,28 +913,28 @@ define([
                         });
                 }
 
-                var roles = [{
-                    id: 'mr',
-                    label: 'Mr'
-                }, {
-                    id: 'ms',
-                    label: 'Ms'
-                }, {
-                    id: 'miss',
-                    label: 'Miss'
-                }, {
-                    id: 'mrs',
-                    label: 'Mrs'
-                }, {
-                    id: 'dr',
-                    label: 'Dr'
-                }, {
-                    id: 'sr',
-                    label: 'Sr'
-                }, {
-                    id: 'director',
-                    label: 'Director'
-                }];
+                // var roles = [{
+                //     id: 'mr',
+                //     label: 'Mr'
+                // }, {
+                //     id: 'ms',
+                //     label: 'Ms'
+                // }, {
+                //     id: 'miss',
+                //     label: 'Miss'
+                // }, {
+                //     id: 'mrs',
+                //     label: 'Mrs'
+                // }, {
+                //     id: 'dr',
+                //     label: 'Dr'
+                // }, {
+                //     id: 'sr',
+                //     label: 'Sr'
+                // }, {
+                //     id: 'director',
+                //     label: 'Director'
+                // }];
 
 
                 return {
@@ -945,8 +943,8 @@ define([
                     username: username,
                     realname: realname,
                     email: email,
-                    role: role,
-                    roles: roles,
+                    // role: role,
+                    // roles: roles,
                     organization: organization,
                     department: department,
                     policiesToResolve: policiesToResolve,

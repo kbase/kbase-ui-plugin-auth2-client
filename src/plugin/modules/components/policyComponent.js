@@ -73,63 +73,64 @@ define([
                     class: 'col-md-8'
                 }, [
                     div({}, [
-                        button({
-                            type: 'button',
-                            class: 'btn btn-warning',
-                            name: 'viewer-button',
-                            dataBind: {
-                                click: '$parent.doViewPolicy',
-                                css: {
-                                    '"btn-warning"': '!agreed()',
-                                    '"btn-success"': 'agreed()'
-                                }
+                        // button({
+                        //     type: 'button',
+                        //     class: 'btn btn-warning',
+                        //     name: 'viewer-button',
+                        //     dataBind: {
+                        //         click: '$parent.doViewPolicy',
+                        //         css: {
+                        //             '"btn-warning"': '!agreed()',
+                        //             '"btn-success"': 'agreed()'
+                        //         }
+                        //     }
+                        // }, [
+                        //     span({
+                        //         name: 'label',
+                        //         dataBind: {
+                        //             text: 'agreed() ? "Agreed! (click again to Disagree)" : "Read &amp; Agree"'
+                        //         }
+                        //     }),
+                        //     span({
+                        //         name: 'icon',
+                        //         class: 'fa fa-chevron-right',
+                        //         dataBind: {
+                        //             css: {
+                        //                 '"fa-chevron-right"': '!viewPolicy()',
+                        //                 '"fa-chevron-down"': 'viewPolicy()'
+                        //             }
+                        //         },
+                        //         style: {
+                        //             marginLeft: '6px'
+                        //         }
+                        //     })
+                        // ]),
+
+                        div({
+                            style: {
+
                             }
                         }, [
-                            span({
-                                name: 'label',
+                            input({
+                                type: 'checkbox',
+                                name: 'agreed',
+                                // TODO: this is just for prototyping -- this needs to evolve
+                                // in to a viewmodel-based widget.
                                 dataBind: {
-                                    text: 'agreed() ? "Agreed!" : "Read &amp; Agree"'
+                                    checked: 'agreed'
                                 }
                             }),
-                            span({
-                                name: 'icon',
-                                class: 'fa fa-chevron-right',
-                                dataBind: {
-                                    css: {
-                                        '"fa-chevron-right"': '!viewPolicy()',
-                                        '"fa-chevron-down"': 'viewPolicy()'
-                                    }
-                                },
-                                style: {
-                                    marginLeft: '6px'
-                                }
-                            })
+                            ' I have read and agree to this policy'
                         ]),
                         div({
                             dataBind: {
                                 css: {
-                                    hidden: '!viewPolicy()'
+                                    hidden: 'agreed'
                                 }
                             },
-                            class: 'hidden',
+                            // class: 'hidden',
                             name: 'agreement-viewer'
                         }, [
-                            div({
-                                style: {
-
-                                }
-                            }, [
-                                input({
-                                    type: 'checkbox',
-                                    name: 'agreed',
-                                    // TODO: this is just for prototyping -- this needs to evolve
-                                    // in to a viewmodel-based widget.
-                                    dataBind: {
-                                        checked: 'agreed'
-                                    }
-                                }),
-                                ' I have read and agree to this policy'
-                            ]),
                             div({
                                 style: {
                                     height: '400px',
@@ -144,6 +145,23 @@ define([
                                     html: 'policy.fileContent'
                                 }
                             })
+                        ]),
+                        div({
+                            dataBind: {
+                                css: {
+                                    hidden: '!agreed()'
+                                }
+                            }
+                        }, [
+                            p({
+                                style: {
+                                    fontStyle: 'italic',
+                                    textAlign: 'center',
+                                    marginTop: '6px'
+                                }
+                            }, [
+                                'To show the agreement again, uncheck the agreement above.'
+                            ])
                         ])
                     ])
                 ])
@@ -322,6 +340,8 @@ define([
 
                 var haveMissing = ko.observable(data.policiesToResolve.missing.length > 0);
                 var haveOutdated = ko.observable(data.policiesToResolve.outdated.length > 0);
+
+
 
                 var doViewPolicy = function (item) {
                     if (item.viewPolicy()) {
