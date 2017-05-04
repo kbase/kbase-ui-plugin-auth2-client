@@ -9,9 +9,9 @@ define([
     'kb_service/client/userProfile',
     '../../lib/fieldBuilders',
     'kb_plugin_auth2-client',
-    // 'csv!../../../resources/data/institutions.csv'
-    'json!../../../resources/data/institutions.json',
-    'yaml!../../../resources/data/nationalLabs.yaml'
+    '../../lib/geoNames',
+    '../../lib/dataSource',
+    '../../components/profileView'
 ], function (
     ko,
     md5,
@@ -22,412 +22,16 @@ define([
     UserProfileService,
     FieldBuilders,
     Plugin,
-    Institutions,
-    NationalLabs
+    GeoNames,
+    DataSource
 ) {
     var t = html.tag,
         div = t('div'),
         span = t('span'),
-        label = t('label'),
         a = t('a'),
         p = t('p'),
         input = t('input'),
-        button = t('button'),
-        img = t('img'),
-        h3 = t('h3'),
-        ul = t('ul'),
-        li = t('li');
-
-    var fields = {
-        title: {
-            name: 'title',
-            label: 'Title',
-            required: true,
-            description: 'Your title or honorific',
-            more: div([
-                p([
-                    'additional details here...'
-                ])
-            ]),
-            availableValues: [{
-                value: 'mr',
-                label: 'Mr.'
-            }, {
-                value: 'ms',
-                label: 'Ms.'
-            }, {
-                value: 'miss',
-                label: 'Miss'
-            }, {
-                value: 'mrs',
-                label: 'Mrs.'
-            }, {
-                value: 'dr',
-                label: 'Dr.'
-            }, {
-                value: 'prof',
-                label: 'Prof.'
-            }]
-        },
-        suffix: {
-            name: 'suffix',
-            required: false,
-            label: 'Suffix',
-            description: 'A suffix to your name',
-            more: div([
-                p([
-                    'additional details here...'
-                ])
-            ])
-        },
-
-        organization: {
-            name: 'organization',
-            required: true,
-            label: 'Organization',
-            description: 'Your primary association - organization, institution, business',
-            more: div([
-                p([
-                    'You may enter any value you wish here. As you type, matching US higher education institutions ',
-                    'and National Labs will be displayed below. If you see yours listed you should click on it to ',
-                    'use that value.'
-                ]),
-                p([
-                    'National Labs derived from: ',
-                    a({
-                        href: 'https://science.energy.gov/laboratories/',
-                        target: '_blank'
-                    }, 'DOE Web Site - Laboratories'),
-                ]),
-                p([
-                    'US highter education instutitions dervied from: ',
-                    a({
-                        href: 'http://carnegieclassifications.iu.edu/index.php',
-                        target: '_blank'
-                    }, 'Carnegie Classification of Institutions of Higher Education ')
-                ])
-            ]),
-            availableValues: (function () {
-                return NationalLabs.map(function (lab) {
-                    return {
-                        value: lab.name,
-                        label: lab.name + ' (' + lab.initials + ')'
-                    };
-                }).concat(Institutions);
-            }())
-        },
-        department: {
-            name: 'department',
-            required: false,
-            label: 'Department',
-            description: 'Your department or area of specialization within the organization',
-            more: div([
-                p([
-                    'additional details here...'
-                ])
-            ])
-        },
-        jobTitle: {
-            name: 'jobTitle',
-            required: true,
-            label: 'Job Title',
-            description: 'Your job title',
-            more: div([
-                p([
-                    'What you do where you are'
-                ])
-            ])
-        },
-        researchInterests: {
-            name: 'researchInterests',
-            required: true,
-            label: 'Research Interests',
-            description: 'Please indicate one or more areas of research interest',
-            more: div([
-                p([
-                    'Blah blah'
-                ])
-            ]),
-            availableValues: [{
-                    value: 'annotation',
-                    label: 'Genome Annotation'
-                },
-                {
-                    value: 'assembly',
-                    label: 'Genome Assembly'
-                },
-                {
-                    value: 'communities',
-                    label: 'Microbial Communities'
-                },
-                {
-                    value: 'comparative_genomics',
-                    label: 'Comparative Genomics'
-                },
-                {
-                    value: 'expression',
-                    label: 'Expression'
-                },
-                {
-                    value: 'metabolic_modeling',
-                    label: 'Metabolic Modeling'
-                },
-                {
-                    value: 'reads',
-                    label: 'Read Processing'
-                },
-                {
-                    value: 'sequence',
-                    label: 'Sequence Analysis'
-                },
-                {
-                    value: 'util',
-                    label: 'Utilities'
-                }
-            ]
-        },
-        fundingSource: {
-            name: 'fundingSource',
-            required: false,
-            label: 'Primary funding source',
-            description: 'The primary funding source for your work at KBase',
-            availableValues: [
-                { value: 'DOE Office of Energy Efficiency and Renewable Energy (EERE)', label: 'DOE Office of Energy Efficiency and Renewable Energy (EERE)' },
-                { value: 'DOE Office of Environmental Management (EM)', label: 'DOE Office of Environmental Management (EM)' },
-                { value: 'DOE Office of Fossil Energy (FE)', label: 'DOE Office of Fossil Energy (FE)' },
-                { value: 'DOE Office Nuclear Energy (NE)', label: 'DOE Office Nuclear Energy (NE)' },
-                { value: 'DOE National Nuclear Security Administration (NNSA)', label: 'DOE National Nuclear Security Administration (NNSA)' },
-                { value: 'DOE Small Business Innovation Research/Small Business Technology Transfer (SBIR/STTR)', label: 'DOE Small Business Innovation Research/Small Business Technology Transfer (SBIR/STTR)' },
-                { value: 'DOE Office of Science Advenced Scientific Computing Research (ASCR)', label: 'DOE Office of Science Advenced Scientific Computing Research (ASCR)' },
-                { value: 'DOE Office of Science Basic Energy Sciences (BES)', label: 'DOE Office of Science Basic Energy Sciences (BES)' },
-                { value: 'DOE Office of Science BES Energy Frontier Science Center (EFRC)', label: 'DOE Office of Science BES Energy Frontier Science Center (EFRC)' },
-                { value: 'DOE Office of Science Biological and Environmental Research (BER)', label: 'DOE Office of Science Biological and Environmental Research (BER)' },
-                { value: 'DOE Office of Science Fusion Energy Sciences (FES)', label: 'DOE Office of Science Fusion Energy Sciences (FES)' },
-                { value: 'DOE Office of Science High Energy Physics (HEP)', label: 'DOE Office of Science High Energy Physics (HEP)' },
-                { value: 'DOE Office of Science Nuclear Physics (NP)', label: 'DOE Office of Science Nuclear Physics (NP)' },
-                { value: 'DOE Office of Science Workforce Development for Teachers and Students (WDTS)', label: 'DOE Office of Science Workforce Development for Teachers and Students (WDTS)' },
-                { value: 'DOE Laboratory Directed Research and Development (LDRD)', label: 'DOE Laboratory Directed Research and Development (LDRD)' },
-                { value: 'USDA - Agricultural Research Service (ARS)', label: 'USDA - Agricultural Research Service (ARS)' },
-                { value: 'USDA - Forest Service (FS)', label: 'USDA - Forest Service (FS)' },
-                { value: 'DOC - National Institute of Standards and Technology (NIST)', label: 'DOC - National Institute of Standards and Technology (NIST)' },
-                { value: 'DOC - National Oceanic and Atmospheric Administration (NOAA)', label: 'DOC - National Oceanic and Atmospheric Administration (NOAA)' },
-                { value: 'DOD - Defense Advanced Research Projects Agency (DARPA)', label: 'DOD - Defense Advanced Research Projects Agency (DARPA)' },
-                { value: 'U.S. Department of Education (DOEd)', label: 'U.S. Department of Education (DOEd)' },
-                { value: 'U.S. Department of Health and Human Services (HHS) - Other (excl. NCI and NIH)', label: 'U.S. Department of Health and Human Services (HHS) - Other (excl. NCI and NIH)' },
-                { value: 'HHS - Centers for Disease Control (CDC)', label: 'HHS - Centers for Disease Control (CDC)' },
-                { value: 'HHS - National Institutes of Health (NIH)', label: 'HHS - National Institutes of Health (NIH)' },
-                { value: 'HHS - NIH - National Cancer Institute (NCI)', label: 'HHS - NIH - National Cancer Institute (NCI)' },
-                { value: 'HHS - U.S. United States Food and Drug Administration (FDA)', label: 'HHS - U.S. United States Food and Drug Administration (FDA)' },
-                { value: 'U.S. Department of Homeland Security (DHS)', label: 'U.S. Department of Homeland Security (DHS)' },
-                { value: 'DOI - U.S. Geological Survey (USGS)', label: 'DOI - U.S. Geological Survey (USGS)' },
-                { value: 'DOI - U.S. Fish and Wildlife Service (FWS)', label: 'DOI - U.S. Fish and Wildlife Service (FWS)' },
-                { value: 'U.S. Department of Transportation (DOT)', label: 'U.S. Department of Transportation (DOT)' },
-                { value: 'Environmental Protection Agency (EPA)', label: 'Environmental Protection Agency (EPA)' },
-                { value: 'National Aeronautics and Space Administration (NASA)', label: 'National Aeronautics and Space Administration (NASA)' },
-                { value: 'National Science Foundation (NSF)', label: 'National Science Foundation (NSF)' },
-                { value: 'Nuclear Regulatory Commission (NRC)', label: 'Nuclear Regulatory Commission (NRC)' },
-                { value: 'Small Business Administration (SBA)', label: 'Small Business Administration (SBA)' },
-                { value: 'U.S. Other Federal Agency', label: 'U.S. Other Federal Agency' },
-                { value: 'Federally Funded Research and Development Center (FFRDC) - (Specify)', label: 'Federally Funded Research and Development Center (FFRDC) - (Specify)' },
-                { value: 'other', label: 'Other' }
-            ]
-        },
-        location: {
-            name: 'location',
-            required: true,
-            label: 'Location',
-            description: 'Your geographic location',
-            more: div([
-                p([
-                    'additional details here...'
-                ])
-            ])
-        },
-        gravatarDefault: {
-            name: 'gravatarDefault',
-            label: 'Gravatar',
-            description: 'A generated or custom avatar displayed throughout the KBase interface to identify you.',
-            more: div([
-                p([
-                    'Note that if you have a gravatar image set up, this option will have no effect on your gravatar display. '
-                ]),
-                p([
-                    'Your gravatar is based on an image you have associated with your email address at ',
-                    a({
-                        href: 'http://www.gravatar.com',
-                        target: '_blank'
-                    }, 'Gravatar'),
-                    ' a free public profile service from Automattic, the same people who brought us Wordpress. ',
-                    'If you have a personal gravatar associated with the email address in this profile, it will be displayed within KBase.'
-                ]),
-                p([
-                    'If you don\'t have a personal gravator, you may select one of the ',
-                    'default auto-generated gravatars provided below. Note that generated gravatars will ',
-                    'use your email address to create a unique gravatar for you, which may be used to ',
-                    'identify you in the ui. If you do not wish to have a unique gravatar, you may selecte ',
-                    '"mystery man" or "blank"'
-                ])
-            ]),
-            availableValues: [{
-                value: 'mm',
-                label: 'Mystery Man - simple, cartoon-style silhouetted outline'
-            }, {
-                value: 'identicon',
-                label: 'Identicon - a geometric pattern based on an email hash'
-            }, {
-                value: 'monsterid',
-                label: 'MonsterID - generated "monster" with different colors, faces, etc'
-            }, {
-                value: 'wavatar',
-                label: 'Wavatar - generated faces with differing features and backgrounds'
-            }, {
-                value: 'retro',
-                label: 'Retro - 8-bit arcade-style pixelated faces'
-            }, {
-                value: 'blank',
-                label: 'Blank - A Blank Space'
-            }]
-        },
-
-        avatarOption: {
-            name: 'avatarOption',
-            label: 'Avatar Option',
-            description: 'Choose to use gravatar, or one of the KBase default avatars',
-            more: div([
-                p([
-                    'More stuff here...'
-                ])
-            ]),
-            availableValues: [{
-                value: 'gravatar',
-                label: 'Gravatar - Use your Gravatar image otherwise random generator selected below'
-            }, {
-                value: 'mysteryman',
-                label: 'Mystery Man - simple, anonymous, cartoon-style silhouetted outline'
-            }]
-        },
-
-        affiliations: {
-            name: 'affiliations',
-            label: 'Affiliations',
-            description: 'Your history of organizational affiliations ',
-            more: div([
-                p([
-                    'Maintaining your history of orgzniational affiliations can help other users identify you.',
-                ])
-            ])
-        },
-
-
-        realname: {
-            name: 'realname',
-            required: true,
-            label: 'Name',
-            type: 'text',
-            placeholder: 'Your Name',
-            description: span([
-                'Your name as you wish it to be displayed to other KBase users ',
-                ' as well as KBase staff.'
-            ]),
-            more: div([
-                p([
-                    'Your name will be displayed in any context within the KBase in which you are identified. ',
-                    'This includes the Dashboard, User Profile, App Catalog, and Narrative Interface.'
-                ])
-            ])
-        },
-
-        personalStatement: {
-            name: 'personalStatement',
-            required: false,
-            label: 'Research or Personal Statement',
-            type: 'textarea',
-            style: {
-                height: '10em'
-            },
-            placeholder: 'Personal Statement',
-            description: span([
-                'Describe yourself to fellow Narrators'
-            ]),
-            more: 'more here...'
-        }
-    };
-
-    function requiredIcon(field) {
-        if (!field.required) {
-            return;
-        }
-        var result = span({
-            class: 'glyphicon',
-            dataBind: {
-                css: '{"glyphicon-asterisk text-danger": ' + field.name + '.isValid() === false, "glyphicon-ok text-success":' + field.name + '.isValid()}'
-            },
-            style: {
-                marginLeft: '4px'
-            }
-        });
-        return result;
-    }
-
-    function dirtyIcon(field) {
-        var result = span({
-            class: 'glyphicon',
-            dataBind: {
-                css: '{"glyphicon-flash text-muted": ' + field.name + '.isDirty() !== true, "glyphicon-flash text-warning":' + field.name + '.isDirty()}'
-            },
-            style: {
-                marginLeft: '4px'
-            }
-        });
-        return result;
-    }
-
-    function fieldDoc(description, content, name) {
-        return div({
-            dataElement: 'more',
-            class: 'field-doc'
-        }, [
-            div([
-                span({
-                    // type: 'button',
-                    // class: 'btn btn-link',
-                    style: {
-                        padding: '2px',
-                        cursor: 'pointer'
-                            // lineHeight: '1'
-                    },
-                    dataElement: 'button',
-                    dataBind: {
-                        click: 'showMore.bind($data, "' + name + '")'
-                    }
-                }, span({
-                    dataElement: 'label'
-                }, [
-                    description,
-                    span({
-                        class: 'fa ',
-                        style: {
-                            marginLeft: '5px',
-                        },
-                        dataBind: {
-                            css: {
-                                '"fa-caret-right"': 'more.' + name + '()',
-                                '"fa-caret-down"': '!more.' + name + '()'
-                            }
-                        }
-                    })
-                ]))
-            ]),
-            div({
-                dataBind: 'css: {hidden: more.' + name + '()}',
-                dataElement: 'content',
-                style: {
-                    border: '1px silver dashed',
-                    padding: '6px'
-                }
-            }, content)
-        ]);
-    }
+        button = t('button');
 
     function buildMessageDisplay() {
         return div({
@@ -508,7 +112,7 @@ define([
                     },
                     input({
                         class: 'form-control',
-                        textInput: {
+                        dataBind: {
                             textInput: 'end_year'
                         }
                     }))
@@ -534,97 +138,76 @@ define([
                 }, button({
                     class: 'btn btn-default',
                     dataBind: {
-                        click: '$parent.deleteAffiliation'
+                        click: '$component.deleteAffiliation'
                     }
                 }, 'X'))
             ])
         ]);
     }
 
-    function buildAffiliations(field) {
+    function buildAffiliations(vmPath) {
         var id = html.genId();
         return div({
-            class: 'form-group form-row'
+            class: 'form-group form-row',
+            dataBind: {
+                with: vmPath
+            }
         }, [
+            FieldBuilders.buildLabelRow(id),
+            FieldBuilders.buildFieldRow(div({
+                dataBind: {
+                    foreach: 'field'
+                }
+            }, buildAffiliation())),
             div({
                 class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                    fieldDoc(field.description, field.more, field.name)
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                        class: 'col-md-12'
-                    },
-                    div({
-                        dataBind: {
-                            foreach: 'affiliations'
-                        }
-                    }, buildAffiliation()))
-            ]),
-            div({
-                class: 'row',
-                border: '1px orange blue'
             }, [
                 div({
                     class: 'col-md-12'
                 }, button({
                     class: 'btn btn-default',
                     dataBind: {
-                        click: 'addAffiliation'
+                        click: '$component.addAffiliation'
                     }
                 }, 'Add New Affiliation'))
             ])
         ]);
     }
 
-    function organizationDataSource(arg) {
-        var data = arg.data;
-        data.forEach(function (item, index) {
-            item.order = index;
-            item.searchable = {
-                label: item.label.toLowerCase()
-            };
-        });
-
-        function totalCount() {
-            return Promise.try(function () {
-                return data.length;
-            });
+    function buildUseMyLocation() {
+        if (!('geolocation' in navigator)) {
+            return;
         }
-
-        function search(term) {
-            return Promise.try(function () {
-                if (term) {
-                    var searchTerm = term.toLowerCase();
-                    return data.filter(function (item) {
-                        // Just do a substring search.
-                        return item.searchable.label.indexOf(searchTerm) >= 0;
-                        // return regex.test(item.label);
-                    });
-                } else {
-                    return [];
+        return div({
+            style: {
+                textAlign: 'center'
+            }
+        }, [
+            button({
+                type: 'button',
+                class: 'btn btn-default',
+                dataBind: {
+                    click: 'doUseMyLocation',
+                    disable: 'findingLocation'
                 }
-            });
-        }
-
-        function getAll() {
-            return data;
-        }
-
-        return {
-            totalCount: totalCount,
-            search: search,
-            getAll: getAll
-        };
+            }, [
+                span({
+                    dataBind: {
+                        visible: '!findingLocation()'
+                    }
+                }, 'Use My Location'),
+                span({
+                    dataBind: {
+                        visible: 'findingLocation()'
+                    }
+                }, [
+                    'Finding Location ...',
+                    span({
+                        class: 'fa fa-spinner fa-pulse'
+                    })
+                ])
+            ])
+        ]);
     }
 
     function buildForm() {
@@ -638,47 +221,94 @@ define([
                 }
             }
         }, [
-            // buildTypeahead(fields.title),
-            FieldBuilders.buildInput(fields.realname),
-            FieldBuilders.buildInput(fields.jobTitle),
-            // buildInput(fields.suffix),
-            FieldBuilders.buildTypeahead(fields.organization, {}),
-            FieldBuilders.buildInput(fields.department),
-            FieldBuilders.buildInput(fields.location),
-            FieldBuilders.buildCheckboxes(fields.researchInterests),
-            FieldBuilders.buildSelect(fields.fundingSource, {
-                optionsCaption: '- optionally select a funding source or "other" -'
+            FieldBuilders.buildInput2('profile.realname'),
+            FieldBuilders.buildSelect2('profile.avatarOption'),
+            FieldBuilders.buildSelect2('profile.gravatarDefault', {
+                //condition: 'profile.avatarOption() === "gravatar"'
             }),
-            buildAffiliations(fields.affiliations),
-            FieldBuilders.buildTextarea(fields.personalStatement),
-
-            FieldBuilders.buildSelect(fields.avatarOption),
-            FieldBuilders.buildSelect(fields.gravatarDefault, {
-                condition: 'avatarOption() === "gravatar"'
-            }),
-            // div([
-            //     p({
-            //         dataBind: {
-            //             visible: 'someDirty'
-            //         },
-            //         class: 'text-warning'
-            //     }, 'You have changed fields, you should save the form to preserve your changes.'),
-            //     p({
-            //         dataBind: {
-            //             visible: 'someInvalid'
-            //         },
-            //         class: 'text-danger'
-            //     }, 'You have incomplete required or invalid fields, please fix them and then save your profile.')
-            // ]),
-            // buildMessageDisplay(),
-            // button({
-            //     class: 'btn btn-primary',
-            //     type: 'button',
-            //     dataBind: {
-            //         click: 'doSaveProfile',
-            //         enable: 'formCanSave'
-            //     }
-            // }, 'Save')
+            div({
+                style: {
+                    border: '1px #DDD solid',
+                    padding: '4px',
+                    margin: '2em 0 1em 0',
+                }
+            }, [
+                span({
+                    style: {
+                        fontWeight: 'bold',
+                        color: '#DDD',
+                        border: '1px #DDD solid',
+                        position: 'relative',
+                        top: '-14px',
+                        left: '1em',
+                        padding: '6px',
+                        backgroundColor: '#777'
+                    }
+                }, 'Position'),
+                FieldBuilders.buildTypeahead2('profile.organization', {}),
+                FieldBuilders.buildInput2('profile.department'),
+                FieldBuilders.buildSelect2('profile.jobTitle', {
+                    optionsCaption: ' - '
+                }),
+                buildAffiliations('profile.affiliations')
+            ]),
+            div({
+                style: {
+                    border: '1px #DDD solid',
+                    padding: '4px',
+                    margin: '2em 0 1em 0',
+                }
+            }, [
+                span({
+                    style: {
+                        fontWeight: 'bold',
+                        color: '#DDD',
+                        border: '1px #DDD solid',
+                        position: 'relative',
+                        top: '-14px',
+                        left: '1em',
+                        padding: '6px',
+                        backgroundColor: '#777'
+                    }
+                }, 'Location'),
+                buildUseMyLocation(),
+                FieldBuilders.buildInput2('profile.city'),
+                FieldBuilders.buildInput2('profile.state'),
+                FieldBuilders.buildInput2('profile.postalCode'),
+                FieldBuilders.buildSelect2('profile.country', {
+                    // optionsCaption: fields.country.emptyValueLabel,
+                    // defaultValue: fields.country.defaultValue
+                })
+            ]),
+            div({
+                style: {
+                    border: '1px #DDD solid',
+                    padding: '4px',
+                    margin: '2em 0 1em 0',
+                }
+            }, [
+                span({
+                    style: {
+                        fontWeight: 'bold',
+                        color: '#DDD',
+                        border: '1px #DDD solid',
+                        position: 'relative',
+                        top: '-14px',
+                        left: '1em',
+                        padding: '6px',
+                        backgroundColor: '#777'
+                    }
+                }, 'Research'),
+                FieldBuilders.buildCheckboxes2('profile.researchInterests'),
+                FieldBuilders.buildSelect2('profile.fundingSource', {
+                    optionsCaption: ' - '
+                }),
+                FieldBuilders.buildTextarea2('profile.personalStatement', {
+                    style: {
+                        height: '10em'
+                    }
+                })
+            ])
         ]);
         return content;
     }
@@ -686,221 +316,38 @@ define([
     function buildSaver() {
         return div([
             div([
-                p({
+                div({
                     dataBind: {
                         visible: 'someDirty'
-                    },
-                    class: 'text-warning'
+                    }
                 }, [
-                    span({
-                        class: 'fa fa-exclamation',
-                        style: {
-                            marginRight: '1em'
-                        }
-                    }),
-                    'You have made changes to your profile -- you should save them if you wish to preserve them.'
+                    div({
+                        class: 'alert alert-warning'
+                    }, 'You have made changes to your profile -- you should save them if you wish to preserve them.')
                 ]),
-                p({
+                div({
                     dataBind: {
                         visible: 'someInvalid'
-                    },
-                    class: 'text-danger'
+                    }
                 }, [
-                    span({
-                        class: 'fa fa-exclamation-triangle',
-                        style: {
-                            marginRight: '1em'
-                        }
-                    }),
-                    'You have empty required or invalid fields -- please fix them and then save your profile.'
+                    div({
+                        class: 'alert alert-danger'
+                    }, 'You have empty required or invalid fields -- please fix them and then save your profile.')
                 ])
             ]),
             buildMessageDisplay(),
             div({
-                    style: {
-                        textAlign: 'center'
-                    }
-                },
-                button({
-                    class: 'btn btn-primary',
-                    type: 'button',
-                    dataBind: {
-                        click: 'doSaveProfile',
-                        enable: 'formCanSave'
-                    }
-                }, 'Save'))
-        ]);
-    }
-
-    function buildPreview() {
-
-        return div([
-            h3('Your Profile - Preview'),
-            p({}, a({
-                href: '#people'
-            }, 'Visit your profile page')),
-            BS.buildPanel({
-                type: 'default',
-                title: span([
-                    span({
-                        dataBind: {
-                            text: 'realname'
-                        }
-                    }),
-                    ' (',
-                    span({
-                        dataBind: {
-                            text: 'username'
-                        }
-                    }),
-                    ')'
-                ]),
-                body: div({
-                    class: 'row'
-                }, [
-                    div({
-                        class: 'col-md-3'
-                    }, img({
-                        style: {
-                            width: '100%'
-                        },
-                        dataBind: {
-                            attr: {
-                                src: 'gravatarUrl'
-                            }
-                        }
-                    })),
-                    div({
-                        class: 'col-md-9'
-                    }, [
-                        div({
-                            style: {
-                                fontWeight: 'bold',
-                                fontSize: '120%'
-                            },
-                            dataBind: {
-                                text: 'realname'
-                            }
-                        }),
-
-                        div({
-                            style: {
-                                fontStyle: 'italic',
-                                marginBottom: '1em'
-                            },
-                            dataBind: {
-                                text: 'jobTitle'
-                            }
-                        }),
-                        div({
-                            dataBind: {
-                                text: 'organization'
-                            }
-                        }),
-                        div({
-                            dataBind: {
-                                text: 'department'
-                            }
-                        }),
-                        div({
-                            dataBind: {
-                                text: 'location'
-                            }
-                        }),
-                        h3('Research Interests'),
-                        div({
-                            dataBind: {
-                                visible: 'researchInterests.exportDisplay().length === 0'
-                            },
-                            style: {
-                                fontStyle: 'italic'
-                            }
-                        }, 'No research interests selected'),
-                        ul({
-                            dataBind: {
-                                foreach: 'researchInterests.exportDisplay()'
-                            }
-                        }, li({
-                            dataBind: {
-                                text: '$data'
-                            }
-                        })),
-                        div({
-                            dataBind: {
-                                if: 'fundingSource'
-                            }
-                        }, [
-                            h3('Primary Funding Source'),
-                            div({
-                                dataBind: {
-                                    text: 'fundingSource'
-                                }
-                            })
-                        ]),
-                        h3('Affiliations'),
-                        div({
-                            dataBind: {
-                                visible: 'affiliations().length === 0'
-                            },
-                            style: {
-                                fontStyle: 'italic'
-                            }
-                        }, 'No affiliations provided'),
-                        div({
-                            dataBind: {
-                                foreach: 'affiliations'
-                            }
-                        }, div([
-                            p({
-                                style: {
-                                    fontWeight: 'bold'
-                                }
-                            }, [
-                                span({
-                                    dataBind: {
-                                        text: 'title'
-                                    }
-                                }),
-                                ' (',
-                                span({
-                                    dataBind: {
-                                        text: 'start_year'
-                                    }
-                                }),
-                                ' - ',
-                                span({
-                                    dataBind: {
-                                        text: 'end_year_display'
-                                    }
-                                }),
-                                ') ',
-                                ' @ ',
-                                span({
-                                    dataBind: {
-                                        text: 'institution'
-                                    }
-                                })
-                            ])
-                        ])),
-                        h3('Research or Personal Statement'),
-                        div({
-                            dataBind: {
-                                visible: 'personalStatementDisplay().length === 0'
-                            },
-                            style: {
-                                fontStyle: 'italic'
-                            }
-                        }, 'No research statement provided'),
-                        div({
-                            class: 'well',
-                            dataBind: {
-                                visible: 'personalStatementDisplay().length > 0',
-                                html: 'personalStatementDisplay'
-                            }
-                        })
-                    ])
-                ])
-            })
+                style: {
+                    textAlign: 'center'
+                }
+            }, button({
+                class: 'btn btn-primary',
+                type: 'button',
+                dataBind: {
+                    click: 'doSaveProfile',
+                    enable: 'formCanSave'
+                }
+            }, 'Save'))
         ]);
     }
 
@@ -914,7 +361,17 @@ define([
             div({
                 class: 'col-md-6'
             }, [
-                buildPreview(),
+                div({
+                    dataBind: {
+                        component: {
+                            name: '"profile-view"',
+                            params: {
+                                profile: 'exportedProfile()'
+                            }
+                        }
+                    }
+                }),
+                //buildPreview(),
                 buildSaver()
             ])
         ]);
@@ -941,135 +398,386 @@ define([
     function viewModel(params) {
         var runtime = params.runtime;
         var profile = params.profile;
-
-        var realname = ko.observable(profile.user.realname)
-            .extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
-                dirty: false
-            });
-
-        // var title = ko.observable(profile.profile.userdata.title).extend({
-        //     required: true,
-        //     minLength: 2,
-        //     maxLength: 100,
-        //     dirty: false
-        // });
-
-        // var titles = fields.title.availableValues;
-
-        // var suffix = ko.observable(profile.profile.userdata.suffix).extend({
-        //     required: false,
-        //     minLength: 2,
-        //     maxLength: 100,
-        //     dirty: false
-        // });
-
-
-        var organization = ko.observable(profile.profile.userdata.organization).extend({
-            required: true,
-            minLength: 2,
-            maxLength: 100,
-            dirty: false
-        });
-        var organization_dataSource = organizationDataSource({
-            data: fields.organization.availableValues
-        });
-
-        var department = ko.observable(profile.profile.userdata.department).extend({
-            required: false,
-            minLength: 2,
-            maxLength: 100,
-            dirty: false
-        });
-
-        var jobTitle = ko.observable(profile.profile.userdata.jobTitle).extend({
-            required: true,
-            minLength: 2,
-            maxLength: 100,
-            dirty: false
-        });
-
-        var researchInterests = ko.observableArray(fields.researchInterests.availableValues.map(function (item) {
-            var checked = false;
-            if (profile.profile.userdata.researchInterests &&
-                profile.profile.userdata.researchInterests instanceof Array &&
-                profile.profile.userdata.researchInterests.indexOf(item.value) >= 0) {
-                checked = true;
-            }
-            return {
-                value: item.value,
-                label: item.label,
-                checked: ko.observable(checked)
-            };
-        })).extend({
-            required: true,
-            dirty: false,
-            export: {
-                display: function (target) {
-                    return target().filter(function (item) {
-                        return item.checked();
-                    }).map(function (item) {
-                        return item.label;
-                    });
+        var dataSource = DataSource({
+            sources: {
+                // Raw data source
+                jobTitles: {
+                    file: 'jobTitles.json',
+                    type: 'json',
+                    translate: function (item) {
+                        return {
+                            value: item.label,
+                            label: item.label
+                        };
+                    }
                 },
-                data: function (target) {
-                    return target().filter(function (item) {
-                        return item.checked();
-                    }).map(function (item) {
-                        return item.value;
-                    });
+                institutions: {
+                    file: 'institutions.json',
+                    type: 'json'
+                },
+                nationalLabs: {
+                    file: 'nationalLabs.yaml',
+                    type: 'yaml'
+                },
+                researchInterests: {
+                    file: 'researchInterests.json',
+                    type: 'json',
+                    translate: function (item) {
+                        return {
+                            value: item.label,
+                            label: item.label
+                        };
+                    }
+                },
+                fundingSource: {
+                    file: 'fundingSources.json',
+                    type: 'json',
+                    translate: function (item) {
+                        return {
+                            value: item.label,
+                            label: item.label
+                        };
+                    }
+                },
+                countries: {
+                    file: 'countries.json',
+                    type: 'json',
+                    translate: function (item) {
+                        return {
+                            value: item.label,
+                            label: item.label
+                        };
+                    }
+                },
+                gravatarDefaults: {
+                    file: 'gravatarDefaults.json',
+                    type: 'json'
+                },
+                avatarOptions: {
+                    file: 'avatarOptions.json',
+                    type: 'json'
+                },
+                // A computed data source.
+                organizations: {
+                    sources: {
+                        institutions: {
+                            translate: false,
+                        },
+                        nationalLabs: {
+                            translate: function (item) {
+                                return {
+                                    value: item.name,
+                                    label: item.name + ' (' + item.initials + ')'
+                                };
+                            }
+                        }
+                    }
                 }
             }
         });
 
-        var fundingSource = ko.observable(profile.profile.userdata.fundingSource).extend({
-            required: false,
-            dirty: false
-        });
-        var fundingSourceValues = fields.fundingSource.availableValues;
 
-        var location = ko.observable(profile.profile.userdata.location).extend({
+        var realname = {
+            ready: true,
+            field: ko.observable(profile.user.realname)
+                .extend({
+                    required: true,
+                    minLength: 2,
+                    maxLength: 100,
+                    dirty: false
+                }),
+            label: 'Name',
+            doc: {
+                description: span([
+                    'Your name as you wish it to be displayed to other KBase users ',
+                    ' as well as KBase staff.'
+                ]),
+                more: div([
+                    p([
+                        'Your name will be displayed in any context within the KBase in which you are identified. ',
+                        'This includes the Dashboard, User Profile, App Catalog, and Narrative Interface.'
+                    ])
+                ]),
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
+
+        var organization = {
+            ready: ko.observable(true),
+            field: ko.observable(profile.profile.userdata.organization).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            dataSource: dataSource.getFilter('organizations'),
             required: true,
-            minLength: 2,
-            maxLength: 100,
-            dirty: false
-        });
+            label: 'Organization',
+            doc: {
+                description: 'Your primary association - organization, institution, business',
+                more: div([
+                    p([
+                        'You may enter any value you wish here. As you type, matching US higher education institutions ',
+                        'and National Labs will be displayed below. If you see yours listed you should click on it to ',
+                        'use that value.'
+                    ]),
+                    p([
+                        'National Labs derived from: ',
+                        a({
+                            href: 'https://science.energy.gov/laboratories/',
+                            target: '_blank'
+                        }, 'DOE Web Site - Laboratories'),
+                    ]),
+                    p([
+                        'US highter education instutitions dervied from: ',
+                        a({
+                            href: 'http://carnegieclassifications.iu.edu/index.php',
+                            target: '_blank'
+                        }, 'Carnegie Classification of Institutions of Higher Education ')
+                    ])
+                ]),
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
 
-        var avatarOption = ko.observable(profile.profile.userdata.avatarOption).extend({
+        var department = {
+            ready: ko.observable(true),
+            field: ko.observable(profile.profile.userdata.department).extend({
+                required: false,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
             required: false,
-            minLength: 2,
-            maxLength: 100,
-            dirty: false
-        });
-        var avatarOptionValues = fields.avatarOption.availableValues;
+            label: 'Department',
+            doc: {
+                description: 'Your department or area of specialization within the organization',
+                more: div([
+                    p([
+                        'additional details here...'
+                    ])
+                ]),
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
 
-        var gravatarDefault = ko.observable(profile.profile.userdata.gravatarDefault || 'monsterid').extend({
+        ko.extenders.docs = function (target, args) {
+            target.label = function () {
+                return args.label;
+            };
+            target.description = function () {
+                return args.description;
+            };
+            target.moreDescription = function () {
+                return args.moreDescription();
+            };
+            target.more = ko.observable(false);
+
+            target.exportDisplay = function () {
+                if (args.display) {
+                    return args.display(target);
+                } else {
+                    return target();
+                }
+            };
+            target.exportData = function () {
+                if (args.data) {
+                    return args.data(target);
+                } else {
+                    return target();
+                }
+            };
+
+        };
+
+        var jobTitle = {
+            ready: ko.observable(false),
+            required: true,
+            field: ko.observable(profile.profile.userdata.jobTitle).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            emptyLabel: ' - ',
+            dataSource: dataSource.getFilter('jobTitles'),
+            label: 'Job Title',
+            doc: {
+                description: 'Your job title or position',
+                more: 'this is more stuff',
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    // console.log('toggling', this);
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
+
+        var researchInterests = {
+            ready: true,
+            field: ko.observableArray(profile.profile.userdata.researchInterests || []).extend({
+                required: true,
+                dirty: false,
+            }),
+            required: true,
+            dataSource: dataSource.getFilter('researchInterests'),
+            label: 'Research Interests',
+            doc: {
+                description: 'Please indicate one or more areas of research interest',
+                more: div([
+                    p([
+                        'Blah blah'
+                    ])
+                ]),
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
+
+        var fundingSource = {
+            ready: ko.observable(false),
+            field: ko.observable(profile.profile.userdata.fundingSource).extend({
+                required: false,
+                dirty: false
+            }),
+            dataSource: dataSource.getFilter('fundingSource'),
+            emptyLabel: ' - ',
+            label: 'Primary funding source',
+            doc: {
+                description: 'The primary funding source for your work at KBase',
+                more: null,
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
+
+        var city = {
+            ready: ko.observable(true),
+            required: true,
+            field: ko.observable(profile.profile.userdata.city).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            label: 'City',
+            doc: null
+        };
+
+        var state = {
+            ready: ko.observable(true),
+            required: true,
+            field: ko.observable(profile.profile.userdata.state).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            label: 'State, Province, or Region',
+            doc: null
+        };
+        var postalCode = {
+            ready: ko.observable(true),
+            required: true,
+            field: ko.observable(profile.profile.userdata.postalCode).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            label: 'Zip or Postal Code',
+            doc: null
+        };
+
+        var country = {
+            ready: ko.observable(false),
+            required: true,
+            field: ko.observable(profile.profile.userdata.country).extend({
+                required: true,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            label: 'Country',
+            doc: null,
+            emptyLabel: ' - ',
+            dataSource: dataSource.getFilter('countries')
+        };
+
+        var avatarOption = {
+            field: ko.observable(profile.profile.userdata.avatarOption).extend({
+                required: false,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            emptyLabel: ' - ',
+            dataSource: dataSource.getFilter('avatarOptions'),
             required: false,
-            minLength: 2,
-            maxLength: 100,
-            dirty: false
-        });
-        var gravatarDefaultValues = [{
-            value: 'mm',
-            label: 'Mystery Man - simple, cartoon-style silhouetted outline'
-        }, {
-            value: 'identicon',
-            label: 'Identicon - a geometric pattern based on an email hash'
-        }, {
-            value: 'monsterid',
-            label: 'MonsterID - generated "monster" with different colors, faces, etc'
-        }, {
-            value: 'wavatar',
-            label: 'Wavatar - generated faces with differing features and backgrounds'
-        }, {
-            value: 'retro',
-            label: 'Retro - 8-bit arcade-style pixelated faces'
-        }, {
-            value: 'blank',
-            label: 'Blank - A Blank Space'
-        }];
+            label: 'Avatar Options',
+            doc: {
+                description: 'Choose to use gravatar, or the KBase anonymous silhouette.',
+                more: [],
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
+        var gravatarDefault = {
+            ready: ko.observable(true),
+            field: ko.observable(profile.profile.userdata.gravatarDefault || 'monsterid').extend({
+                required: false,
+                minLength: 2,
+                maxLength: 100,
+                dirty: false
+            }),
+            required: false,
+            label: 'Gravatar Default Image',
+            dataSource: dataSource.getFilter('gravatarDefaults'),
+            emptyLabel: ' - ',
+            doc: {
+                description: 'If you do not have a custom gravatar, this generated or generic image will be used',
+                more: div([
+                    p([
+                        'Note that if you have a gravatar image set up, this option will have no effect on your gravatar display. '
+                    ]),
+                    p([
+                        'Your gravatar is based on an image you have associated with your email address at ',
+                        a({
+                            href: 'http://www.gravatar.com',
+                            target: '_blank'
+                        }, 'Gravatar'),
+                        ' a free public profile service from Automattic, the same people who brought us Wordpress. ',
+                        'If you have a personal gravatar associated with the email address in this profile, it will be displayed within KBase.'
+                    ]),
+                    p([
+                        'If you don\'t have a personal gravator, you may select one of the ',
+                        'default auto-generated gravatars provided below. Note that generated gravatars will ',
+                        'use your email address to create a unique gravatar for you, which may be used to ',
+                        'identify you in the ui. If you do not wish to have a unique gravatar, you may selecte ',
+                        '"mystery man" or "blank"'
+                    ])
+                ]),
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
 
         ko.validation.rules['year'] = {
             validator: function (val) {
@@ -1081,6 +789,7 @@ define([
             message: 'A username may only contain the characters a-z, 0-0, and _.'
         };
         ko.validation.registerExtenders();
+
         var affils = profile.profile.userdata.affiliations || [];
 
         function affiliationVm(affil) {
@@ -1108,34 +817,61 @@ define([
                 dirty: false
             });
 
-            var end_year_display = ko.pureComputed(function () {
-                if (end_year()) {
-                    return end_year();
-                }
-                return 'present';
-            });
             return {
                 title: title,
                 institution: institution,
                 start_year: start_year,
-                end_year: end_year,
-                end_year_display: end_year_display
+                end_year: end_year
             };
         }
-        var affiliations = ko.observableArray(affils.map(function (affil) {
-            return affiliationVm(affil);
-        })).extend({
-            dirty: false
-        });
 
-        var personalStatement = ko.observable(profile.profile.userdata.personalStatement).extend({
+        var affiliations = {
+            field: ko.observableArray(affils.map(function (affil) {
+                return affiliationVm(affil);
+            })).extend({
+                required: false,
+                dirty: false
+            }),
+            label: 'Affiliations',
             required: false,
-            minLength: 2,
-            maxLength: 400,
-            dirty: false
-        });
+            doc: {
+                description: 'Your history of organizational affiliations ',
+                more: div([
+                    p([
+                        'Maintaining your history of orgzniational affiliations can help other users identify you.',
+                    ])
+                ]),
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+            }
+        };
+
+        var personalStatement = {
+            ready: ko.observable(true),
+            field: ko.observable(profile.profile.userdata.personalStatement).extend({
+                required: false,
+                minLength: 2,
+                maxLength: 400,
+                dirty: false
+            }),
+            required: false,
+            label: 'Research or Personal Statement',
+            doc: {
+                description: span([
+                    'Describe yourself to fellow Narrators'
+                ]),
+                more: [],
+                showMore: ko.observable(false),
+                toggleShowMore: function () {
+                    this.showMore(!this.showMore());
+                }
+
+            }
+        };
         var personalStatementDisplay = ko.pureComputed(function () {
-            var text = personalStatement();
+            var text = personalStatement.field();
             if (!text) {
                 return '';
             }
@@ -1146,35 +882,23 @@ define([
 
         var gravatarHash = profile.profile.synced.gravatarHash;
         var gravatarUrl = ko.pureComputed(function () {
-            switch (avatarOption()) {
-            case 'gravatar':
-                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault();
-            case 'mysteryman':
-                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            try {
+                switch (avatarOption.field()) {
+                case 'gravatar':
+                    return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault.field();
+                case 'mysteryman':
+                    return Plugin.plugin.fullPath + '/images/nouserpic.png';
+                }
+            } catch (ex) {
+                console.error('ERROR computing gravatar url', ex);
             }
-
         });
-
-        // var realnameMore = ko.observable(true);
-        // var emailMore = ko.observable(true);
-
-        var more = {};
-        Object.keys(fields).forEach(function (key) {
-            more[key] = ko.observable(true);
-        });
-
-        function showMore(name) {
-            if (more[name]()) {
-                more[name](false);
-            } else {
-                more[name](true);
-            }
-        }
 
         var vmFields = [
-            realname, location, organization,
-            department, avatarOption, gravatarDefault, affiliations,
-            personalStatement, jobTitle, researchInterests, fundingSource
+            realname.field, city.field, state.field, postalCode.field, country.field, organization.field,
+            department.field, avatarOption.field, gravatarDefault.field, affiliations.field,
+            personalStatement.field, researchInterests.field, fundingSource.field,
+            jobTitle.field
         ];
 
         var someDirty = ko.pureComputed(function () {
@@ -1197,6 +921,42 @@ define([
             return someDirty() && !someInvalid();
         });
 
+        var exportedProfile = ko.pureComputed(function () {
+            return {
+                user: {
+                    username: username,
+                    realname: realname.field()
+                },
+                profile: {
+                    userdata: {
+                        jobTitle: jobTitle.field(),
+                        organization: organization.field(),
+                        department: department.field(),
+                        city: city.field(),
+                        state: state.field(),
+                        postalCode: postalCode.field(),
+                        country: country.field(),
+                        researchInterests: researchInterests.field(),
+                        fudingSource: fundingSource.field(),
+                        affiliations: affiliations.field().map(function (af) {
+                            return {
+                                title: af.title(),
+                                institution: af.institution(),
+                                start_year: af.start_year(),
+                                end_year: af.end_year()
+                            };
+                        }),
+                        personalStatement: personalStatement.field(),
+                        avatarOption: avatarOption.field(),
+                        gravatarDefault: gravatarDefault.field(),
+                    }
+                },
+                synced: {
+                    gravatarHash: gravatarHash
+                }
+            };
+        });
+
         function saveProfile() {
             var client = new UserProfileService(runtime.config('services.user_profile.url'), {
                 token: runtime.service('session').getAuthToken()
@@ -1214,62 +974,71 @@ define([
                     // build the update object.
                     // TODO: detect changed fields - knockout?
 
-                    // if (title.isDirty()) {
-                    //     profile.profile.userdata.title = title();
-                    //     title.markClean();
-                    //     profileChanges = true;
-                    // }
-                    if (realname.isDirty()) {
-                        profile.user.realname = realname();
-                        realname.markClean();
-                        account.display = realname();
+                    if (realname.field.isDirty()) {
+                        profile.user.realname = realname.field();
+                        realname.field.markClean();
+                        account.display = realname.field();
                         accountChanges = true;
                         profileChanges = true;
                     }
-                    // if (suffix.isDirty()) {
-                    //     profile.profile.userdata.suffix = suffix();
-                    //     suffix.markClean();
-                    //     accountChanges = true;
-                    // }
-                    if (location.isDirty()) {
-                        profile.profile.userdata.location = location();
-                        location.markClean();
+
+                    if (city.field.isDirty()) {
+                        profile.profile.userdata.city = city.field();
+                        city.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (organization.isDirty()) {
-                        profile.profile.userdata.organization = organization();
-                        organization.markClean();
+                    if (state.field.isDirty()) {
+                        profile.profile.userdata.state = state.field();
+                        state.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (department.isDirty()) {
-                        profile.profile.userdata.department = department();
-                        department.markClean();
+                    if (postalCode.field.isDirty()) {
+                        profile.profile.userdata.postalCode = postalCode.field();
+                        postalCode.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (fundingSource.isDirty()) {
-                        profile.profile.userdata.fundingSource = fundingSource();
-                        fundingSource.markClean();
+                    if (country.field.isDirty()) {
+                        profile.profile.userdata.country = country.field();
+                        country.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (avatarOption.isDirty()) {
-                        profile.profile.userdata.avatarOption = avatarOption();
-                        avatarOption.markClean();
+                    if (organization.field.isDirty()) {
+                        profile.profile.userdata.organization = organization.field();
+                        organization.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (gravatarDefault.isDirty()) {
-                        profile.profile.userdata.gravatarDefault = gravatarDefault();
-                        gravatarDefault.markClean();
+                    if (department.field.isDirty()) {
+                        profile.profile.userdata.department = department.field();
+                        department.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (affiliations.isDirty()) {
+                    if (fundingSource.field.isDirty()) {
+                        profile.profile.userdata.fundingSource = fundingSource.field();
+                        fundingSource.field.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (avatarOption.field.isDirty()) {
+                        profile.profile.userdata.avatarOption = avatarOption.field();
+                        avatarOption.field.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (gravatarDefault.field.isDirty()) {
+                        profile.profile.userdata.gravatarDefault = gravatarDefault.field();
+                        gravatarDefault.field.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (affiliations.field.isDirty()) {
                         // just bundle the whole thing up...
-                        var newAffiliations = affiliations().map(function (af) {
+                        var newAffiliations = affiliations.field().map(function (af) {
                             return {
                                 title: af.title(),
                                 institution: af.institution(),
@@ -1278,33 +1047,25 @@ define([
                             };
                         });
                         profile.profile.userdata.affiliations = newAffiliations;
-                        affiliations.markClean();
+                        affiliations.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (personalStatement.isDirty()) {
-                        profile.profile.userdata.personalStatement = personalStatement();
-                        personalStatement.markClean();
+                    if (personalStatement.field.isDirty()) {
+                        profile.profile.userdata.personalStatement = personalStatement.field();
+                        personalStatement.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (jobTitle.isDirty()) {
-                        profile.profile.userdata.jobTitle = jobTitle();
-                        jobTitle.markClean();
+                    if (jobTitle.field.isDirty()) {
+                        profile.profile.userdata.jobTitle = jobTitle.field();
+                        jobTitle.field.markClean();
                         profileChanges = true;
                     }
 
-                    if (researchInterests.isDirty()) {
-                        profile.profile.userdata.researchInterests = researchInterests()
-                            .map(function (item) {
-                                if (item.checked()) {
-                                    return item.value;
-                                }
-                            })
-                            .filter(function (item) {
-                                return (typeof item !== 'undefined');
-                            });
-                        researchInterests.markClean();
+                    if (researchInterests.field.isDirty()) {
+                        profile.profile.userdata.researchInterests = researchInterests.field();
+                        researchInterests.field.markClean();
                         profileChanges = true;
                     }
 
@@ -1327,7 +1088,7 @@ define([
                 });
         }
 
-
+        // ACTIONS
 
         function doSaveProfile() {
             saveProfile()
@@ -1352,51 +1113,80 @@ define([
         var messageType = ko.observable();
 
         function deleteAffiliation(item) {
-            affiliations.remove(item);
+            console.log('deleting...');
+            affiliations.field.remove(item);
         }
 
         function addAffiliation() {
-            affiliations.push(affiliationVm());
+            console.log('here');
+            affiliations.field.push(affiliationVm());
+        }
+
+        var findingLocation = ko.observable(false);
+
+        function doUseMyLocation() {
+            findingLocation(true);
+            navigator.geolocation.getCurrentPosition(function (position) {
+                //console.log('position', position);
+                GeoNames.getCountryCode({
+                        username: 'eapearson',
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    })
+                    .then(function (response) {
+                        console.log('setting country name', response);
+                        country.field(response.countryName);
+                    })
+                    .catch(function (err) {
+                        console.error('ERROR', err);
+                    })
+                    .finally(function () {
+                        findingLocation(false);
+                    });
+            });
         }
 
         return {
             // fields being edited or displayed
-            //title: title,
-            //titles: titles,
-            realname: realname,
-            organization: organization,
-            organization_dataSource: organization_dataSource,
-            department: department,
-            location: location,
-            avatarOption: avatarOption,
-            avatarOptionValues: avatarOptionValues,
-            gravatarDefault: gravatarDefault,
-            gravatarDefaultValues: gravatarDefaultValues,
-            affiliations: affiliations,
-            personalStatement: personalStatement,
-            personalStatementDisplay: personalStatementDisplay,
-            jobTitle: jobTitle,
-            researchInterests: researchInterests,
-            fundingSource: fundingSource,
-            fundingSourceValues: fundingSourceValues,
+            profile: {
+                username: username,
+                realname: realname,
+                organization: organization,
+                department: department,
+                city: city,
+                state: state,
+                postalCode: postalCode,
+                country: country,
+                avatarOption: avatarOption,
+                gravatarDefault: gravatarDefault,
+                affiliations: affiliations,
+                personalStatement: personalStatement,
+                personalStatementDisplay: personalStatementDisplay,
+                jobTitle: jobTitle,
+                researchInterests: researchInterests,
+                fundingSource: fundingSource,
 
-            username: username,
+                // computed
+                gravatarUrl: gravatarUrl
+            },
 
-            // computed
-            gravatarUrl: gravatarUrl,
-
-            showMore: showMore,
-            more: more,
-            doSaveProfile: doSaveProfile,
+            // UI
+            findingLocation: findingLocation,
             message: message,
             messageType: messageType,
 
-            deleteAffiliation: deleteAffiliation,
-            addAffiliation: addAffiliation,
-
+            // Editing state
             someDirty: someDirty,
             someInvalid: someInvalid,
-            formCanSave: formCanSave
+            formCanSave: formCanSave,
+
+            // ACTIONS
+
+            doSaveProfile: doSaveProfile,
+            deleteAffiliation: deleteAffiliation,
+            addAffiliation: addAffiliation,
+            exportedProfile: exportedProfile,
+            doUseMyLocation: doUseMyLocation
         };
     }
 

@@ -16,6 +16,7 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
+        br = t('br'),
         p = t('p'),
         a = t('a'),
         b = t('b'),
@@ -145,13 +146,16 @@ define([
                         }
                     }, [
                         div({
-                                style: {
-                                    margin: '6px 0 0 0',
-                                    fontStyle: 'italic',
-                                    textAlign: 'center'
-                                }
-                            },
-                            'Sign in with:'),
+                            style: {
+                                margin: '6px 0 0 0',
+                                fontStyle: 'italic',
+                                textAlign: 'center'
+                            }
+                        }, [
+                            'Choose Globus if you signed up',
+                            br(),
+                            'before 5/15/17'
+                        ]),
                         div({
                                 class: 'btn-group-vertical',
                                 style: {
@@ -189,10 +193,11 @@ define([
                         marginTop: '10px'
                     },
                     dataBind: {
-                        click: 'doSetSignupMode',
-                        css: {
-                            active: 'mode() === "signup"'
-                        }
+                        click: 'doSignup'
+                            // click: 'doSetSignupMode',
+                            // css: {
+                            //     active: 'mode() === "signup"'
+                            // }
                     }
                 }, div({
                     style: {
@@ -216,47 +221,43 @@ define([
                         }
                     }, 'New User')
 
-                ])),
-                div({
-                    dataBind: {
-                        visible: 'mode() === "signup"'
-                    }
-                }, [
+                ]))
+                // div({
+                //     dataBind: {
+                //         visible: 'mode() === "signup"'
+                //     }
+                // }, [
 
-                    div({
-                        style: {
-                            marginBottom: '20px',
-                            padding: '4px',
-                            // border: '1px silver solid',
-                            backgroundColor: '#DDD',
-                            textAlign: 'left',
-                        },
-                    }, [
-                        div({
-                                style: {
-                                    margin: '6px 0 0 0',
-                                    fontStyle: 'italic',
-                                    textAlign: 'center'
-                                }
-                            },
-                            'Sign up with:'),
-                        div({
-                                class: 'btn-group-vertical',
-                                style: {
-                                    width: '100%'
-                                },
-                                dataBind: {
-                                    with: 'providersMap.Google'
-                                }
-                            },
-                            buildSignupButton()
-                            // utils.buildLoginButton2(events, providerMap.Google, {
-                            //     nextrequest: nextRequest,
-                            //     origin: 'signup'
-                            // })
-                        )
-                    ])
-                ])
+                //     div({
+                //         style: {
+                //             marginBottom: '20px',
+                //             padding: '4px',
+                //             // border: '1px silver solid',
+                //             backgroundColor: '#DDD',
+                //             textAlign: 'left',
+                //         },
+                //     }, [
+                //         div({
+                //                 style: {
+                //                     margin: '6px 0 0 0',
+                //                     fontStyle: 'italic',
+                //                     textAlign: 'center'
+                //                 }
+                //             },
+                //             'Sign up with:'),
+                //         div({
+                //                 class: 'btn-group-vertical',
+                //                 style: {
+                //                     width: '100%'
+                //                 },
+                //                 dataBind: {
+                //                     foreach: 'providers'
+                //                 }
+                //             },
+                //             buildSignupButton()
+                //         ),
+                //     ])
+                //])
             ]),
             div({
                 style: {

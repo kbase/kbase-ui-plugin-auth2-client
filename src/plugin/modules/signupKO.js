@@ -280,19 +280,6 @@ define([
                             fontWeight: 'bold'
                         }
                     })
-                ]),
-                p([
-                    'You already have a KBase account ',
-                    'linked to this ',
-                    span({
-                        dataBind: {
-                            text: 'choice.provider'
-                        },
-                        style: {
-                            fontWeight: 'bold'
-                        }
-                    }),
-                    ' account.'
                 ])
             ])
         ]);
@@ -421,6 +408,18 @@ define([
                     }, span({
                         dataElement: 'title'
                     }, 'Already Logged In'))
+                ]),
+                p([
+                    'Interestingly, even though you apparently intended to sign up with this ',
+                    span({
+                        dataBind: {
+                            text: 'choice.provider'
+                        },
+                        style: {
+                            fontWeight: 'bold'
+                        }
+                    }),
+                    ' account, you already have a KBase account linked to it.'
                 ]),
                 div({
                     dataBind: {
