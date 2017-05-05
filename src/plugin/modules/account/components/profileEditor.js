@@ -616,7 +616,6 @@ define([
                 more: 'this is more stuff',
                 showMore: ko.observable(false),
                 toggleShowMore: function () {
-                    // console.log('toggling', this);
                     this.showMore(!this.showMore());
                 }
             }
@@ -1113,12 +1112,10 @@ define([
         var messageType = ko.observable();
 
         function deleteAffiliation(item) {
-            console.log('deleting...');
             affiliations.field.remove(item);
         }
 
         function addAffiliation() {
-            console.log('here');
             affiliations.field.push(affiliationVm());
         }
 
@@ -1127,14 +1124,12 @@ define([
         function doUseMyLocation() {
             findingLocation(true);
             navigator.geolocation.getCurrentPosition(function (position) {
-                //console.log('position', position);
                 GeoNames.getCountryCode({
                         username: 'eapearson',
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude
                     })
                     .then(function (response) {
-                        console.log('setting country name', response);
                         country.field(response.countryName);
                     })
                     .catch(function (err) {

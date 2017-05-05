@@ -3,12 +3,16 @@ define([
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
-    'kb_common/format'
+    'kb_common/format',
+    '../lib/format',
+    '../lib/utils'
 ], function (
     html,
     DomEvent,
     BS,
-    Format
+    Format,
+    fmt,
+    Utils
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
@@ -28,6 +32,10 @@ define([
     function factory(config) {
         var hostNode, container;
         var runtime = config.runtime;
+        var utils = Utils.make({
+            runtime: runtime
+        });
+        var serverBias;
 
         var vm = {
             roles: {
@@ -72,6 +80,11 @@ define([
             bindVmNode(vm.toolbar);
         }
 
+        function timeRemaining(time) {
+            var now = new Date().getTime();
+            return time - (now + serverBias);
+        }
+
         function showAlert(type, message) {
             var alert = div({
                 class: 'alert ' + 'alert-' + type,
@@ -94,7 +107,6 @@ define([
             temp.innerHTML = alert;
             vm.alerts.node.appendChild(temp);
         }
-
 
         function renderLayout() {
             container.innerHTML = div({
@@ -160,17 +172,6 @@ define([
                 });
         }
 
-        function doLogoutToken(tokenId) {
-            // Revoke
-            return runtime.service('session').getClient().logout(tokenId)
-                .then(function () {
-                    runtime.send('session', 'loggedout');
-                })
-                .catch(function (err) {
-                    console.error('ERROR', err);
-                });
-        }
-
         function renderNewToken() {
             var newToken = vm.newToken.value;
             var clockId = html.genId();
@@ -220,7 +221,7 @@ define([
                 }
 
                 function render(timeLeft) {
-                    node.innerHTML = niceDuration(timeLeft);
+                    node.innerHTML = fmt.niceDuration(timeLeft);
                 }
 
                 function loop() {
@@ -274,77 +275,6 @@ define([
                     console.error('ERROR', err);
                 });
 
-        }
-
-        function niceDuration(value, defaultValue) {
-            if (!value) {
-                return defaultValue;
-            }
-            var minimized = [];
-            var units = [{
-                unit: 'millisecond',
-                short: 'ms',
-                single: 'm',
-                size: 1000
-            }, {
-                unit: 'second',
-                short: 'sec',
-                single: 's',
-                size: 60
-            }, {
-                unit: 'minute',
-                short: 'min',
-                single: 'm',
-                size: 60
-            }, {
-                unit: 'hour',
-                short: 'hr',
-                single: 'h',
-                size: 24
-            }, {
-                unit: 'day',
-                short: 'day',
-                single: 'd',
-                size: 30
-            }];
-            var temp = value;
-            var parts = units
-                .map(function (unit) {
-                    var unitValue = temp % unit.size;
-                    temp = (temp - unitValue) / unit.size;
-                    return {
-                        name: unit.single,
-                        value: unitValue
-                    };
-                }).reverse();
-
-            parts.pop();
-
-            var keep = false;
-            for (var i = 0; i < parts.length; i += 1) {
-                if (!keep) {
-                    if (parts[i].value > 0) {
-                        keep = true;
-                        minimized.push(parts[i]);
-                    }
-                } else {
-                    minimized.push(parts[i]);
-                }
-            }
-
-            if (minimized.length === 0) {
-                // This means that there is are no time measurements > 1 second.
-                return '<1s';
-            } else {
-                // Skip seconds if we are into the hours...
-                if (minimized.length > 2) {
-                    minimized.pop();
-                }
-                return minimized.map(function (item) {
-                        return String(item.value) + item.name;
-                    })
-                    .join(' ');
-            }
         }
 
         function renderAddTokenForm() {
@@ -435,7 +365,10 @@ define([
             ].concat(vm.allTokens.value.map(function (token) {
                 return tr([
                     td(niceDate(token.created)),
-                    td(niceElapsed(token.expires)),
+                    // td(niceElapsed(token.expires)),
+                    td(fmt.niceDuration(timeRemaining(token.expires), {
+                        trimEnd: true
+                    })),
                     td(token.name),
                     td({
                         style: {
@@ -534,10 +467,12 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function () {
-                renderLayout();
-                render();
-            });
+            return utils.getTimeBias()
+                .then(function (bias) {
+                    serverBias = bias;
+                    renderLayout();
+                    render();
+                });
         }
 
         function stop() {
