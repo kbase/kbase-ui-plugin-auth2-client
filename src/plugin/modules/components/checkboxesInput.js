@@ -83,7 +83,6 @@ define([
                 //     var update = newValue.map(function (item) {
                 //         return item.value;
                 //     });
-                //     console.log('update?', update);
                 //     upstreamValue(update);
                 // });
                 ready(true);

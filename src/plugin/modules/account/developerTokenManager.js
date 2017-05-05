@@ -3,12 +3,16 @@ define([
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
-    'kb_common/format'
+    'kb_common/format',
+    '../lib/format',
+    '../lib/utils'
 ], function (
     html,
     DomEvent,
     BS,
-    Format
+    Format,
+    fmt,
+    Utils
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
@@ -28,6 +32,10 @@ define([
     function factory(config) {
         var hostNode, container;
         var runtime = config.runtime;
+        var serverBias;
+        var utils = Utils.make({
+            runtime: runtime
+        });
 
         var vm = {
             roles: {
@@ -95,75 +103,9 @@ define([
             vm.alerts.node.appendChild(temp);
         }
 
-        function niceDuration(value, defaultValue) {
-            if (!value) {
-                return defaultValue;
-            }
-            var minimized = [];
-            var units = [{
-                unit: 'millisecond',
-                short: 'ms',
-                single: 'm',
-                size: 1000
-            }, {
-                unit: 'second',
-                short: 'sec',
-                single: 's',
-                size: 60
-            }, {
-                unit: 'minute',
-                short: 'min',
-                single: 'm',
-                size: 60
-            }, {
-                unit: 'hour',
-                short: 'hr',
-                single: 'h',
-                size: 24
-            }, {
-                unit: 'day',
-                short: 'day',
-                single: 'd',
-                size: 30
-            }];
-            var temp = value;
-            var parts = units
-                .map(function (unit) {
-                    var unitValue = temp % unit.size;
-                    temp = (temp - unitValue) / unit.size;
-                    return {
-                        name: unit.single,
-                        value: unitValue
-                    };
-                }).reverse();
-
-            parts.pop();
-
-            var keep = false;
-            for (var i = 0; i < parts.length; i += 1) {
-                if (!keep) {
-                    if (parts[i].value > 0) {
-                        keep = true;
-                        minimized.push(parts[i]);
-                    }
-                } else {
-                    minimized.push(parts[i]);
-                }
-            }
-
-            if (minimized.length === 0) {
-                // This means that there is are no time measurements > 1 second.
-                return '<1s';
-            } else {
-                // Skip seconds if we are into the hours...
-                if (minimized.length > 2) {
-                    minimized.pop();
-                }
-                return minimized.map(function (item) {
-                        return String(item.value) + item.name;
-                    })
-                    .join(' ');
-            }
+        function timeRemaining(time) {
+            var now = new Date().getTime();
+            return time - (now + serverBias);
         }
 
         function renderLayout() {
@@ -213,28 +155,12 @@ define([
             return Format.niceTime(date);
         }
 
-        // function niceDuration(epoch) {
-        //     var date = new Date(epoch);
-        //     return Format.niceElapsedTime(date);
-        // }
-
         function doRevokeToken(tokenId) {
             // Revoke
             runtime.service('session').getClient().revokeToken(tokenId)
                 .then(function () {
                     render();
                     return null;
-                })
-                .catch(function (err) {
-                    console.error('ERROR', err);
-                });
-        }
-
-        function doLogoutToken(tokenId) {
-            // Revoke
-            return runtime.service('session').getClient().logout(tokenId)
-                .then(function () {
-                    runtime.send('session', 'loggedout');
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -290,7 +216,7 @@ define([
                 }
 
                 function render(timeLeft) {
-                    node.innerHTML = niceDuration(timeLeft);
+                    node.innerHTML = fmt.niceDuration(timeLeft);
                 }
 
                 function loop() {
@@ -434,7 +360,9 @@ define([
             ].concat(vm.allTokens.value.map(function (token) {
                 return tr([
                     td(niceDate(token.created)),
-                    td(niceDuration(token.expires)),
+                    td(fmt.niceDuration(timeRemaining(token.expires), {
+                        trimEnd: true
+                    })),
                     td(token.name),
                     td({
                         style: {
@@ -483,16 +411,7 @@ define([
                 div({
                     class: 'btn-group pull-right',
                     role: 'group'
-                }, [
-                    // button({
-                    //     type: 'button',
-                    //     class: 'btn btn-danger',
-                    //     // id: events.addEvent({
-                    //     //     type: 'click',
-                    //     //     handler: 
-                    //     // })
-                    // }, 'NOOP')
-                ])
+                }, [])
             ]);
             events.attachEvents();
         }
@@ -501,10 +420,7 @@ define([
             if (vm.allTokens.enabled) {
                 runtime.service('session').getClient().getTokens()
                     .then(function (result) {
-
                         renderToolbar();
-
-                        // Render "other" tokens
 
                         vm.allTokens.value = result.tokens
                             .filter(function (token) {
@@ -513,31 +429,16 @@ define([
 
                         renderTokens();
                         renderAddTokenForm();
-
                     })
                     .catch(function (err) {
-                        vm.serverTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
+                        console.error('ERROR', err);
+                        showAlert('danger', 'Sorry, error, look in console: ' + err.message);
                     });
             }
         }
 
         function render() {
             renderAllTokens();
-            // return runtime.service('session').getClient().getMe()
-            //     .then(function (account) {
-            //         vm.roles.value = account.roles;
-            //         vm.roles.value.forEach(function (role) {
-            //             switch (role.id) {
-            //             case 'ServToken':
-            //                 vm.serverTokens.enabled = true;
-            //                 break;
-            //             case 'DevToken':
-            //                 vm.developerTokens.enabled = true;
-            //                 break;
-            //             }
-            //         });
-            //         return Promise.all([renderAllTokens(), renderServerTokens(), renderDeveloperTokens()]);
-            //     });
         }
 
         function attach(node) {
@@ -548,10 +449,12 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function () {
-                renderLayout();
-                render();
-            });
+            return utils.getTimeBias()
+                .then(function (bias) {
+                    serverBias = bias;
+                    renderLayout();
+                    render();
+                });
         }
 
         function stop() {

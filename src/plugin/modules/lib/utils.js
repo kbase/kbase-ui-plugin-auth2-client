@@ -76,7 +76,6 @@ define([
             ]);
         }
 
-
         function buildLoginButton2(events, provider, state) {
             return button({
                 class: 'btn btn-default',
@@ -183,13 +182,22 @@ define([
             ]);
         }
 
-
+        function getTimeBias() {
+            var then = new Date().getTime();
+            return runtime.service('session').getClient().getClient().root()
+                .then(function (root) {
+                    var now = new Date().getTime();
+                    var serverBias = root.servertime - (now + then) / 2;
+                    return serverBias;
+                });
+        }
 
         return {
             buildLoginButton: buildLoginButton,
             buildLoginButton2: buildLoginButton2,
             parsePolicyAgreements: parsePolicyAgreements,
-            buildTable: buildTable
+            buildTable: buildTable,
+            getTimeBias: getTimeBias
         };
     }
 
@@ -325,6 +333,8 @@ define([
             resolve: resolve
         };
     }
+
+
     return {
         make: function (config) {
             return factory(config);
