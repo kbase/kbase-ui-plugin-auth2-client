@@ -15,7 +15,6 @@ define([
     'use strict';
 
     function myWidget(config) {
-
         var runtime = config.runtime;
         if (!runtime) {
             throw {
@@ -25,22 +24,22 @@ define([
             };
         }
 
-        var button = html.tag('button'),
-            div = html.tag('div'),
-            a = html.tag('a'),
-            span = html.tag('span'),
-            ul = html.tag('ul'),
-            li = html.tag('li'),
-            br = html.tag('br', { close: false }),
-            i = html.tag('i'),
-            img = html.tag('img');
+        var t = html.tag,
+            button = t('button'),
+            div = t('div'),
+            a = t('a'),
+            span = t('span'),
+            ul = t('ul'),
+            li = t('li'),
+            br = t('br', { close: false }),
+            i = t('i'),
+            img = t('img');
 
         function handleSignout(e) {
             e.preventDefault();
 
             runtime.service('session').logout()
                 .then(function () {
-                    // w.setState('updated', new Date());
                     runtime.send('app', 'navigate', {
                         path: 'auth2/signedout'
                     });
@@ -83,27 +82,9 @@ define([
             });
         }
 
-        // function handleAccount() {
-        //     runtime.send('ui', 'navigate', ['auth2', 'account']);
-        // }
-
-        // function hasRole(account, role) {
-        //     for (var i = 0; i < account.roles.length; i += 1) {
-        //         if (account.roles[i].id === role) {
-        //             return true;
-        //         }
-        //     }
-        //     return false;
-        // }
-
         function renderLogin(events) {
             return Promise.try(function () {
                 if (runtime.service('session').isLoggedIn()) {
-                    /* TODO: fix dependencies like this -- realname is not available until, and unless, the                     
-                    profile is loaded, which happens asynchronously.            
-                    */
-                    // var profile = widget.get('userProfile'),
-                    //     realname;
                     return runtime.service('userprofile').getProfile()
                         .then(function (profile) {
                             if (!profile) {
@@ -113,8 +94,16 @@ define([
                             }
                             var realname = profile.user.realname;
                             var username = profile.user.username;
-                            return div({ class: 'dropdown', style: 'display:inline-block' }, [
-                                button({ type: 'button', class: 'btn btn-default dropdown-toggle', 'data-toggle': 'dropdown', 'aria-expanded': 'false' }, [
+                            return div({
+                                class: 'dropdown',
+                                style: 'display:inline-block'
+                            }, [
+                                button({
+                                    type: 'button',
+                                    class: 'btn btn-default dropdown-toggle',
+                                    dataToggle: 'dropdown',
+                                    ariaExpanded: 'false'
+                                }, [
                                     buildAvatar(profile),
                                     span({ class: 'caret', style: 'margin-left: 5px;' })
                                 ]),
@@ -132,45 +121,6 @@ define([
                                             i({}, username)
                                         ])
                                     ]),
-                                    //li({ class: 'divider' }),
-                                    // li({}, [
-                                    //     a({ href: '#people/' + username, 'data-menu-item': 'userlabel' }, [
-                                    //         div({ style: 'display:inline-block; width: 34px; vertical-align: top;' }, [
-                                    //             span({ class: 'fa fa-address-card-o', style: 'font-size: 150%; margin-right: 10px;' })
-                                    //         ]),
-                                    //         div({ style: 'display: inline-block', 'data-element': 'user-label' }, 'Profile')
-                                    //     ])
-                                    // ]),
-                                    // li({}, [
-                                    //     a({
-                                    //         href: '#auth2/account',
-                                    //         'data-menu-item': 'account'
-                                    //     }, [
-                                    //         div({ style: 'display: inline-block; width: 34px;' }, [
-                                    //             span({ class: 'fa fa-user', style: 'font-size: 150%; margin-right: 10px;' })
-                                    //         ]),
-                                    //         'Account'
-                                    //     ])
-                                    // ]),
-                                    // DISABLE ADMIN
-                                    // For now. There is in actuality no back-end admin support yet other than for
-                                    // the auth2 built-in ui.
-                                    // (function() {
-                                    //     if (!hasRole(account, 'Admin')) {
-                                    //         return;
-                                    //     }
-                                    //     return li({}, [
-                                    //         a({
-                                    //             href: '#auth2/admin',
-                                    //             'data-menu-item': 'account'
-                                    //         }, [
-                                    //             div({ style: 'display: inline-block; width: 34px;' }, [
-                                    //                 span({ class: 'fa fa-unlock', style: 'font-size: 150%; margin-right: 10px;' })
-                                    //             ]),
-                                    //             'Admin'
-                                    //         ])
-                                    //     ]);
-                                    // }()),
                                     li({ class: 'divider' }),
                                     li({}, [
                                         a({
@@ -181,9 +131,18 @@ define([
                                                 handler: handleSignout
                                             })
                                         }, [
-                                            div({ style: 'display: inline-block; width: 34px;' }, [
-                                                span({ class: 'fa fa-sign-out', style: 'font-size: 150%; margin-right: 10px;' })
-                                            ]),
+                                            div({
+                                                style: {
+                                                    display: 'inline-block',
+                                                    width: '34px'
+                                                }
+                                            }, span({
+                                                class: 'fa fa-sign-out',
+                                                style: {
+                                                    fontSize: '150%',
+                                                    marginRight: '10px'
+                                                }
+                                            })),
                                             'Sign Out'
                                         ])
                                     ])
@@ -191,14 +150,35 @@ define([
                             ]);
                         });
                 }
-                return a({ class: 'btn btn-primary navbar-btn kb-nav-btn', 'data-button': 'signin', href: '#login' }, [
-                    div({ class: 'fa fa-sign-in  fa-inverse', style: 'margin-right: 5px;' }),
-                    div({ class: 'kb-nav-btn-txt' }, ['Sign In'])
+                return a({
+                    class: 'btn btn-primary navbar-btn kb-nav-btn',
+                    dataButton: 'signin',
+                    href: '#login'
+                }, [
+                    div({
+                        class: 'fa fa-sign-in  fa-inverse',
+                        style: { marginRight: '5px' }
+                    }),
+                    div({ class: 'kb-nav-btn-txt' }, 'Sign In')
                 ]);
             });
         }
 
-        // API
+        function render() {
+            var events = DomEvents.make({
+                node: container
+            });
+            return renderLogin(events)
+                .then(function (loginContent) {
+                    container.innerHTML = div({
+                        dataWidget: 'auth2_signin',
+                        class: 'widget-auth2_signin'
+                    }, loginContent);
+                    events.attachEvents();
+                });
+        }
+
+        // LIFECYCLE API
 
         var hostNode, container;
 
@@ -209,31 +189,13 @@ define([
             });
         }
 
-        function render() {
-            var events = DomEvents.make({
-                node: container
-            });
-            return renderLogin(events)
-                .then(function (loginContent) {
-                    container.innerHTML = loginContent;
-                    events.attachEvents();
-                });
-        }
-
         function start(params) {
             return Promise.try(function () {
-                // this.set('loggedin', runtime.service('session').isLoggedIn());
-                runtime.service('userprofile').onChange(function (data) {
-                    // this.set('userProfile', data);
+                runtime.service('userprofile').onChange(function () {
                     render();
                 }.bind(this));
 
-                // runtime.service('session').onChange(function () {
-                //     // hmm, also take it upon ourselves to visit the logged out page if we are indeed logged out.
-                //     render();
-                // });
                 return render();
-
             });
         }
 

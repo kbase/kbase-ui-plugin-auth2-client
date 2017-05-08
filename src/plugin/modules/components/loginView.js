@@ -1,4 +1,3 @@
-/* global Promise */
 define([
     'knockout',
     'kb_common/html',
@@ -28,8 +27,6 @@ define([
         legend = t('legend'),
         i = t('i');
 
-
-
     function buildLoginButton(action) {
         return button({
             class: 'btn btn-default',
@@ -37,7 +34,11 @@ define([
                 textAlign: 'center'
             },
             dataBind: {
-                click: '$parent.' + action
+                click: '$parent.' + action,
+                attr: {
+                    'data-control': '"signin-provider-button"',
+                    'data-provider': 'id'
+                }
             }
         }, div({
             style: {
@@ -81,7 +82,6 @@ define([
     }
 
     function buildLoginControl(runtime) {
-
         return div({
             dataBind: {
                 ifnot: 'authorized'
@@ -106,6 +106,9 @@ define([
                         click: 'doSetSigninMode',
                         css: {
                             active: 'mode() === "signin"'
+                        },
+                        attr: {
+                            'data-control': '"signin-button"'
                         }
                     }
                 }, div({
@@ -179,9 +182,6 @@ define([
                                     checked: 'isSessionPersistent',
 
                                 },
-                                // checked: (function () {
-                                //     return runtime.service('session').getClient().isSessionPersistent();
-                                // }()),
                             }),
                             ' Stay signed in'
                         ]),
@@ -193,11 +193,10 @@ define([
                         marginTop: '10px'
                     },
                     dataBind: {
-                        click: 'doSignup'
-                            // click: 'doSetSignupMode',
-                            // css: {
-                            //     active: 'mode() === "signup"'
-                            // }
+                        click: 'doSignup',
+                        attr: {
+                            'data-control': '"signup-button"'
+                        }
                     }
                 }, div({
                     style: {
@@ -222,42 +221,6 @@ define([
                     }, 'New User')
 
                 ]))
-                // div({
-                //     dataBind: {
-                //         visible: 'mode() === "signup"'
-                //     }
-                // }, [
-
-                //     div({
-                //         style: {
-                //             marginBottom: '20px',
-                //             padding: '4px',
-                //             // border: '1px silver solid',
-                //             backgroundColor: '#DDD',
-                //             textAlign: 'left',
-                //         },
-                //     }, [
-                //         div({
-                //                 style: {
-                //                     margin: '6px 0 0 0',
-                //                     fontStyle: 'italic',
-                //                     textAlign: 'center'
-                //                 }
-                //             },
-                //             'Sign up with:'),
-                //         div({
-                //                 class: 'btn-group-vertical',
-                //                 style: {
-                //                     width: '100%'
-                //                 },
-                //                 dataBind: {
-                //                     foreach: 'providers'
-                //                 }
-                //             },
-                //             buildSignupButton()
-                //         ),
-                //     ])
-                //])
             ]),
             div({
                 style: {
@@ -384,8 +347,9 @@ define([
             ]
         });
         return div({
-            class: 'container',
-            // style: 'margin-top: 4em', 
+            class: 'container component-login-view',
+            dataPlugin: 'auth2-client',
+            dataComponent: 'login-view',
             dataWidget: 'login'
         }, [
             // div({}, [
@@ -453,7 +417,6 @@ define([
     }
 
     function viewModel(params) {
-
         var runtime = params.runtime;
         var nextRequest = params.nextRequest;
         var docs = runtime.config('resources.documentation');
@@ -480,10 +443,6 @@ define([
             providersMap[p.id] = p;
         });
 
-        // id: events.addEvent('click', function () {
-        //     runtime.service('session').getClient().setLastProvider(provider.id);
-        //     doLogin(provider.id, state);
-        // })
         function doSignin(data) {
             // set last provider...
             loginStart(runtime, data.id, {
@@ -505,7 +464,6 @@ define([
                     });
                 });
         }
-
 
         var mode = ko.observable();
 
@@ -551,6 +509,4 @@ define([
         };
     }
     ko.components.register('login-view', component());
-
-
 });
