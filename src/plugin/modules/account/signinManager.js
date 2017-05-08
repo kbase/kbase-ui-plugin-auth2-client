@@ -215,7 +215,7 @@ define([
                         style: {
                             width: '20%'
                         }
-                    }, 'From IP Address'),
+                    }, 'IP Address'),
                     th({
                         style: {
                             width: '10%',
