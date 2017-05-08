@@ -28,12 +28,6 @@ define([
             });
         }
 
-        function doStaySignedIn(e) {
-            var checked = e.target.checked;
-            var auth2Client = runtime.service('session').getClient();
-            auth2Client.setSessionPersistent(checked);
-        }
-
         function showErrorMessage(message) {
             container.innerHTML = div({
                 class: 'alert alert-danger'
@@ -43,6 +37,9 @@ define([
         function render() {
             try {
                 container.innerHTML = div({
+                    class: 'plugin-auth2-client widget-auth2_login',
+                    dataPlugin: 'auth2-client',
+                    dataWidget: 'auth2_signin',
                     dataBind: {
                         component: {
                             name: '"login-view"',

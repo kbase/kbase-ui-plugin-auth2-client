@@ -17,21 +17,6 @@ define([
         img = t('img'),
         button = t('button');
 
-
-    // function doLogin(providerId, state) {
-
-    //     runtime.service('session').loginStart({
-    //         // TODO: this should be either the redirect url passed in 
-    //         // or the dashboard.
-    //         // We just let the login page do this. When the login page is 
-    //         // entered with a valid token, redirect to the nextrequest,
-    //         // and if that is empty, the dashboard.
-    //         state: state,
-    //         provider: providerId,
-    //         stayLoggedIn: false
-    //     });
-    // }
-
     function buildProviderLabel() {
         return div({
             style: {
@@ -75,14 +60,16 @@ define([
                 fontSize: '110%',
                 fontWeight: 'bold'
             },
+            dataControl: 'signin-button',
             dataBind: {
-                click: '$parent.doProviderSignin'
+                click: '$parent.doProviderSignin',
+                attr: {
+                    'data-provider': 'id'
+                }
             }
-            // id: events.addEvent('click', function() {
-            //     runtime.service('session').getClient().setLastProvider(provider.id);
-            //     doLogin(provider.id, state);
-            // })
-        }, buildProviderLabel());
+        }, [
+            buildProviderLabel()
+        ]);
     }
 
     function parsePolicyAgreements(policyIds) {
@@ -139,14 +126,9 @@ define([
         ]);
     }
 
-
-
     return {
         buildLoginButton: buildLoginButton,
         parsePolicyAgreements: parsePolicyAgreements,
         buildTable: buildTable
     };
-
-
-
 });

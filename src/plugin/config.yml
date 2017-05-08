@@ -18,8 +18,8 @@ install:
             id: auth2Info
             type: factory
         -
-            module: signinKO
-            id: auth2Signin
+            module: login
+            id: auth2_login
             css: true
             type: factory
         -
@@ -41,6 +41,7 @@ install:
         -
             module: signinWidget
             id: auth2_signin
+            css: true
             type: factory
         -
             module: linkContinue
@@ -51,7 +52,7 @@ install:
             id: auth2_legacyLogin
             type: factory
         -
-            module: signupKO
+            module: signup
             id: auth2_signup
             type: factory
         -
@@ -82,7 +83,7 @@ install:
         #         nextrequest: {}
         -
             path: ['login']
-            widget: auth2Signin
+            widget: auth2_login
             queryParams:
                 nextrequest: {}
         -
