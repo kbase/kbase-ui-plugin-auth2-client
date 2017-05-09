@@ -259,7 +259,19 @@ define([
             }
         }
 
-        var providers = runtime.service('session').getProviders();
+        var providers = runtime.service('session').getProviders().sort(function (a, b) {
+            if (a.id === 'Google') {
+                return -1;
+            } else if (b.id === 'Google') {
+                return 1;
+            }
+            if (a.id < b.id) {
+                return -1;
+            } else if (a.id > b.id) {
+                return 1;
+            }
+            return 0;
+        });
 
         return {
             runtime: runtime,
