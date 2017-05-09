@@ -1,7 +1,7 @@
 /* global Promise */
 define([
     'kb_common/html'
-], function(
+], function (
     html
 ) {
     'use strict';
@@ -43,15 +43,35 @@ define([
                     p([
                         'If you wish to ensure that your KBase account is inaccessible from this ',
                         'browser until you explicitly authenticate with a sign-in provider, ',
-                        'you should sign out of any Google or Globus account as well'
+                        'you should sign out of any Google or Globus account as well.'
                     ]),
                     ul(runtime.service('session').getProviders()
-                        .map(function(provider) {
+                        .sort(function (a, b) {
+                            if (a.id === 'Google') {
+                                return -1;
+                            } else if (b.id === 'Google') {
+                                return 1;
+                            }
+                            if (a.id < b.id) {
+                                return -1;
+                            } else if (a.id > b.id) {
+                                return 1;
+                            }
+                            return 0;
+                        })
+                        .map(function (provider) {
                             return li(a({
                                 href: provider.logoutUrl,
                                 target: '_blank'
                             }, 'Log out from ' + provider.label));
-                        }).join(''))
+                        }).join('')),
+                    p([
+                        'Additional security measures include:'
+                    ]),
+                    ul([
+                        li('Remove all browser cookies'),
+                        li('Use your browser\'s private-browsing feature')
+                    ])
                 ]),
                 div({
                     class: 'col-md-1'
@@ -62,14 +82,14 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (runtime.service('session').isLoggedIn()) {
                     runtime.send('app', 'navigate', {
                         path: 'dashboard'
@@ -81,13 +101,13 @@ define([
         }
 
         function stop() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 return null;
             });
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -103,7 +123,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

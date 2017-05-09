@@ -173,7 +173,7 @@ define([
                 ]),
                 ul({
                     dataBind: {
-                        foreach: 'providers'
+                        foreach: 'providersList'
                     }
                 }, li(a({
                     dataBind: {
@@ -218,7 +218,7 @@ define([
                 ]),
                 ul({
                     dataBind: {
-                        foreach: 'providers'
+                        foreach: 'providersList'
                     }
                 }, li(a({
                     dataBind: {
@@ -454,6 +454,47 @@ define([
         ]);
     }
 
+    function getProviders() {
+        return {
+            google: {
+                id: 'Google',
+                label: 'Google',
+                logoImage: Plugin.plugin.fullPath + '/providers/google_logo.png',
+                description: div([
+                    p([
+                        'Any Google account may be used to access KBase, including gmail ',
+                        'and organizational services built on the Google Apps platform.'
+                    ])
+                ])
+            },
+            globus: {
+                id: 'Globus',
+                label: 'Globus',
+                logoImage: Plugin.plugin.fullPath + '/providers/globus_logo.png',
+                description: div([
+                    p([
+                        'In addition to Globus ID, required for the Globus Transfer service, ',
+                        'Globus supports many organizational sign-in providers -- your organization may be supported.'
+                    ]),
+                    p([
+                        'Sign-in providers offered by Globus: ',
+                        span({
+                            dataBind: {
+                                component: {
+                                    name: '"globus-providers"'
+                                }
+                            }
+                        })
+                    ]),
+                    p([
+                        'KBase accounts created before 5/15/17 utilized Globus ID exclusively.'
+                    ])
+                ])
+            }
+
+        };
+    }
+
     function template() {
         var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
@@ -521,7 +562,12 @@ define([
                 var login = null;
                 var create = null;
 
-                var providers = runtime.service('session').getProviders();
+                // var providers = runtime.service('session').getProviders();
+                var providers = getProviders();
+                var providersList = [
+                    providers.google,
+                    providers.globus
+                ];
 
                 // UI state
 
@@ -566,6 +612,7 @@ define([
                     runtime: runtime,
                     uiState: uiState,
                     providers: providers,
+                    providersList: providersList,
                     nextRequest: nextRequest,
                     staySignedIn: staySignedIn,
                     choice: choice,

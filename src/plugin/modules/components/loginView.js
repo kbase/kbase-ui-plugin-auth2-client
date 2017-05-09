@@ -434,14 +434,23 @@ define([
         // TODO; populate from session, as above.
         var username = runtime.service('session').getUsername();
 
-        var providers = runtime.service('session').getProviders().map(function (provider) {
-            provider.imageSource = Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png';
-            return provider;
-        });
-        var providersMap = {};
-        providers.forEach(function (p) {
-            providersMap[p.id] = p;
-        });
+        var providers = runtime.service('session').getProviders().sort(function (a, b) {
+                if (a.id === 'Google') {
+                    return -1;
+                } else if (b.id === 'Google') {
+                    return 1;
+                }
+                if (a.id < b.id) {
+                    return -1;
+                } else if (a.id > b.id) {
+                    return 1;
+                }
+                return 0;
+            })
+            .map(function (provider) {
+                provider.imageSource = Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png';
+                return provider;
+            });
 
         function doSignin(data) {
             // set last provider...
@@ -491,7 +500,6 @@ define([
             docs: docs,
             isSessionPersistent: isSessionPersistent,
             providers: providers,
-            providersMap: providersMap,
             authorized: authorized,
             username: username,
             doSignin: doSignin,

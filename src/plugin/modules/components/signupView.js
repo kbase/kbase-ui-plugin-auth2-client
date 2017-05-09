@@ -42,8 +42,7 @@ define([
                 logoImage: Plugin.plugin.fullPath + '/providers/google_logo.png',
                 description: div([
                     p([
-                        'Any Google account may be used to access KBase, including gmail ',
-                        'and organizational services built on the Google Apps platform.'
+                        'Any Google account may be used to access KBase.'
                     ])
                 ])
             },
@@ -57,7 +56,7 @@ define([
                         'Globus supports many organizational sign-in providers -- your organization may be supported.'
                     ]),
                     p([
-                        'Sign-in providers offered by Globus: ',
+                        'Search here for sign-in providers offered by Globus: ',
                         span({
                             dataBind: {
                                 component: {
@@ -102,24 +101,6 @@ define([
             ]),
             div({
                 class: 'row',
-                dataBind: {
-                    with: 'providers.globus'
-                }
-            }, [
-                div({
-                    class: 'col-md-3'
-                }, Utils.buildLoginButton('signup')),
-                div({
-                    class: 'col-md-9',
-                    style: {
-                        textAlign: 'left',
-                        marginTop: '6px'
-                    }
-                }, providers.globus.description)
-            ]),
-
-            div({
-                class: 'row',
                 style: {
                     marginTop: '1em'
                 }
@@ -157,7 +138,30 @@ define([
                         'sign out or delete your browser cookies. '
                     ])
                 ])
-            ])
+            ]),
+            BS.buildCollapsiblePanel({
+                collapsed: true,
+                type: 'default',
+                classes: ['kb-panel-light', '-lighter'],
+                title: 'Additional providers',
+                body: div({
+                    class: 'row',
+                    dataBind: {
+                        with: 'providers.globus'
+                    }
+                }, [
+                    div({
+                        class: 'col-md-3'
+                    }, Utils.buildLoginButton('signup')),
+                    div({
+                        class: 'col-md-9',
+                        style: {
+                            textAlign: 'left',
+                            marginTop: '6px'
+                        }
+                    }, providers.globus.description)
+                ]),
+            }),
         ]);
     }
 
