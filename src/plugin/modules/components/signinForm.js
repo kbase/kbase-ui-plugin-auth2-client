@@ -4,8 +4,7 @@ define([
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/ui',
-    'kb_common_ts/Cookie',
-    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils'
 ], function (
@@ -14,8 +13,7 @@ define([
     html,
     DomEvent,
     UI,
-    M_Cookie,
-    M_Auth2,
+    Auth2Error,
     Plugin,
     BS
 ) {
@@ -25,8 +23,6 @@ define([
         div = t('div'),
         span = t('span'),
         p = t('p'),
-        ul = t('ul'),
-        li = t('li'),
         a = t('a'),
         form = t('form'),
         button = t('button');
@@ -85,49 +81,165 @@ define([
         });
     }
 
-    function buildOops() {
+    function buildGlobusOops() {
         return BS.buildCollapsiblePanel({
             title: 'Not the account you were expecting?',
-            type: 'default',
+            type: 'warning',
             collapsed: true,
-            classes: ['kb-panel-light', '-lighter'],
+            classes: ['kb-panel-help'],
             body: div([
-                p([
-                    'If this is not the account you were expecting, you may need to sign out of the identity provider ',
-                    'and start the sign-in process again.'
-                ]),
-                p([
-                    'KBase cannot sign you out of an identity provider, but the links below will allow you ',
-                    'to do so.'
-                ]),
-                ul({
+                div({
                     dataBind: {
-                        foreach: 'providers'
+                        if: '$component.source === "signin"'
                     }
-                }, li(a({
-                    dataBind: {
-                        attr: {
-                            href: 'logoutUrl'
-                        }
-                    },
-                    target: '_blank'
                 }, [
-                    'Log out from ',
+                    p([
+                        'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+                        'to Globus and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of Globus, and then try agin.'
+                    ])
+                ]),
+                div({
+                    dataBind: {
+                        if: '$component.source === "signup"'
+                    }
+                }, [
+                    p([
+                        'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+                        'to Globus and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of Globus, and then try agin.'
+                    ]),
+                    p([
+                        'If you have signed in with a Globus account already linked to a KBase account, you will be unable ',
+                        'to create a new KBase account using that Globus account. '
+                    ]),
+                ]),
+                // p([
+                //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+                //     'to do so.'
+                // ]),
+                div({
+                    style: {
+                        marginBottom: '5px'
+                    },
+                    dataBind: {
+                        with: 'providersMap.Globus'
+                    }
+                }, [
                     span({
-                        dataBind: {
-                            text: 'label'
+                        class: 'fa fa-external-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
                         }
-                    })
-                ]))),
+                    }),
+                    a({
+                        dataBind: {
+                            attr: {
+                                href: 'logoutUrl'
+                            }
+                        },
+                        target: '_blank'
+                    }, [
+                        'Log out from ',
+                        span({
+                            dataBind: {
+                                text: 'label'
+                            }
+                        })
+                    ])
+                ]),
                 p([
-                    'After signing out you will need to start the ',
+                    'After signing out you will need to '
+                ]),
+                p([
+                    span({
+                        class: 'fa fa-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
                     a({
                         href: '#login'
-                    }, 'signin'),
-                    ' process again.'
-                ]),
+                    }, 'Signin to KBase again')
+                ])
             ])
         });
+    }
+
+    function buildGoogleOops() {
+        return BS.buildCollapsiblePanel({
+            title: 'Not the account you were expecting?',
+            type: 'warning',
+            collapsed: true,
+            classes: ['kb-panel-help'],
+            body: div([
+                p([
+                    'If you have signed in with a Google account already linked to a KBase account, you will be unable ',
+                    'to create a new KBase account using that Google account. ',
+                    'We only allow one KBase account per Google account.'
+                ]),
+                p([
+                    'You may attempt to sign up again, but this time at Google either select a different account ',
+                    'or sign up for a new one. Upon returning to KBase, you will be able to create a new KBase account.'
+                ]),
+
+                // p([
+                //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+                //     'to do so.'
+                // ]),               
+                // p([
+                //     'After signing out you will need to '
+                // ]),
+                p([
+                    span({
+                        class: 'fa fa-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        dataBind: {
+                            click: 'doRetrySignup'
+                        }
+                        // href: '#signup?cb=' + new Date().getTime()
+                    }, 'Sign up for KBase again')
+                ])
+                // p({
+                //     style: {
+                //         marginTop: '18px'
+                //     }
+                // }, [
+                //     'Alternatively, you may continue to sign in with this account, link it to another account, ',
+                //     'unlink this account, and then sign up with it again'
+                // ]),
+            ])
+        });
+    }
+
+    function buildOops() {
+        return div({
+
+        }, [
+            div({
+                dataBind: {
+                    if: '$component.choice.provider === "Globus"'
+                }
+            }, buildGlobusOops()),
+            div({
+                dataBind: {
+                    if: '$component.choice.provider === "Google"'
+                }
+            }, buildGoogleOops())
+        ]);
     }
 
     function template() {
@@ -198,6 +310,7 @@ define([
         var login = choice.login[0];
         var nextRequest = params.nextRequest;
         var runtime = params.runtime;
+        var source = params.source;
 
         var policiesToResolve = {
             missing: params.policiesToResolve.missing.map(function (item) {
@@ -259,6 +372,41 @@ define([
             }
         }
 
+        function doRetrySignup() {
+            runtime.service('session').getClient().loginCancel()
+                .then(function () {
+                    runtime.send('app', 'navigate', {
+                        path: 'signup',
+                        params: {
+                            cb: String(new Date().getTime())
+                        }
+                    });
+                })
+                .catch(Auth2Error.AuthError, function (err) {
+                    console.error('ERROR1', err);
+                    // Setting the error triggers the error component to be 
+                    // displayed and populated.
+                    // TODO: I think the error object needs to be fully observable and 
+                    // updated here in order to propogate the values into the component....
+                    // Otherwise those properties will be stuck at the original value.
+                    // error({
+                    //     code: err.code,
+                    //     message: err.message,
+                    //     detail: err.detail,
+                    //     data: err.data
+                    // });
+                })
+                .catch(function (err) {
+                    console.error('ERROR2', err);
+                    // error({
+                    //     code: err.name,
+                    //     message: err.message,
+                    //     detail: '',
+                    //     data: ko.observable({})
+                    // });
+                });
+        }
+
         var providers = runtime.service('session').getProviders().sort(function (a, b) {
             if (a.id === 'Google') {
                 return -1;
@@ -272,16 +420,23 @@ define([
             }
             return 0;
         });
+        var providersMap = {};
+        providers.forEach(function (provider) {
+            providersMap[provider.id] = provider;
+        });
 
         return {
             runtime: runtime,
             choice: choice,
             login: login,
             providers: providers,
+            providersMap: providersMap,
             canSignin: canSignin,
             doSigninSubmit: doSigninSubmit,
             doSigninSuccess: doSigninSuccess,
-            policiesToResolve: policiesToResolve
+            doRetrySignup: doRetrySignup,
+            policiesToResolve: policiesToResolve,
+            source: source
         };
     }
 

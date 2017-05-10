@@ -4,14 +4,11 @@
 
 .form-sub-row {
     border: 1px transparent solid;
-    xborder-bottom: 1px #CCC solid;
     padding: 3px;
     box-sizing: border-box;
 }
 
-.form-sub-row:nth-last-child() {
-    xborder-bottom: 1px transparenet solid;
-}
+.form-sub-row:nth-last-child() {}
 
 .form-sub-row:hover {
     border: 1px #EEE solid;
@@ -29,48 +26,3 @@
 .form-row:hover .field-doc {
     color: #000;
 }
-
-.kbase-ui .panel-danger.kb-panel-help .panel-title {
-    color: #a94442;
-}
-
-.kbase-ui .panel-success.kb-panel-help .panel-title {
-    color: #3c763d;
-}
-
-.kbase-ui .panel-warning.kb-panel-help .panel-title {
-    color: #8a6d3b;
-}
-
-.kbase-ui .panel-info.kb-panel-help .panel-title {
-    color: blue;
-}
-
-.kbase-ui .panel.kb-panel-help {
-    border: none;
-    box-shadow: none;
-}
-
-.kbase-ui .panel.kb-panel-help>.panel-heading {
-    background-color: transparent;
-    font-weight: bold;
-    color: #666;
-    padding-left: 0;
-    padding-bottom: 4px;
-    border: none;
-}
-
-.kbase-ui .panel.kb-panel-help .panel-body {
-    padding: 14px 10px 10px 14px;
-    border: none;
-}
-
-
-/*.kbase-ui .panel.kb-panel-help.-lighter>.panel-heading {
-    background-color: transparent;
-    font-weight: bold;
-    color: #666;
-    padding-left: 0;
-    padding-bottom: 2px;
-    border-bottom: none;
-}*/
