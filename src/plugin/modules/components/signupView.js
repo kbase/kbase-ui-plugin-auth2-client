@@ -572,7 +572,7 @@ define([
         // var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
         return div({
-            class: 'container',
+            class: 'container-fluid',
             //  style: 'margin-top: 4em',
             // dataWidget: 'login'
             dataComponent: 'signup-view'
