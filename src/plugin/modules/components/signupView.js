@@ -432,6 +432,7 @@ define([
                             params: {
                                 choice: 'choice',
                                 runtime: 'runtime',
+                                source: '"signup"',
                                 nextRequest: 'nextRequest',
                                 policiesToResolve: 'policiesToResolve'
                                     // to communicate completion of the signup process

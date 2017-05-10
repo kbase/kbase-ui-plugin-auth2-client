@@ -36,7 +36,10 @@ define([
 
     function factory(config) {
         var hostNode, container,
-            main,
+            mounts = {
+                main: null,
+                error: null
+            },
             runtime = config.runtime;
 
         // LIFECYCLE API
@@ -45,14 +48,21 @@ define([
             return Promise.try(function () {
                 hostNode = node;
                 var id = html.genId();
+                var errorId = html.genId();
                 var layout = div({
                     class: 'container-fluid'
-                }, div({
-                    id: id
-                }));
+                }, [
+                    div({
+                        id: id
+                    }),
+                    div({
+                        id: errorId
+                    })
+                ]);
                 container = hostNode.appendChild(document.createElement('div'));
                 container.innerHTML = layout;
-                main = document.getElementById(id);
+                mounts.main = document.getElementById(id);
+                mounts.error = document.getElementById(errorId);
                 // renderLayout();
             });
         }
@@ -156,7 +166,7 @@ define([
                                 return doSignIn(choice, stateParams.nextrequest);
                             }
 
-                            main.innerHTML = div({
+                            mounts.main.innerHTML = div({
                                 dataBind: {
                                     component: {
                                         name: '"signin-view"',
@@ -165,6 +175,7 @@ define([
                                             requestedStep: 'step',
                                             nextRequest: 'nextRequest',
                                             choice: 'choice',
+                                            source: '"signin"',
                                             policiesToResolve: 'policiesToResolve'
                                         }
                                     }
@@ -177,7 +188,7 @@ define([
                                 choice: choice,
                                 policiesToResolve: policiesToResolve
                             };
-                            ko.applyBindings(viewModel, main);
+                            ko.applyBindings(viewModel, mounts.main);
                         });
                 })
                 .catch(Auth2Error.AuthError, function (err) {
@@ -211,8 +222,6 @@ define([
                         nextErr = err;
                     }
 
-
-
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
                     var viewModel = {
@@ -221,7 +230,7 @@ define([
                         detail: nextErr.detail,
                         data: nextErr.data
                     };
-                    main.innerHTML = div({
+                    mounts.error.innerHTML = div({
                         dataBind: {
                             component: {
                                 name: '"error-view"',
@@ -234,7 +243,7 @@ define([
                             }
                         }
                     });
-                    ko.applyBindings(viewModel, main);
+                    ko.applyBindings(viewModel, mounts.error);
                 })
 
             .catch(function (err) {
@@ -244,7 +253,7 @@ define([
                     detail: err.detail || '',
                     data: ko.observable(err.data || {})
                 };
-                main.innerHTML = div({
+                mounts.error.innerHTML = div({
                     dataBind: {
                         component: {
                             name: '"error-view"',
@@ -257,7 +266,7 @@ define([
                         }
                     }
                 });
-                ko.applyBindings(viewModel, main);
+                ko.applyBindings(viewModel, mounts.error);
             });
         }
 

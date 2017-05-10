@@ -83,6 +83,7 @@ define([
                             params: {
                                 choice: 'choice',
                                 runtime: 'runtime',
+                                source: '"signin"',
                                 nextRequest: 'nextRequest',
                                 policiesToResolve: 'policiesToResolve'
                                     // to communicate completion of the signup process
@@ -99,7 +100,7 @@ define([
     function buildOopsLegacyUser() {
         return BS.buildCollapsiblePanel({
             title: 'Already Have a KBase Account?',
-            type: 'default',
+            type: 'warning',
             collapsed: true,
             classes: ['kb-panel-help'],
             body: div([
@@ -159,7 +160,7 @@ define([
     function buildOopsWrongGoogleAccount() {
         return BS.buildCollapsiblePanel({
             title: 'Not the account you were expecting?',
-            type: 'default',
+            type: 'warning',
             collapsed: true,
             classes: ['kb-panel-help'],
             body: div([
@@ -203,11 +204,15 @@ define([
 
     function buildOopsWrongGlobusAccount() {
         return BS.buildCollapsiblePanel({
-            title: 'Not the account you were expecting?',
-            type: 'default',
+            title: 'Not the account you were expecting??',
+            type: 'warning',
             collapsed: true,
             classes: ['kb-panel-help'],
             body: div([
+                p([
+                    'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+                    'to Globus and back again without any warning.'
+                ]),
                 p([
                     'If this is not the account you were expecting, you may need to sign out of the identity provider ',
                     'and start the sign-in process again.'
@@ -218,7 +223,7 @@ define([
                 ]),
                 ul({
                     dataBind: {
-                        foreach: 'providersList'
+                        with: 'providers.Globus'
                     }
                 }, li(a({
                     dataBind: {
