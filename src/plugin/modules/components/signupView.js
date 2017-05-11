@@ -456,15 +456,15 @@ define([
         }, [
 
             div({}, [
-                p({
-                    style: {
-                        marginTop: '10px',
-                        fontWeight: 'bold'
-                    }
-                }, [
+                p({}, [
                     div({
                         dataBind: {
                             if: 'signupState() === "incomplete"'
+                        }
+                    }, div({
+                        style: {
+                            marginTop: '10px',
+                            fontWeight: 'bold'
                         }
                     }, [
                         incompleteStep(true),
@@ -478,10 +478,15 @@ define([
                                 fontWeight: 'bold'
                             }
                         }, 'Create a new KBase Account'))
-                    ]),
+                    ])),
                     div({
                         dataBind: {
                             if: 'signupState() === "complete"'
+                        }
+                    }, div({
+                        style: {
+                            marginTop: '10px',
+                            fontWeight: 'bold'
                         }
                     }, [
                         incompleteStep(true),
@@ -492,10 +497,15 @@ define([
                         }, span({
                             dataElement: 'title'
                         }, 'Ready to create a new KBase Account'))
-                    ]),
+                    ])),
                     div({
                         dataBind: {
                             if: 'signupState() === "success"'
+                        }
+                    }, div({
+                        style: {
+                            marginTop: '10px',
+                            fontWeight: 'bold'
                         }
                     }, [
                         completeStep(true),
@@ -506,7 +516,7 @@ define([
                         }, span({
                             dataElement: 'title'
                         }, 'KBase Account Successfully Created'))
-                    ]),
+                    ]))
                 ]),
                 div({
                     dataBind: {
@@ -572,7 +582,7 @@ define([
         // var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
         return div({
-            class: 'container',
+            class: 'container-fluid',
             //  style: 'margin-top: 4em',
             // dataWidget: 'login'
             dataComponent: 'signup-view'

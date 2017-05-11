@@ -38,7 +38,7 @@ define([
 
     function buildStep2Inactive() {
         return div({
-            class: 'col-sm-10 col-sm-offset-1',
+            class: 'col-sm-12',
             style: {
                 paddingBottom: '10px'
             }
@@ -68,7 +68,7 @@ define([
 
     function buildSigninStep() {
         return div({
-            class: 'col-sm-10 col-sm-offset-1',
+            class: 'col-sm-12',
             // style: {
             //     backgroundColor: 'white',
             //     border: '1px silver solid',
@@ -253,7 +253,7 @@ define([
 
     function buildSignupStep() {
         return div({
-            class: 'col-sm-10 col-sm-offset-1',
+            class: 'col-sm-12',
             // style: {
             //     backgroundColor: 'white',
             //     border: '1px silver solid',
@@ -307,7 +307,6 @@ define([
                             }),
                             ' account.'
                         ]),
-                        p(['Otherwise']),
 
                         buildOopsLegacyUser(),
                         div({
@@ -459,11 +458,14 @@ define([
         ]);
     }
 
+    // TODO: load the canonical providers list, and augment with the additional info
+    // logoImage and description.
     function getProviders() {
         return {
             google: {
                 id: 'Google',
                 label: 'Google',
+                logoutUrl: 'https://accounts.google.com/Logout',
                 logoImage: Plugin.plugin.fullPath + '/providers/google_logo.png',
                 description: div([
                     p([
@@ -475,6 +477,7 @@ define([
             globus: {
                 id: 'Globus',
                 label: 'Globus',
+                logoutUrl: 'https://www.globus.org/app/logout',
                 logoImage: Plugin.plugin.fullPath + '/providers/globus_logo.png',
                 description: div([
                     p([
@@ -504,7 +507,7 @@ define([
         var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
 
         return div({
-            class: 'container',
+            class: 'container-fluid',
             // style: 'margin-top: 4em',
             dataWidget: 'login'
         }, [
@@ -526,31 +529,10 @@ define([
             // ]),
             div({ class: 'row' }, [
                 buildStep2()
-                // div({
-                //     id: vm.get('step2').id
-                // }),
-                // div({
-                //     id: vm.get('error').id
-                // }),
-                // div({
-                //     id: vm.get('alreadySignedUp').id
-                // })
             ])
         ]);
     }
-    // function doLogin(providerId, state) {
 
-    //     runtime.service('session').loginStart({
-    //         // TODO: this should be either the redirect url passed in 
-    //         // or the dashboard.
-    //         // We just let the login page do this. When the login page is 
-    //         // entered with a valid token, redirect to the nextrequest,
-    //         // and if that is empty, the dashboard.
-    //         state: state,
-    //         provider: providerId,
-    //         stayLoggedIn: false
-    //     });
-    // }
     function component() {
         return {
             viewModel: function (data) {

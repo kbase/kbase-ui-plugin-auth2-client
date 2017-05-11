@@ -347,7 +347,7 @@ define([
             ]
         });
         return div({
-            class: 'container component-login-view',
+            class: 'container-fluid component-login-view',
             dataPlugin: 'auth2-client',
             dataComponent: 'login-view',
             dataWidget: 'login'

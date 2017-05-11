@@ -15,6 +15,7 @@ define([
         div = t('div'),
         span = t('span'),
         input = t('input'),
+        label = t('label'),
         button = t('button');
 
     function buildMissingPolicy() {
@@ -22,7 +23,7 @@ define([
         return div({
             dataBind: {
                 style: {
-                    border: 'agreed() ? "1px green solid" : "1px orange solid"'
+                    border: 'agreed() ? "2px #3c763d solid" : "2px #a94442 solid"'
                 }
             },
             style: {
@@ -67,68 +68,34 @@ define([
                                 text: 'policy.date'
                             }
                         })
-                    ])
+                    ]),
+                    div({
+                        style: {
+                            marginTop: '10px'
+                        }
+                    }, label([
+                        input({
+                            type: 'checkbox',
+                            name: 'agreed',
+                            // TODO: this is just for prototyping -- this needs to evolve
+                            // in to a viewmodel-based widget.
+                            dataBind: {
+                                checked: 'agreed'
+                            }
+                        }),
+                        ' I have read and agree to this policy'
+                    ])),
                 ]),
                 div({
                     class: 'col-md-8'
                 }, [
                     div({}, [
-                        // button({
-                        //     type: 'button',
-                        //     class: 'btn btn-warning',
-                        //     name: 'viewer-button',
-                        //     dataBind: {
-                        //         click: '$parent.doViewPolicy',
-                        //         css: {
-                        //             '"btn-warning"': '!agreed()',
-                        //             '"btn-success"': 'agreed()'
-                        //         }
-                        //     }
-                        // }, [
-                        //     span({
-                        //         name: 'label',
-                        //         dataBind: {
-                        //             text: 'agreed() ? "Agreed! (click again to Disagree)" : "Read &amp; Agree"'
-                        //         }
-                        //     }),
-                        //     span({
-                        //         name: 'icon',
-                        //         class: 'fa fa-chevron-right',
-                        //         dataBind: {
-                        //             css: {
-                        //                 '"fa-chevron-right"': '!viewPolicy()',
-                        //                 '"fa-chevron-down"': 'viewPolicy()'
-                        //             }
-                        //         },
-                        //         style: {
-                        //             marginLeft: '6px'
-                        //         }
-                        //     })
-                        // ]),
-
-                        div({
-                            style: {
-
-                            }
-                        }, [
-                            input({
-                                type: 'checkbox',
-                                name: 'agreed',
-                                // TODO: this is just for prototyping -- this needs to evolve
-                                // in to a viewmodel-based widget.
-                                dataBind: {
-                                    checked: 'agreed'
-                                }
-                            }),
-                            ' I have read and agree to this policy'
-                        ]),
                         div({
                             dataBind: {
                                 css: {
                                     hidden: 'agreed'
                                 }
                             },
-                            // class: 'hidden',
                             name: 'agreement-viewer'
                         }, [
                             div({
@@ -139,6 +106,7 @@ define([
                                     padding: '4px',
                                     backgroundColor: '#EEE'
                                 },
+                                class: '-policy-markdown',
                                 dataElement: 'policyViewer',
                                 dataMinMax: 'max',
                                 dataBind: {
@@ -151,15 +119,17 @@ define([
                                 css: {
                                     hidden: '!agreed()'
                                 }
+                            },
+                            style: {
+                                fontStyle: 'italic',
+                                textAlign: 'center',
+                                marginTop: '20px'
                             }
                         }, [
-                            p({
-                                style: {
-                                    fontStyle: 'italic',
-                                    textAlign: 'center',
-                                    marginTop: '6px'
-                                }
-                            }, [
+                            p([
+                                'You have agreed to this policy.'
+                            ]),
+                            p([
                                 'To show the agreement again, uncheck the agreement above.'
                             ])
                         ])
@@ -277,6 +247,8 @@ define([
 
     function buildTemplate() {
         return div({
+            dataComponent: 'policy-resolver',
+            class: 'component-policy-resolver',
             dataBind: {
                 if: 'policiesToResolve.missing.length + policiesToResolve.outdated.length > 0'
             }

@@ -26,3 +26,61 @@
 .form-row:hover .field-doc {
     color: #000;
 }
+
+
+/* Policy resolver component styles */
+
+.component-policy-resolver .-policy-markdown {
+    font-family: Oxygen, Arial, sans-serif;
+}
+
+.component-policy-resolver .-policy-markdown h1 {
+    font-family: Oxygen, Arial, sans-serif;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: 150%;
+}
+
+.component-policy-resolver .-policy-markdown h2 {
+    font-family: Oxygen, Arial, sans-serif;
+    margin-top: 1em;
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: 135%;
+}
+
+.component-policy-resolver .-policy-markdown h3 {
+    font-family: Oxygen, Arial, sans-serif;
+    margin-top: 1em;
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: 120%;
+}
+
+.component-policy-resolver .-policy-markdown h4 {
+    font-family: Oxygen, Arial, sans-serif;
+    margin-top: 1em;
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: 100%;
+}
+
+.component-policy-resolver .-policy-markdown p {
+    margin-top: 0.5em;
+}
+
+.component-policy-resolver .-policy-markdown blockquote {
+    font-size: inherit;
+    margin-left: 1em;
+    padding-left: 1em;
+    border-left: 3px silver solid;
+}
+
+.component-policy-resolver .-policy-markdown a {}
+
+.component-policy-resolver .-policy-markdown a:link,
+.component-policy-resolver .-policy-markdown a:visited {}
+
+.component-policy-resolver .-policy-markdown a:hover,
+.component-policy-resolver .-policy-markdown a:active {}

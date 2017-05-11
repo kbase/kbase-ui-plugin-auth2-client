@@ -11,6 +11,8 @@ define([
     './lib/utilsKO',
     './widgets/errorWidget',
     './lib/policies',
+    './lib/format',
+
     // loaded for effect
     'bootstrap',
     './components/signinView',
@@ -27,17 +29,100 @@ define([
     Auth2Error,
     Utils,
     ErrorWidget,
-    Policies
+    Policies,
+    Format
 ) {
     var t = html.tag,
         div = t('div'),
+        span = t('span'),
         p = t('p'),
         a = t('a');
+
+    var clock;
+
+    function CountDownClock(arg) {
+        var countdownTo = arg.countdownTo;
+        var updater = arg.onTick;
+        var tick = arg.tick || 500;
+
+        var timer;
+        var timeRemaining;
+
+        function calcTimeRemaining() {
+            var now = new Date().getTime();
+            //var elapsed = now - startTime;
+            // console.log('remaining', tick, now, elapsed, countdownTo);
+            timeRemaining = countdownTo - now;
+        }
+        calcTimeRemaining();
+
+        function loop() {
+            timer = window.setTimeout(function () {
+                calcTimeRemaining();
+
+                updater(timeRemaining);
+                if (timeRemaining >= 0) {
+                    loop();
+                } else {
+                    updater(timeRemaining);
+                    stop();
+                }
+            }, tick);
+        }
+
+        function start() {
+            loop();
+        }
+
+        function stop() {
+            countdownTo = 0;
+            if (timer) {
+                window.clearTimeout(timer);
+            }
+        }
+        updater(timeRemaining);
+        loop();
+        return {
+            start: start,
+            stop: stop
+        };
+    }
+
+    // glues a countdown clock into the vm and the ui.
+    function Clock(config) {
+        var runtime = config.runtime;
+        var clockVar = config.clock;
+        var expires = config.expires;
+        var clock;
+
+        function start() {
+            var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+
+            clock = CountDownClock({
+                countdownTo: expires - timeOffset,
+                onTick: function (remaining) {
+                    clockVar(remaining);
+                }
+            });
+            clock.start();
+        }
+
+        function stop() {
+            clock.stop();
+            clockVar(null);
+        }
+
+        return {
+            start: start,
+            stop: stop
+        };
+    }
 
     function factory(config) {
         var hostNode, container,
             mounts = {
                 main: null,
+                clock: null,
                 error: null
             },
             runtime = config.runtime;
@@ -49,19 +134,32 @@ define([
                 hostNode = node;
                 var id = html.genId();
                 var errorId = html.genId();
+                var clockId = html.genId();
                 var layout = div({
                     class: 'container-fluid'
                 }, [
                     div({
-                        id: id
-                    }),
-                    div({
-                        id: errorId
-                    })
+                        class: 'row'
+                    }, [
+                        div({
+                            class: 'col-sm-10 col-sm-offset-1'
+                        }, [
+                            div({
+                                id: clockId
+                            }),
+                            div({
+                                id: id
+                            }),
+                            div({
+                                id: errorId
+                            })
+                        ])
+                    ])
                 ]);
                 container = hostNode.appendChild(document.createElement('div'));
                 container.innerHTML = layout;
                 mounts.main = document.getElementById(id);
+                mounts.clock = document.getElementById(clockId);
                 mounts.error = document.getElementById(errorId);
                 // renderLayout();
             });
@@ -165,6 +263,56 @@ define([
                                 choice.provider === 'Google') {
                                 return doSignIn(choice, stateParams.nextrequest);
                             }
+
+                            mounts.clock.innerHTML = div({
+                                    dataBind: {
+                                        if: 'clockTime'
+                                    },
+                                    style: {
+                                        textAlign: 'right',
+                                    }
+                                },
+                                p({
+                                    style: {
+                                        display: 'inline-block',
+                                        padding: '6px',
+                                        backgroundColor: '#999',
+                                        color: '#FFF'
+                                    }
+                                }, [
+                                    'You have ',
+                                    span({
+                                        dataBind: {
+                                            text: 'clockDisplay'
+                                        },
+                                        style: {
+                                            fontWeight: 'bold'
+                                        }
+                                    }),
+                                    ' to complete the signin process.'
+                                ])
+                            );
+                            var clockVm = (function () {
+                                var clockTime = ko.observable();
+                                var clockDisplay = ko.pureComputed(function () {
+                                    if (typeof clockTime() === 'number') {
+                                        return Format.niceDuration(clockTime());
+                                    } else {
+                                        return '';
+                                    }
+                                });
+                                return {
+                                    clockTime: clockTime,
+                                    clockDisplay: clockDisplay
+                                };
+                            }());
+                            ko.applyBindings(clockVm, mounts.clock);
+                            clock = Clock({
+                                runtime: runtime,
+                                clock: clockVm.clockTime,
+                                expires: choice.expires
+                            });
+                            clock.start();
 
                             mounts.main.innerHTML = div({
                                 dataBind: {
@@ -272,7 +420,9 @@ define([
 
         function stop() {
             return Promise.try(function () {
-
+                if (clock) {
+                    clock.stop();
+                }
             });
         }
 

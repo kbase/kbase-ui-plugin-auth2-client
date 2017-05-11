@@ -391,15 +391,26 @@ define([
                     }, [
                         div({
                             class: 'col-md-5'
-                        }, button({
-                            class: 'btn btn-primary',
-                            type: 'submit',
-                            dataElement: 'submit-button',
-                            dataBind: {
-                                click: 'doSubmitSignup',
-                                disable: '!canSubmit()'
-                            }
-                        }, 'Create KBase Account')),
+                        }, [
+                            button({
+                                class: 'btn btn-primary',
+                                type: 'submit',
+                                dataElement: 'submit-button',
+                                dataBind: {
+                                    click: 'doSubmitSignup',
+                                    disable: '!canSubmit()'
+                                }
+                            }, 'Create KBase Account'),
+                            button({
+                                class: 'btn btn-danger btn-sm',
+                                style: {
+                                    marginLeft: '10px'
+                                },
+                                dataBind: {
+                                    click: 'doCancelChoiceSession'
+                                }
+                            }, 'Cancel Sign-Up')
+                        ]),
                         div({
                             class: 'col-md-7'
                         })
@@ -415,26 +426,25 @@ define([
             dataBind: {
                 if: 'signupState() === "success"'
             },
+        }, div({
             style: {
                 marginTop: '20px'
             }
-        }, [
-            BS.buildPanel({
-                type: 'success',
-                title: 'KBase Account Successfuly Created',
-                body: div([
-                    p('Your new KBase account has been created and is ready to be used.'),
-                    div([
-                        button({
-                            class: 'btn btn-primary',
-                            dataBind: {
-                                click: 'doSignupSuccess'
-                            }
-                        }, 'Continue')
-                    ])
+        }, BS.buildPanel({
+            type: 'success',
+            title: 'KBase Account Successfuly Created',
+            body: div([
+                p('Your new KBase account has been created and is ready to be used.'),
+                div([
+                    button({
+                        class: 'btn btn-primary',
+                        dataBind: {
+                            click: 'doSignupSuccess'
+                        }
+                    }, 'Continue')
                 ])
-            })
-        ]);
+            ])
+        })));
     }
 
     function buildErrorResponse() {
@@ -442,29 +452,28 @@ define([
             class: 'row',
             dataBind: {
                 if: 'signupState() === "error"'
-            },
+            }
+        }, div({
             style: {
                 marginTop: '20px'
             }
-        }, [
-            BS.buildPanel({
-                type: 'error',
-                title: 'Auth Error',
-                body: div({
-                    dataBind: {
-                        component: {
-                            name: '"error-view"',
-                            params: {
-                                code: 'error.code',
-                                message: 'error.message',
-                                detail: 'error.detail',
-                                data: 'error.data'
-                            }
+        }, BS.buildPanel({
+            type: 'error',
+            title: 'Auth Error',
+            body: div({
+                dataBind: {
+                    component: {
+                        name: '"error-view"',
+                        params: {
+                            code: 'error.code',
+                            message: 'error.message',
+                            detail: 'error.detail',
+                            data: 'error.data'
                         }
                     }
-                })
+                }
             })
-        ]);
+        })));
     }
 
     function buildExpired() {
@@ -503,9 +512,16 @@ define([
             },
             style: {
                 marginBottom: '12px',
-                textAlign: 'center'
+                textAlign: 'right'
             }
 
+        }, p({
+            style: {
+                display: 'inline-block',
+                padding: '6px',
+                backgroundColor: '#999',
+                color: '#FFF'
+            }
         }, [
             'This sign-up session will expire in ',
             span({
@@ -515,17 +531,17 @@ define([
                 dataBind: {
                     text: 'expiresMessage()'
                 }
-            }),
-            button({
-                class: 'btn btn-danger',
-                style: {
-                    marginLeft: '10px'
-                },
-                dataBind: {
-                    click: 'doCancelChoiceSession'
-                }
-            }, 'Cancel Sign-up Session')
-        ]));
+            })
+            // button({
+            //     class: 'btn btn-danger btn-sm',
+            //     style: {
+            //         marginLeft: '10px'
+            //     },
+            //     dataBind: {
+            //         click: 'doCancelChoiceSession'
+            //     }
+            // }, '&times;')
+        ])));
     }
 
     function template() {
