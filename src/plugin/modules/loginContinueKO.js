@@ -420,7 +420,9 @@ define([
 
         function stop() {
             return Promise.try(function () {
-                clock.stop();
+                if (clock) {
+                    clock.stop();
+                }
             });
         }
 
