@@ -1,5 +1,5 @@
 define([
-    'knockout',
+    'knockout-plus',
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_common_ts/Auth2Error',
@@ -25,7 +25,60 @@ define([
         h1 = t('h1'),
         h3 = t('h3'),
         legend = t('legend'),
-        i = t('i');
+        i = t('i'),
+        ul = t('ul'),
+        li = t('li');
+
+    function buildTabs() {
+        return div({}, [
+            ul({
+                class: 'nav nav-tabs',
+                role: 'tablist',
+                dataBind: {
+                    foreach: 'tabs'
+                }
+            }, li({
+                role: 'presentation',
+                dataBind: {
+                    visible: 'show',
+                    css: {
+                        active: 'active'
+                    }
+                }
+            }, a({
+                dataBind: {
+                    attrs: {
+                        id: 'name',
+                        href: '"#" + name'
+                    },
+                    text: 'label',
+                    click: '$component.doSelectTab'
+                }
+            }))),
+            div({
+                class: 'tab-content',
+                dataBind: {
+                    foreach: 'tabs'
+                }
+            }, div({
+                role: 'tabpanel',
+                class: 'tab-pane',
+                style: {
+                    paddingTop: '10px'
+                },
+                dataBind: {
+                    visible: 'show',
+                    css: {
+                        active: 'active'
+                    },
+                    attrs: {
+                        id: 'name'
+                    },
+                    html: 'content'
+                }
+            }))
+        ]);
+    }
 
     function buildLoginButton(action) {
         return button({
@@ -75,10 +128,6 @@ define([
 
     function buildSigninButton() {
         return buildLoginButton('doSignin');
-    }
-
-    function buildSignupButton() {
-        return buildLoginButton('doSignup');
     }
 
     function buildLoginControl(runtime) {
@@ -326,62 +375,45 @@ define([
         ]);
     }
 
+    function buildAuthorizationRequired() {
+        return div([
+            p([
+                'Authorization is required to access this path.'
+            ]),
+            p([
+                'Please sign in and you will be redirected to the resource.'
+                // span({
+                //     dataBind: {
+                //         text: '"stuff"'
+                //     }
+                // })
+            ])
+        ]);
+    }
+
+    function buildIntroNormal() {
+        return div({}, [
+            h1('Welcome to KBase'),
+            buildTabs()
+        ]);
+    }
 
     function template() {
-        var authControl = buildAuthControl();
-        var tabs = BS.buildTabs({
-            initalTab: 'welcome',
-            style: {
-                paddingTop: '1em'
-            },
-            tabs: [{
-                    name: 'welcome',
-                    label: 'Welcome',
-                    content: buildWelcomeTab()
-                },
-                {
-                    name: 'about',
-                    label: 'About',
-                    content: buildAboutTab()
-                }
-            ]
-        });
         return div({
             class: 'container-fluid component-login-view',
             dataPlugin: 'auth2-client',
             dataComponent: 'login-view',
             dataWidget: 'login'
         }, [
-            // div({}, [
-            //     div({
-            //         style: {
-            //             position: 'absolute',
-            //             // backgroundImage: 'url(' + doodlePath + ')',
-            //             // backgroundRepeat: 'no-repeat',
-            //             // backgroundSize: '35%',
-            //             top: '0',
-            //             left: '0',
-            //             bottom: '0',
-            //             right: '0',
-            //             opacity: '0.1',
-            //             zIndex: '-1000'
-            //         }
-            //     })
-            // ]),
             div({ class: 'row' }, [
-                div({ class: 'col-sm-8 ' }, [
-                    h1({ xstyle: 'font-size:1.6em' }, ['Welcome to KBase'])
-                ])
-            ]),
-            div({ class: 'row' }, [
-                div({ class: 'col-sm-8 ' }, [
-                    tabs.content
-                ]),
+                div({ class: 'col-sm-8 ' },
+                    buildIntroNormal()
+                ),
                 div({ class: 'col-sm-4' }, [
                     div({ class: 'well well-kbase' }, [
                         div({ class: 'login-form' }, [
                             legend({ style: 'text-align: center' }, 'Use KBase'),
-                            authControl
+                            buildAuthControl()
                         ])
                     ])
                 ])
@@ -419,6 +451,7 @@ define([
     function viewModel(params) {
         var runtime = params.runtime;
         var nextRequest = params.nextRequest;
+        var source = params.source;
         var docs = runtime.config('resources.documentation');
 
         var authorized = runtime.service('session').isAuthorized();
@@ -494,9 +527,60 @@ define([
             }
         }
 
+        var tabs = ko.observableArray([{
+                name: 'authorization',
+                label: 'Authorization Required',
+                show: ko.computed(function () {
+                    return (source === 'authorization');
+                }),
+                active: ko.observable(false),
+                content: buildAuthorizationRequired()
+            },
+            {
+                name: 'welcome',
+                label: 'Welcome',
+                show: true,
+                active: ko.observable(false),
+                content: buildWelcomeTab()
+            },
+            {
+                name: 'about',
+                label: 'About',
+                show: true,
+                active: ko.observable(false),
+                content: buildAboutTab()
+            }
+        ]);
+        if (source === 'authorization') {
+            tabs()[0].active(true);
+        } else {
+            tabs()[1].active(true);
+        }
+
+        function doSelectTab(data) {
+            var selected = tabs().filter(function (item) {
+                return item.active();
+            });
+            if (selected.length > 0 && selected[0].name === data.name) {
+                return;
+            }
+            tabs().forEach(function (item) {
+                if (item.active()) {
+                    item.active(false);
+                }
+            });
+            data.active(true);
+
+        }
+
+        var filteredTabs = tabs.filter(function (item) {
+            return item.show;
+        });
+
         return {
             runtime: runtime,
             nextRequest: nextRequest,
+            source: source,
             docs: docs,
             isSessionPersistent: isSessionPersistent,
             providers: providers,
@@ -506,7 +590,10 @@ define([
             doSignup: doSignup,
             doSetSigninMode: doSetSigninMode,
             doSetSignupMode: doSetSignupMode,
-            mode: mode
+            mode: mode,
+            tabs: filteredTabs,
+            doSelectTab: doSelectTab,
+            test: 'this is a tset'
         };
     }
 

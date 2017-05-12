@@ -19,7 +19,7 @@ define([
     function factory(config) {
         var hostNode, container,
             runtime = config.runtime,
-            nextRequest;
+            nextRequest, source;
 
         function attach(node) {
             return Promise.try(function () {
@@ -45,6 +45,7 @@ define([
                             name: '"login-view"',
                             params: {
                                 runtime: 'runtime',
+                                source: 'source',
                                 nextRequest: 'nextRequest'
                             }
                         }
@@ -52,7 +53,8 @@ define([
                 });
                 ko.applyBindings({
                     runtime: runtime,
-                    nextRequest: nextRequest
+                    nextRequest: nextRequest,
+                    source: source
                 }, container);
             } catch (ex) {
                 console.error('ERROR rendering login stuff', ex);
@@ -85,6 +87,7 @@ define([
                 } else {
                     nextRequest = null;
                 }
+                source = params.source;
 
                 if (runtime.service('session').isLoggedIn()) {
                     doRedirect(params);
