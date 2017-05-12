@@ -267,17 +267,17 @@ define([
                     paddingTop: '10px'
                 },
                 tabs: [{
-                        name: 'account',
-                        label: 'Account',
-                        panel: {
-                            factory: PersonalInfoEditor
-                        }
-                    },
-                    {
                         name: 'profile',
                         label: 'Your Profile',
                         panel: {
                             factory: ProfileManager
+                        }
+                    },
+                    {
+                        name: 'account',
+                        label: 'Account',
+                        panel: {
+                            factory: PersonalInfoEditor
                         }
                     },
                     {
@@ -342,11 +342,9 @@ define([
             ]);
             var tabs = renderTabs(tabDef, document.getElementById(tabsId));
 
-            var defaultTab = params.tab || 'account';
+            var defaultTab = params.tab || 'profile';
             tabs.showTab(defaultTab);
         }
-
-
 
         // API
 

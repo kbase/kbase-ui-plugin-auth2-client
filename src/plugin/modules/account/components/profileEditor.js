@@ -323,7 +323,7 @@ define([
                 }, [
                     div({
                         class: 'alert alert-warning'
-                    }, 'You have made changes to your profile -- you should save them if you wish to preserve them.')
+                    }, 'You have made changes to your profile.')
                 ]),
                 div({
                     dataBind: {
@@ -332,7 +332,7 @@ define([
                 }, [
                     div({
                         class: 'alert alert-danger'
-                    }, 'You have empty required or invalid fields -- please fix them and then save your profile.')
+                    }, 'You have empty required or invalid fields -- you must fix them before you can save any changes.')
                 ])
             ]),
             buildMessageDisplay(),
@@ -356,12 +356,53 @@ define([
             class: 'row'
         }, [
             div({
-                class: 'col-md-6'
-            }, buildForm()),
+                class: 'col-md-6',
+                style: {
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-start',
+                    alignItems: 'stretch',
+                    alignContent: 'stretch'
+                }
+            }, div({
+                style: {
+                    //overflowY: 'auto',
+                    flex: 1,
+                    // position: 'relative',
+                    // top: 0,
+                    // bottom: 0,
+                    // overflowY: 'auto'
+                    overflowY: 'auto',
+                    //height: 'calc(100vh - 150px)'
+                    //height: '100vh'
+                }
+            }, [
+                buildSaver(),
+                div({
+                    style: {
+                        height: '10px'
+                    }
+                }),
+                buildForm(),
+                buildSaver(),
+                div({
+                    style: {
+                        height: '10px'
+                    }
+                }),
+            ])),
             div({
-                class: 'col-md-6'
+                class: 'col-md-6',
+                style: {
+                    overflowY: 'auto'
+                }
             }, [
                 div({
+                    id: 'profilePreview',
+                    style: {
+                        position: 'relative'
+                    },
                     dataBind: {
                         component: {
                             name: '"profile-view"',
@@ -372,7 +413,7 @@ define([
                     }
                 }),
                 //buildPreview(),
-                buildSaver()
+                // buildSaver()
             ])
         ]);
     }
@@ -1140,6 +1181,28 @@ define([
                     });
             });
         }
+
+        // Global event listeners
+        // TODO: how to tear these down?
+        // var mainWindowNode = document.querySelector('.kb-mainwindow-body');
+        // var originalY = previewNode.getBoundingClientRect().y;
+
+        // document.addEventListener('scroll', function () {
+        //     var previewNode = document.getElementById('profilePreview');
+        //     var mainWindowNode = document.querySelector('.kb-mainwindow-body');
+        //     // var mainScrolled = mainWindowNode.scrollTop;
+        //     var mainRect = mainWindowNode.getBoundingClientRect();
+        //     var previewRect = previewNode.getBoundingClientRect();
+
+        //     var tippyTop = 70;
+        //     console.log('??', previewRect.y, tippyTop, previewNode.style.top);
+        //     if (previewRect.y < tippyTop) {
+        //         // previewNode.style.display = 'absolute';
+        //         previewNode.style.top =
+        //     }
+
+        //     // console.log('scrolled!', mainRect, previewRect);
+        // });
 
         return {
             // fields being edited or displayed
