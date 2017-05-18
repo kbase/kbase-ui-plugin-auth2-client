@@ -24,7 +24,6 @@ define([
         // var tabsDefinition = arg.tabs;
 
         var tabsId = html.genId();
-        console.log('config', config);
         var tabsMap = config.tabs.reduce(function (accum, tab) {
             if (tab) {
                 accum[tab.name] = tab;
@@ -106,7 +105,6 @@ define([
                 runtime: runtime
             });
             var tabNode = hostNode.querySelector('[data-tab-panel="' + tabName + '"]');
-            console.log('loading');
             return currentTabWidget.attach(tabNode)
                 .then(function () {
                     return currentTabWidget.start();
