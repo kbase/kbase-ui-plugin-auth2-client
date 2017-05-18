@@ -241,7 +241,7 @@ define([
                 tabs: [{
                     name: 'main',
                     label: 'Main',
-                    content: div({ class: 'col-md-12' }, [
+                    content: div([
                         BS.buildPanel({
                             name: 'linkForm',
                             classes: ['kb-panel-light'],
@@ -251,7 +251,6 @@ define([
                             }, [
                                 tr([
                                     th('Provider'),
-                                    // th('Id'),
                                     th('Username'),
                                     th('Action')
                                 ])
@@ -265,7 +264,6 @@ define([
                                     }
                                     return tr([
                                         td(buildProviderLabel(runtime.service('session').getClient().getClient().getProvider(identity.provider))),
-                                        // td(identity.id),
                                         td(identity.provusername),
                                         td(button({
                                             class: 'btn btn-danger',
@@ -361,7 +359,6 @@ define([
             });
 
             container.innerHTML = div({
-                class: 'container-fluid',
                 style: {
                     marginTop: '10px'
                 }

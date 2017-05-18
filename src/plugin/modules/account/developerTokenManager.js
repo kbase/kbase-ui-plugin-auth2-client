@@ -125,7 +125,8 @@ define([
 
                         BS.buildPanel({
                             type: 'default',
-                            title: 'Developer Tokens',
+                            classes: ['kb-panel-light'],
+                            title: 'Manage Your Developer Tokens',
                             body: div([
                                 div({
                                     id: vm.alerts.id
@@ -159,8 +160,7 @@ define([
             // Revoke
             runtime.service('session').getClient().revokeToken(tokenId)
                 .then(function () {
-                    render();
-                    return null;
+                    return render();
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -261,10 +261,9 @@ define([
                     type: 'developer'
                 })
                 .then(function (result) {
-                    renderAllTokens();
                     vm.newToken.value = result;
                     renderNewToken();
-                    return null;
+                    return render();
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -389,8 +388,7 @@ define([
                     return runtime.service('session').getClient().revokeToken(token.id);
                 }))
                 .then(function () {
-                    render();
-                    return null;
+                    return render();
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -416,29 +414,23 @@ define([
             events.attachEvents();
         }
 
-        function renderAllTokens() {
-            if (vm.allTokens.enabled) {
-                runtime.service('session').getClient().getTokens()
-                    .then(function (result) {
-                        renderToolbar();
-
-                        vm.allTokens.value = result.tokens
-                            .filter(function (token) {
-                                return (token.type === 'Developer');
-                            });
-
-                        renderTokens();
-                        renderAddTokenForm();
-                    })
-                    .catch(function (err) {
-                        console.error('ERROR', err);
-                        showAlert('danger', 'Sorry, error, look in console: ' + err.message);
-                    });
-            }
-        }
-
         function render() {
-            renderAllTokens();
+            return runtime.service('session').getClient().getTokens()
+                .then(function (result) {
+                    renderToolbar();
+
+                    vm.allTokens.value = result.tokens
+                        .filter(function (token) {
+                            return (token.type === 'Developer');
+                        });
+
+                    renderTokens();
+                    renderAddTokenForm();
+                })
+                .catch(function (err) {
+                    console.error('ERROR', err);
+                    showAlert('danger', 'Sorry, error, look in console: ' + err.message);
+                });
         }
 
         function attach(node) {
@@ -453,7 +445,7 @@ define([
                 .then(function (bias) {
                     serverBias = bias;
                     renderLayout();
-                    render();
+                    return render();
                 });
         }
 

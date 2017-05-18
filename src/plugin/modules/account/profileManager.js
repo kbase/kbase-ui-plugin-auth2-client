@@ -11,63 +11,38 @@ define([
     UserProfileService,
     ko
 ) {
-    var // t = html.tagMaker(),
-        t = html.tag,
-        div = t('div'),
-        p = t('p');
+    var t = html.tag,
+        div = t('div');
 
     function factory(config) {
         var runtime = config.runtime;
         var hostNode, container;
+        var componentNode;
         var vm;
 
-
         function render(id) {
-            var tabs = BS.buildTabs({
-                initialTab: 0,
-                tabs: [{
-                    label: 'Main',
-                    name: 'main',
-                    content: div({
-                        style: {
-                            marginTop: '10px'
-                        },
-                        dataBind: {
-                            component: {
-                                name: '"profile-editor"',
-                                params: (function () {
-                                    var params = {};
-                                    Object.keys(vm).forEach(function (k) {
-                                        params[k] = k;
-                                    });
-                                    return params;
-                                }())
-                            }
-                        }
-                    })
-                }, {
-                    label: 'About',
-                    name: 'about',
-                    content: div({
-                        style: {
-                            marginTop: '10px'
-                        }
-                    }, [
-                        p('You may view and edit edit your basic account information here.'),
-                        p('Changes saved will be immediately available')
-                    ])
-                }]
-            });
             return div({
                 id: id,
-                class: 'container-fluid',
                 style: {
-                    marginTop: '10px'
+                    marginTop: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: '1 1 0px',
+                    overflowY: 'auto'
+                },
+                dataBind: {
+                    component: {
+                        name: '"profile-editor"',
+                        params: (function () {
+                            var params = {};
+                            Object.keys(vm).forEach(function (k) {
+                                params[k] = k;
+                            });
+                            return params;
+                        }())
+                    }
                 }
-            }, [
-                p([]),
-                tabs.content
-            ]);
+            });
         }
 
         function getProfile() {
@@ -86,7 +61,7 @@ define([
         function attach(node) {
             return Promise.try(function () {
                 hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
+                container = hostNode;
             });
         }
 
@@ -102,7 +77,8 @@ define([
                         profile: profile
                     };
                     container.innerHTML = render(id);
-                    ko.applyBindings(vm, document.getElementById(id));
+                    componentNode = document.getElementById(id);
+                    ko.applyBindings(vm, componentNode);
                 });
         }
 
@@ -112,9 +88,13 @@ define([
 
         function detach() {
             return Promise.try(function () {
-                if (hostNode && container) {
-                    hostNode.removeChild(container);
-                    hostNode.innerHTML = '';
+                // if (hostNode && container) {
+                //     hostNode.removeChild(container);
+                //     hostNode.innerHTML = '';
+                // }
+                if (componentNode) {
+                    ko.cleanNode(componentNode);
+                    container.removeChild(componentNode);
                 }
             });
         }

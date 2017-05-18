@@ -21,8 +21,6 @@ define([
         b = t('b'),
         img = t('img'),
         button = t('button'),
-        input = t('input'),
-        h1 = t('h1'),
         h3 = t('h3'),
         legend = t('legend'),
         i = t('i'),
@@ -39,6 +37,9 @@ define([
                 }
             }, li({
                 role: 'presentation',
+                style: {
+                    fontWeight: 'bold'
+                },
                 dataBind: {
                     visible: 'show',
                     css: {
@@ -80,55 +81,129 @@ define([
         ]);
     }
 
-    function buildLoginButton(action) {
-        return button({
-            class: 'btn btn-default',
+    function buildSigninButton() {
+        return div({
             style: {
-                textAlign: 'center'
-            },
-            dataBind: {
-                click: '$parent.' + action,
-                attr: {
-                    'data-control': '"signin-provider-button"',
-                    'data-provider': 'id'
-                }
-            }
-        }, div({
-            style: {
-                display: 'inline-block',
-                width: '50%',
-                textAlign: 'left',
-                fontWeight: 'bold',
-                verticalAlign: 'middle'
+                textAlign: 'center',
+                margin: '4px',
+                padding: '4px',
+                position: 'relative'
             }
         }, [
+
             img({
+                style: {
+                    height: '44px',
+                    cursor: 'pointer'
+                },
+                class: 'signin-button',
                 dataBind: {
+                    click: '$parent.doSignin',
+                    event: {
+                        mouseover: 'doMouseOver',
+                        mouseout: 'doMouseOut'
+                    },
                     attr: {
                         src: 'imageSource'
                     }
-                },
-                style: {
-                    height: '24px',
-                    marginRight: '10px',
-                    verticalAlign: 'middle'
                 }
             }),
-            span({
+            div({
                 style: {
-                    verticalAlign: 'middle'
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    textAlign: 'center',
+                    paddingTop: '4px',
+                    pointerEvents: 'none'
                 },
                 dataBind: {
-                    text: 'label'
+                    visible: 'loading'
                 }
-            })
-
-        ]));
+            }, span({
+                    style: {
+                        width: '50px',
+                        backgroundColor: 'rgba(255,255,255,0.5)'
+                    }
+                }, img({
+                    src: Plugin.plugin.fullPath + '/images/spinner5.gif'
+                })
+                //span({
+                //     style: {
+                //         color: 'rgba(52, 159, 50, 1)'
+                //     },
+                //     class: 'fa fa-2x fa-spinner fa-pulse',
+                //     // dataBind: {
+                //     //     visible: 'loading'
+                //     // }
+                // })
+            ))
+        ]);
     }
 
-    function buildSigninButton() {
-        return buildLoginButton('doSignin');
-    }
+    // function buildSigninButton() {
+    //     return button({
+    //         class: 'btn btn-default',
+    //         style: {
+    //             textAlign: 'center'
+    //         },
+    //         dataBind: {
+    //             click: '$parent.doSignin',
+    //             disable: 'disabled',
+    //             attr: {
+    //                 'data-control': '"signin-provider-button"',
+    //                 'data-provider': 'id'
+    //             }
+    //         }
+    //     }, div({
+    //         style: {
+    //             display: 'inline-block',
+    //             // width: '50%',
+    //             //textAlign: 'left',
+    //             //fontWeight: 'bold',
+    //             //verticalAlign: 'middle'
+    //         }
+    //     }, [
+    //         span({
+    //             style: {
+    //                 display: 'inline-block',
+    //                 // width: '50px',
+    //                 textAlign: 'center'
+    //             }
+    //         }, img({
+    //             dataBind: {
+    //                 attr: {
+    //                     src: 'imageSource'
+    //                 }
+    //             },
+    //             style: {
+    //                 height: '24px',
+    //                 // marginRight: '10px',
+    //                 verticalAlign: 'middle'
+    //             }
+    //         })),
+    //         // span({
+    //         //     style: {
+    //         //         verticalAlign: 'middle'
+    //         //     },
+    //         //     dataBind: {
+    //         //         text: 'label'
+    //         //     }
+    //         // }),
+    //         span({
+    //             class: 'fa fa-spinner fa-pulse',
+    //             style: {
+    //                 marginLeft: '6px'
+    //             },
+    //             dataBind: {
+    //                 visible: 'loading'
+    //             }
+    //         })
+
+    //     ]));
+    // }
 
     function buildLoginControl(runtime) {
         return div({
@@ -137,14 +212,16 @@ define([
             },
             style: {
                 width: '80%',
-                display: 'inline-block'
+                display: 'inline-block',
+                minWidth: '210px'
             }
         }, [
             div({
                 class: 'btn-group-vertical',
                 style: {
                     width: '100%'
-                }
+                },
+                minWidth: '200px'
             }, [
                 button({
                     class: 'btn btn-default',
@@ -206,34 +283,35 @@ define([
                         }, [
                             'Choose Globus if you signed up',
                             br(),
-                            'before 5/15/17'
+                            'before 5/25/17'
                         ]),
                         div({
-                                class: 'btn-group-vertical',
+                                // class: 'btn-group-vertical',
                                 style: {
-                                    width: '100%'
+                                    width: '100%',
+                                    display: 'inline-block',
                                 },
                                 dataBind: {
                                     foreach: 'providers'
                                 }
                             },
                             buildSigninButton()
-                        ),
-                        div({
-                            style: {
-                                marginTop: '0.5em',
-                                textAlign: 'center'
-                            }
-                        }, [
-                            input({
-                                type: 'checkbox',
-                                dataBind: {
-                                    checked: 'isSessionPersistent',
+                        )
+                        // div({
+                        //     style: {
+                        //         marginTop: '0.5em',
+                        //         textAlign: 'center'
+                        //     }
+                        // }, [
+                        //     input({
+                        //         type: 'checkbox',
+                        //         dataBind: {
+                        //             checked: 'isSessionPersistent',
 
-                                },
-                            }),
-                            ' Stay signed in'
-                        ]),
+                        //         },
+                        //     }),
+                        //     ' Stay signed in'
+                        // ]),
                     ])),
                 button({
                     class: 'btn btn-default',
@@ -308,7 +386,7 @@ define([
                 },
                 'Sign in Changes'),
             p([
-                'On 5/15/17 KBase launched a new authentication and authorization system. ',
+                'On 5/25/17 KBase launched a new authentication and authorization system. ',
                 'One of the changes is to replace a direct login to KBase with an authorization ',
                 'system using Google and Globus for user identification.'
             ]),
@@ -381,7 +459,7 @@ define([
                 'Authorization is required to access this path.'
             ]),
             p([
-                'Please sign in and you will be redirected to the resource.'
+                'After signing in you will be redirected to the requested resource.'
                 // span({
                 //     dataBind: {
                 //         text: '"stuff"'
@@ -393,7 +471,11 @@ define([
 
     function buildIntroNormal() {
         return div({}, [
-            h1('Welcome to KBase'),
+            // h1({
+            //     dataBind: {
+            //         text: 'title'
+            //     }
+            // }),
             buildTabs()
         ]);
     }
@@ -458,11 +540,11 @@ define([
 
         // todo set initial value from sessino service,
         // udpate session service when the value changes.
-        var isSessionPersistent = ko.observable(runtime.service('session').getClient().isSessionPersistent());
+        // var isSessionPersistent = ko.observable(runtime.service('session').getClient().isSessionPersistent());
 
-        isSessionPersistent.subscribe(function (persist) {
-            runtime.service('session').getClient().setSessionPersistent(persist);
-        });
+        // isSessionPersistent.subscribe(function (persist) {
+        //     runtime.service('session').getClient().setSessionPersistent(persist);
+        // });
 
         // TODO; populate from session, as above.
         var username = runtime.service('session').getUsername();
@@ -481,12 +563,42 @@ define([
                 return 0;
             })
             .map(function (provider) {
-                provider.imageSource = Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png';
+                var imageBase = Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '/signin-button/';
+                provider.state = ko.observable('normal');
+                provider.doMouseOver = function () {
+                    provider.state('hover');
+                };
+                provider.doMouseOut = function () {
+                    provider.state('normal');
+                };
+                provider.imageSource = ko.pureComputed(function () {
+                    switch (provider.state()) {
+                    case 'normal':
+                        return imageBase + 'normal.png';
+                    case 'hover':
+                        return imageBase + 'pressed.png';
+                    case 'disabled':
+                        return imageBase + 'disabled.png';
+                    default:
+                        return imageBase + 'normal.png';
+                    }
+                });
+                // ['normal', 'disabled', 'focus', 'pressed'].forEach(function (state) {
+                //     provider.imageSource[state] = imageBase + state + '.png';
+                // });
+                provider.disabled = ko.observable(false);
+                provider.loading = ko.observable(false);
+
                 return provider;
             });
 
         function doSignin(data) {
             // set last provider...
+            data.loading(true);
+            providers.forEach(function (provider) {
+                provider.state('disabled');
+                provider.disabled(true);
+            });
             loginStart(runtime, data.id, {
                 nextrequest: nextRequest,
                 origin: 'login'
@@ -527,6 +639,7 @@ define([
             }
         }
 
+        // var title = ko.observable();
         var tabs = ko.observableArray([{
                 name: 'authorization',
                 label: 'Authorization Required',
@@ -582,7 +695,7 @@ define([
             nextRequest: nextRequest,
             source: source,
             docs: docs,
-            isSessionPersistent: isSessionPersistent,
+            // isSessionPersistent: isSessionPersistent,
             providers: providers,
             authorized: authorized,
             username: username,

@@ -109,7 +109,7 @@ define([
                 ]),
                 p([
                     'If you created a KBase account ',
-                    b('prior to 5/15/17'),
+                    b('prior to 5/25/17'),
                     ', we have prepared a ',
                     a({
                         href: '#auth2/login/legacy'
@@ -323,7 +323,7 @@ define([
                         // p([
                         //     'If this is a mistake, and you want to sign in to a KBase account you already have, you should probably be ',
                         //     'signing in with a different account. ',
-                        //     'If you created a KBase account prior to 5/15/17, we have prepared a special page for you ',
+                        //     'If you created a KBase account prior to 5/25/17, we have prepared a special page for you ',
                         //     'to explain the changes and help you sign in for the first time.'
                         // ]),
                         // p([
@@ -495,7 +495,7 @@ define([
                         })
                     ]),
                     p([
-                        'KBase accounts created before 5/15/17 utilized Globus ID exclusively.'
+                        'KBase accounts created before 5/25/17 utilized Globus ID exclusively.'
                     ])
                 ])
             }

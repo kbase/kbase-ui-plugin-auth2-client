@@ -66,7 +66,7 @@ define([
                         })
                     ]),
                     p([
-                        'KBase accounts created before 5/15/17 utilized Globus ID exclusively.'
+                        'KBase accounts created before 5/25/17 utilized Globus ID exclusively.'
                     ])
                 ])
             }

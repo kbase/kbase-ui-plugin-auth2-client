@@ -42,7 +42,7 @@ define([
                     ]),
                     p([
                         'If you wish to ensure that your KBase account is inaccessible from this ',
-                        'browser until you explicitly authenticate with a sign-in provider, ',
+                        'browser, ',
                         'you should sign out of any Google or Globus account as well.'
                     ]),
                     ul(runtime.service('session').getProviders()

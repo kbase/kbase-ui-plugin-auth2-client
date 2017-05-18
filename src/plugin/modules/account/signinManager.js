@@ -1,16 +1,17 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     'kb_common/format'
 ], function (
+    Promise,
     html,
     DomEvent,
     BS,
-    format
+    Format
 ) {
-    var // t = html.tagMaker(),
+    var
         t = html.tag,
         div = t('div'),
         span = t('span'),
@@ -19,7 +20,8 @@ define([
         th = t('th'),
         td = t('td'),
         button = t('button'),
-        p = t('p');
+        p = t('p'),
+        em = t('em');
 
     function factory(config) {
         var hostNode, container;
@@ -63,6 +65,134 @@ define([
             bindVmNode(vm.intro);
         }
 
+        //     function renderLayout2() {
+        //         return div({
+        //             style: {
+        //                 display: 'flex',
+        //                 flexDirection: 'column',
+        //                 flex: '1 1 0px'
+        //             }
+        //         }, [
+        //             div({
+        //                 style: {
+        //                     flex: '0 0 0px',
+        //                     backgroundColor: 'rgba(255,185,2,0.5)',
+        //                     padding: '6px',
+        //                     display: 'flex',
+        //                     flexDirection: 'row'
+        //                 }
+        //             }, [
+        //                 div({
+        //                     style: {
+        //                         flex: '2',
+        //                         color: 'rgba(0,121,98,1)', // 0, 121, 98
+        //                         fontSize: '130%',
+        //                         fontWeight: 'bold',
+        //                         textAlign: 'center',
+        //                         display: 'flex',
+        //                         flexDirection: 'column',
+        //                         justifyContent: 'center'
+        //                     }
+        //                 }, 'Edit Your Profile'),
+        //                 div({
+        //                     style: {
+        //                         flex: '1',
+        //                         textAlign: 'center',
+        //                         display: 'flex',
+        //                         flexDirection: 'column',
+        //                         justifyContent: 'center'
+        //                     },
+        //                     dataBind: {
+        //                         text: 'message'
+        //                     }
+        //                 }),
+        //                 div({
+        //                     style: {
+        //                         flex: '1',
+        //                         textAlign: 'right'
+        //                     }
+        //                 }, [
+        //                     a({
+        //                         class: 'btn btn-link',
+        //                         href: '#people'
+        //                     }, 'Open Your Profile Page'),
+        //                     buildSaveButton()
+        //                 ])
+        //             ]),
+        //             div({
+        //                 style: {
+        //                     display: 'flex',
+        //                     flexDirection: 'row',
+        //                     flex: '1 1 0px',
+        //                     alignItems: 'stretch',
+        //                     overflowY: 'auto',
+        //                     padding: '5px'
+        //                 }
+        //             }, [
+        //                 div({
+        //                     style: {
+        //                         // flexDirection: 'column',
+        //                         // justifyContent: 'flex-start',
+        //                         // alignItems: 'stretch',
+        //                         // alignContent: 'stretch',
+        //                         flex: '1 1 0px',
+        //                         overflowY: 'auto',
+        //                         padding: '0 10px 0 5px'
+        //                     }
+        //                 }, [
+
+        //                     div({
+        //                         style: {
+        //                             height: '10px'
+        //                         }
+        //                     }),
+        //                     buildForm(),
+        //                     // buildSaver(),
+        //                     div({
+        //                         style: {
+        //                             height: '10px'
+        //                         }
+        //                     }),
+        //                 ]),
+        //                 div({
+        //                     style: {
+        //                         flex: '1 1 0px',
+        //                         overflowY: 'auto',
+        //                         padding: '0 10px 0 5px'
+        //                     }
+        //                 }, [
+        //                     div({
+        //                         style: {
+        //                             textAlign: 'center'
+        //                         }
+        //                     }, [
+        //                         span({
+        //                             style: {
+        //                                 fontWeight: 'bold',
+        //                                 fontSize: '120%'
+        //                             }
+        //                         }, 'Preview')
+        //                     ]),
+        //                     div({
+        //                         id: 'profilePreview',
+        //                         style: {
+        //                             position: 'relative'
+        //                         },
+        //                         dataBind: {
+        //                             component: {
+        //                                 name: '"profile-view"',
+        //                                 params: {
+        //                                     profile: 'exportedProfile()'
+        //                                 }
+        //                             }
+        //                         }
+        //                     })
+        //                 ])
+        //             ])
+        //         ]);
+        //     }
+        // }
+
         function renderLayout() {
             var tabs = BS.buildTabs({
                 style: {
@@ -70,13 +200,14 @@ define([
                 },
                 tabs: [{
                     name: 'main',
-                    label: 'Main',
+                    label: 'Manage your sign-ins',
                     content: div({}, [
                         div({
                             id: vm.toolbar.id
                         }),
                         BS.buildPanel({
                             type: 'default',
+                            class: 'kb-panel-light',
                             title: 'Your Current Sign-In',
                             body: div({
                                 id: vm.currentToken.id
@@ -84,7 +215,8 @@ define([
                         }),
                         BS.buildPanel({
                             type: 'default',
-                            title: 'Active Sign-Ins in other Browsers',
+                            class: 'kb-panel-light',
+                            title: 'Other Sign-In Sessions',
                             body: div({
                                 id: vm.allTokens.id
                             })
@@ -99,24 +231,64 @@ define([
                 }]
             });
 
-            container.innerHTML = tabs.content;
+            container.innerHTML = div({
+                style: {
+                    marginTop: '10px'
+                }
+            }, tabs.content);
             bindVm();
         }
 
         function renderIntro() {
             vm.intro.node.innerHTML = div({
                 style: {
-                    maxWidth: '60em'
+                    maxWidth: '60em',
+                    margin: '0 auto'
                 }
             }, [
                 p([
-                    'A sign-in session is created when you ',
-                    'sign in to KBase. Normally a sign-in is removed when you logout. ',
-                    'However, if you do not logout, your sign-in session will remain active for two weeks.'
+                    'A ',
+                    em('sign-in session'),
+                    ' is created when you ',
+                    'sign in to KBase. A sign-in session is removed when you logout. ',
+                    'However, if you do not logout, your sign-in session will remain active for two weeks. ',
+                    'At the end of two weeks, the sign-in session will become invalid, and you will need to sign-in again.'
+                ]),
+                p([
+                    'If you unselect the "stay signed in" option during sign-in, your sign-in session will be removed from the ',
+                    'browser when you quit it. However, the KBase system will still have an internal record of the sign-in session, ',
+                    'which will be displayed on this page.'
+                ]),
+
+                p({
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                }, 'Current Sign-In'),
+                p([
+                    'Your <i>Current sign-in</i> is the one active in this browser.'
+                ]),
+                p({
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                }, 'Other Sign-Ins'),
+                p([
+                    'The <i>Other sign-ins</i> are all other active sign-ins other than the current one. ',
+                    'This includes sign-ins in other browsers on this or other computers, as well as past sign-ins in this browser. ',
+                ]),
+                p([
+                    'Note that if you have deleted your browser cookies, or unselect the "keep me logged in" option at sign-in, ',
+                    'your sign-in session will become disassociated from your web browser, and will become unusable. ',
+                    'The KBase system does not know that this has occurred and will report the sign-in session on this page until ',
+                    'it expires.'
                 ]),
                 p([
                     'The browser and operating system columns can help you locate the browser with which ',
-                    'an active session is associated. If you have left the  "keep me logged in" option checked ',
+                    'an active session is associated.'
+                ]),
+                p([
+                    'If you have left the  "keep me logged in" option checked ',
                     'when logging in, the browser will have a sign-in cookie lasting for two weeks, even if you ',
                     'close and re-open your browser. ',
                     'However, if you unselected the "keep me logged in" option your KBase browser cookie will be removed ',
@@ -127,10 +299,9 @@ define([
 
         function doRevokeToken(tokenId) {
             // Revoke
-            runtime.service('session').getClient().revokeToken(tokenId)
+            return runtime.service('session').getClient().revokeToken(tokenId)
                 .then(function () {
-                    render();
-                    return null;
+                    return render();
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -163,14 +334,20 @@ define([
                     id: events.addEvent({
                         type: 'click',
                         handler: doRevokeAll
-                    })
-                }, 'Revoke All');
+                    }),
+                    dataToggle: 'tooltip',
+                    dataPlacement: 'left',
+                    title: 'Remove all of your sign-in sessions other than the current one.'
+                }, 'Remove All');
             } else {
                 revokeAllButton = button({
                     type: 'button',
                     class: 'btn btn-danger',
-                    disabled: true
-                }, 'Revoke All');
+                    disabled: true,
+                    dataToggle: 'tooltip',
+                    dataPlacement: 'left',
+                    title: 'You do not have any other sign-in sessions.'
+                }, 'Remove All');
             }
 
             if (vm.allTokens.value.length === 0) {
@@ -182,7 +359,6 @@ define([
                 }, 'You do not have any additional active sign-ins.');
                 return;
             }
-
 
             vm.allTokens.node.innerHTML = table({
                 class: 'table table-striped',
@@ -229,8 +405,8 @@ define([
                 })
                 .map(function (token) {
                     return tr([
-                        td(format.niceTime(token.created)),
-                        td(format.niceElapsedTime(token.expires)),
+                        td(Format.niceTime(token.created)),
+                        td(Format.niceElapsedTime(token.expires)),
                         td((function () {
                             if (token.os === null || token.os.length === 0) {
                                 return span({
@@ -290,8 +466,11 @@ define([
                                 handler: function () {
                                     doRevokeToken(token.id);
                                 }
-                            })
-                        }, 'Revoke'))
+                            }),
+                            dataToggle: 'tooltip',
+                            dataPlacement: 'left',
+                            title: 'Remove this sign-in session. Note that this will be leave the session cookie in the browser, but it will be unusable.'
+                        }, 'Remove'))
                     ]);
                 })));
             events.attachEvents();
@@ -341,8 +520,11 @@ define([
                 ])
             ].concat(tokens.map(function (token) {
                 return tr([
-                    td(format.niceTime(token.created)),
-                    td(format.niceElapsedTime(token.expires)),
+                    td(Format.niceElapsedTime(token.created) +
+                        ' (' +
+                        Format.niceTime(token.created) +
+                        ')'),
+                    td(Format.niceElapsedTime(token.expires)),
                     td((function () {
                         if (token.os === null || token.os.length === 0) {
                             return span({
@@ -404,7 +586,10 @@ define([
                                 handler: function () {
                                     doLogoutToken(token.id);
                                 }
-                            })
+                            }),
+                            dataToggle: 'tooltip',
+                            dataPlacement: 'left',
+                            title: 'Remove the current sign-in session and browser cookie. This is the same as "logging out".'
                         }, 'Logout')
                     ])
                 ]);
@@ -432,8 +617,7 @@ define([
                     return runtime.service('session').getClient().revokeToken(token.id);
                 }))
                 .then(function () {
-                    render();
-                    return null;
+                    return render();
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -461,43 +645,46 @@ define([
                         id: events.addEvent({
                             type: 'click',
                             handler: doRevokeAll2
-                        })
-                    }, 'Revoke All and Logout')
+                        }),
+                        dataToggle: 'tooltip',
+                        dataPlacement: 'left',
+                        title: 'Remove all of your sign-in sessions, including the current one, and log out of KBase'
+                    }, 'Remove All and Logout')
                 ])
             ]);
             events.attachEvents();
         }
 
         function renderAllTokens() {
-            if (vm.allTokens.enabled) {
-                runtime.service('session').getClient().getTokens()
-                    .then(function (result) {
+            return runtime.service('session').getClient().getTokens()
+                .then(function (result) {
 
-                        renderIntro();
+                    renderIntro();
 
-                        renderToolbar();
+                    renderToolbar();
 
-                        // Render "current" token.
-                        renderCurrentTokens(vm.currentToken.node, [result.current]);
+                    // Render "current" token.
+                    renderCurrentTokens(vm.currentToken.node, [result.current]);
 
-                        // Render "other" tokens
+                    // Render "other" tokens
+                    vm.allTokens.value = result.tokens
+                        .filter(function (token) {
+                            return (token.type === 'Login');
+                        });
 
-                        vm.allTokens.value = result.tokens
-                            .filter(function (token) {
-                                return (token.type === 'Login');
-                            });
+                    renderTokens();
 
-                        renderTokens();
-
-                    })
-                    .catch(function (err) {
-                        vm.allTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
-                    });
-            }
+                })
+                .catch(function (err) {
+                    vm.allTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
+                });
         }
 
         function render() {
-            return renderAllTokens();
+            return renderAllTokens()
+                .then(function () {
+                    BS.activateTooltips(container);
+                });
         }
 
         function attach(node) {

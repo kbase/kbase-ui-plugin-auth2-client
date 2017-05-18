@@ -145,7 +145,7 @@ define([
                         fontStyle: 'italic'
                     },
                     dataBind: {
-                        if: '!tooManyResults() && searchedValues().length === 0 && inputValue().length < 2'
+                        if: '!tooManyResults() && searchedValues().length === 0 && inputValue() && inputValue().length < 2'
                     }
                 }, [
                     'Please enter two or more letters above to search for your research or educational organization. '
@@ -323,15 +323,6 @@ define([
 
         var showingAll = ko.observable(false);
 
-        function doToggleAll() {
-            if (inputValue() === '.*') {
-                showingAll(false);
-                inputValue('');
-            } else {
-                showingAll(true);
-                inputValue('.*');
-            }
-        }
 
         function doSelectValue(selected) {
             inputValue(selected.label);
@@ -362,7 +353,6 @@ define([
             userHasModified: userHasModified,
             doSelectValue: doSelectValue,
             itemSelected: itemSelected,
-            doToggleAll: doToggleAll,
             showingAll: showingAll,
             doCancelSearch: doCancelSearch,
             tooManyResults: tooManyResults,
