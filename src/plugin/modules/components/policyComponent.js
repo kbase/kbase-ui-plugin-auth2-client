@@ -73,7 +73,13 @@ define([
                         style: {
                             marginTop: '10px'
                         }
-                    }, label([
+                    }, label({
+                        dataBind: {
+                            css: {
+                                'text-danger': '!agreed()'
+                            }
+                        }
+                    }, [
                         input({
                             type: 'checkbox',
                             name: 'agreed',

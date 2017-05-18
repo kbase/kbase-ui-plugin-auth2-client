@@ -10,7 +10,8 @@ define([
     './serviceTokenManager',
     './agreementsManager',
     './signinManager',
-    './profileManager'
+    './profileManager',
+    '../widgets/tabsWidget'
 ], function (
     $,
     Html,
@@ -22,25 +23,21 @@ define([
     ServiceTokenManager,
     AgreementsManager,
     SigninManager,
-    ProfileManager
+    ProfileManager,
+    TabsWidget
 ) {
     // var html = new Html.Html();
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
-        span = t('span'),
         ul = t('ul'),
         li = t('li'),
-        a = t('a'),
-        button = t('button'),
-        form = t('form'),
-        input = t('input'),
-        label = t('label'),
         p = t('p');
 
     function factory(config) {
         var hostNode, container,
-            runtime = config.runtime;
+            runtime = config.runtime,
+            tabs;
 
         var vm = {
             developerTokens: {
@@ -106,166 +103,13 @@ define([
             ]));
         }
 
-        function renderTabs(arg, node) {
-            var tabsId = arg.id,
-                tabsAttribs = {},
-                tabClasses = ['nav', 'nav-tabs'],
-                tabStyle = {},
-                activeIndex, tabTabs,
-                tabs = arg.tabs.filter(function (tab) {
-                    return (tab ? true : false);
-                }),
-                selectedTab = arg.initialTab,
-                events = [],
-                content,
-                tabMap = {},
-                panelClasses = ['tab-pane'];
-
-            if (arg.fade) {
-                panelClasses.push('fade');
-            }
-
-            if (tabsId) {
-                tabsAttribs.id = tabsId;
-            }
-
-            tabs.forEach(function (tab, index) {
-                tab.panelId = html.genId();
-                tab.tabId = html.genId();
-                if (tab.selected === true && selectedTab === undefined) {
-                    selectedTab = index;
-                }
-
-                // panel widget definition
-                if (tab.panel) {
-                    events.push({
-                        id: tab.tabId,
-                        jquery: true,
-                        type: 'show.bs.tab',
-                        handler: function (e) {
-                            // var panelId = e.target.getAttribute('data-target');
-                            var panel = document.getElementById(tab.panelId);
-                            // close any active panels.
-                            Promise.all(arg.tabs.map(function (tab) {
-                                    if (tab && tab.panel && tab.panel.instance) {
-                                        return tab.panel.instance.stop()
-                                            .then(function () {
-                                                return tab.panel.instance.detach();
-                                            })
-                                            .then(function () {
-                                                tab.panel.instance = null;
-                                            });
-                                    }
-                                }))
-                                .then(function () {
-                                    tab.panel.instance = tab.panel.factory.make({
-                                        runtime: runtime
-                                    });
-                                    return tab.panel.instance.attach(panel)
-                                })
-                                .then(function () {
-                                    tab.panel.instance.start();
-                                });
-                        }
-                    });
-                }
-            });
-            if (arg.alignRight) {
-                tabTabs = BS.reverse(tabs);
-                tabStyle.float = 'right';
-                if (selectedTab !== undefined) {
-                    activeIndex = tabs.length - 1 - selectedTab;
-                }
-            } else {
-                tabTabs = tabs;
-                if (selectedTab !== undefined) {
-                    activeIndex = selectedTab;
-                }
-            }
-            content = div(tabsAttribs, [
-                ul({ class: tabClasses.join(' '), role: 'tablist' },
-                    tabTabs.map(function (tab, index) {
-                        if (tab.name) {
-                            tabMap[tab.name] = tab;
-                        }
-                        var tabAttribs = {
-                                role: 'presentation'
-                            },
-                            linkAttribs = {
-                                href: '#' + tab.panelId,
-                                dataElement: 'tab',
-                                ariaControls: tab.panelId,
-                                dataTarget: tab.panelid,
-                                role: 'tab',
-                                id: tab.tabId,
-                                dataPanelId: tab.panelId,
-                                dataToggle: 'tab'
-                            },
-                            icon, label = span({ dataElement: 'label' }, tab.label);
-                        if (tab.icon) {
-                            icon = BS.buildIcon({ name: tab.icon });
-                        } else {
-                            icon = '';
-                        }
-
-                        if (tab.name) {
-                            linkAttribs.dataName = tab.name;
-                        }
-                        if (index === activeIndex) {
-                            tabAttribs.class = 'active';
-                        }
-                        tabAttribs.style = tabStyle;
-                        return li(tabAttribs, a(linkAttribs, [icon, label].join(' ')));
-                    })),
-                div({ class: 'tab-content' },
-                    tabs.map(function (tab, index) {
-                        var attribs = {
-                            role: 'tabpanel',
-                            class: panelClasses.join(' '),
-                            id: tab.panelId,
-                            style: arg.style || {}
-                        };
-                        if (tab.name) {
-                            attribs.dataName = tab.name;
-                        }
-                        if (index === 0) {
-                            attribs.class += ' active';
-                        }
-                        return div(attribs, tab.content);
-                    }))
-            ]);
-
-            function showTab(name) {
-                if (!tabMap[name]) {
-                    console.warn('Tab ' + name + ' not found');
-                    return;
-                }
-                var tabId = tabMap[name].tabId;
-                $(document.getElementById(tabId)).tab('show');
-
-            }
-
-            node.innerHTML = content;
-
-            events.forEach(function (event) {
-                if (event.jquery) {
-                    $(document.getElementById(event.id)).on(event.type, event.handler);
-                } else {
-                    document.getElementById(event.id).addEventListener(event.type, event.handler);
-                }
-            });
-            return {
-                node: node,
-                map: tabMap,
-                showTab: showTab
-            };
-        }
-
         function renderLayout(node, params) {
             var tabDef = {
+                runtime: runtime,
                 style: {
-                    paddingTop: '10px'
+                    padding: '0 10px'
                 },
+                initialTab: 'profile',
                 tabs: [{
                         name: 'profile',
                         label: 'Your Profile',
@@ -324,26 +168,16 @@ define([
                     //     label: 'About',
                     //     content: buildAbout()
                     // }
-                ]
+                ].filter(function (tab) {
+                    return tab ? true : false;
+                })
             };
-            // var tabs = buildTabs(tabDef);
-            var tabsId = html.genId();
-            node.innerHTML = div({
-                class: 'container-fluid'
-            }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({
-                        class: 'col-md-12',
-                        id: tabsId
-                    })
-                ])
-            ]);
-            var tabs = renderTabs(tabDef, document.getElementById(tabsId));
 
-            var defaultTab = params.tab || 'profile';
-            tabs.showTab(defaultTab);
+            tabs = TabsWidget.make(tabDef);
+            return tabs.attach(node)
+                .then(function () {
+                    return tabs.start();
+                });
         }
 
         // API
@@ -351,7 +185,8 @@ define([
         function attach(node) {
             return Promise.try(function () {
                 hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
+                container = hostNode;
+                //hostNode.appendChild(document.createElement('div'));
             });
         }
 
@@ -372,7 +207,7 @@ define([
 
                     runtime.send('ui', 'setTitle', 'Account Manager');
                     try {
-                        renderLayout(container, params);
+                        return renderLayout(container, params);
                     } catch (ex) {
                         console.error('ERROR', ex);
                         // renderError(ex);
@@ -382,14 +217,23 @@ define([
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function () {
+                return tabs.stop();
+            });
         }
 
         function detach() {
             return Promise.try(function () {
-                if (hostNode && container) {
-                    hostNode.removeChild(container);
-                }
+                // if (hostNode && container) {
+                //     hostNode.removeChild(container);
+                // }
+
+                return tabs.detach()
+                    .then(function () {
+                        if (hostNode) {
+                            hostNode.innerHTML = '';
+                        }
+                    });
             });
         }
 

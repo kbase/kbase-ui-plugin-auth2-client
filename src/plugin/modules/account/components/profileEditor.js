@@ -28,6 +28,8 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
+        h2 = t('h2'),
+        h3 = t('h3'),
         a = t('a'),
         p = t('p'),
         input = t('input'),
@@ -54,70 +56,77 @@ define([
             })
         ]);
     }
-
+    // FieldBuilders.buildTypeahead('profile.organization', {}),
     function buildAffiliationForm() {
-        return [
+        return div({
+            class: 'container-fluid'
+        }, [
             div({
-                class: 'row'
+                class: 'row row-edgeless'
             }, [
                 div({
                     class: 'col-sm-2'
                 }, 'Title'),
                 div({
-                        class: 'col-sm-10',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            textInput: 'title'
-                        }
-                    }))
+                    class: 'col-sm-10',
+                }, input({
+                    class: 'form-control',
+                    dataBind: {
+                        textInput: 'title.field'
+                    }
+                }))
             ]),
             div({
-                class: 'row'
+                class: 'row row-edgeless'
             }, [
                 div({
                     class: 'col-sm-2'
-                }, 'Institution'),
+                }, 'Organization'),
                 div({
-                        class: 'col-sm-10',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            textInput: 'institution'
+                    class: 'col-sm-10',
+                    dataBind: {
+                        with: 'institution'
+                    }
+                }, div({
+                    dataBind: {
+                        component: {
+                            name: '"typeahead-input"',
+                            params: {
+                                inputValue: 'field',
+                                dataSource: 'dataSource'
+                                    // availableValues: field.name + 'Values'
+                            }
                         }
-                    }))
+                    }
+                }))
             ]),
             div({
-                class: 'row'
+                class: 'row row-edgeless'
             }, [
                 div({
                     class: 'col-sm-2'
-                }, 'Starting in'),
+                }, 'Started in'),
                 div({
-                        class: 'col-sm-4',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            textInput: 'start_year'
-                        }
-                    })),
+                    class: 'col-sm-4',
+                }, input({
+                    class: 'form-control',
+                    dataBind: {
+                        textInput: 'start_year.field'
+                    }
+                })),
                 div({
                     class: 'col-sm-2'
-                }, 'Ending in'),
+                }, 'Ended in'),
                 div({
-                        class: 'col-sm-4',
-                    },
-                    input({
-                        class: 'form-control',
-                        dataBind: {
-                            textInput: 'end_year'
-                        }
-                    }))
+                    class: 'col-sm-4',
+                }, input({
+                    class: 'form-control',
+                    dataBind: {
+                        textInput: 'end_year.field'
+                    }
+                }))
             ])
-        ];
+        ]);
     }
 
     function buildAffiliation() {
@@ -128,15 +137,18 @@ define([
             }
         }, [
             div({
-                class: 'row form-sub-row'
+                class: 'row row-padless form-sub-row'
             }, [
                 div({
                     class: 'col-md-11'
                 }, buildAffiliationForm()),
                 div({
-                    class: 'col-md-1'
+                    class: 'col-md-1',
+                    style: {
+                        textAlign: 'left'
+                    }
                 }, button({
-                    class: 'btn btn-default',
+                    class: 'btn btn-sm btn-default',
                     dataBind: {
                         click: '$component.deleteAffiliation'
                     }
@@ -153,23 +165,25 @@ define([
                 with: vmPath
             }
         }, [
-            FieldBuilders.buildLabelRow(id),
-            FieldBuilders.buildFieldRow(div({
-                dataBind: {
-                    foreach: 'field'
-                }
-            }, buildAffiliation())),
             div({
-                class: 'row'
+                class: 'container-fluid'
             }, [
+                FieldBuilders.buildLabelRow(id),
+                FieldBuilders.buildFieldRow(div({
+                    dataBind: {
+                        foreach: 'field'
+                    }
+                }, buildAffiliation())),
                 div({
+                    class: 'row row-edgeless'
+                }, div({
                     class: 'col-md-12'
                 }, button({
                     class: 'btn btn-default',
                     dataBind: {
                         click: '$component.addAffiliation'
                     }
-                }, 'Add New Affiliation'))
+                }, 'Add New Affiliation')))
             ])
         ]);
     }
@@ -221,11 +235,7 @@ define([
                 }
             }
         }, [
-            FieldBuilders.buildInput2('profile.realname'),
-            FieldBuilders.buildSelect2('profile.avatarOption'),
-            FieldBuilders.buildSelect2('profile.gravatarDefault', {
-                //condition: 'profile.avatarOption() === "gravatar"'
-            }),
+            FieldBuilders.buildInput('profile.realname'),
             div({
                 style: {
                     border: '1px #DDD solid',
@@ -245,9 +255,9 @@ define([
                         backgroundColor: '#777'
                     }
                 }, 'Position'),
-                FieldBuilders.buildTypeahead2('profile.organization', {}),
-                FieldBuilders.buildInput2('profile.department'),
-                FieldBuilders.buildSelect2('profile.jobTitle', {
+                FieldBuilders.buildTypeahead('profile.organization', {}),
+                FieldBuilders.buildInput('profile.department'),
+                FieldBuilders.buildSelect('profile.jobTitle', {
                     optionsCaption: ' - '
                 }),
                 buildAffiliations('profile.affiliations')
@@ -271,11 +281,11 @@ define([
                         backgroundColor: '#777'
                     }
                 }, 'Location'),
-                buildUseMyLocation(),
-                FieldBuilders.buildInput2('profile.city'),
-                FieldBuilders.buildInput2('profile.state'),
-                FieldBuilders.buildInput2('profile.postalCode'),
-                FieldBuilders.buildSelect2('profile.country', {
+                // buildUseMyLocation(),
+                FieldBuilders.buildInput('profile.city'),
+                FieldBuilders.buildInput('profile.state'),
+                FieldBuilders.buildInput('profile.postalCode'),
+                FieldBuilders.buildSelect('profile.country', {
                     // optionsCaption: fields.country.emptyValueLabel,
                     // defaultValue: fields.country.defaultValue
                 })
@@ -299,18 +309,53 @@ define([
                         backgroundColor: '#777'
                     }
                 }, 'Research'),
-                FieldBuilders.buildCheckboxes2('profile.researchInterests'),
-                FieldBuilders.buildSelect2('profile.fundingSource', {
+                FieldBuilders.buildCheckboxes('profile.researchInterests'),
+                FieldBuilders.buildSelect('profile.fundingSource', {
                     optionsCaption: ' - '
                 }),
-                FieldBuilders.buildTextarea2('profile.personalStatement', {
+                FieldBuilders.buildTextarea('profile.personalStatement', {
                     style: {
                         height: '10em'
                     }
                 })
+            ]),
+            div({
+                style: {
+                    border: '1px #DDD solid',
+                    padding: '4px',
+                    margin: '2em 0 1em 0',
+                }
+            }, [
+                span({
+                    style: {
+                        fontWeight: 'bold',
+                        color: '#DDD',
+                        border: '1px #DDD solid',
+                        position: 'relative',
+                        top: '-14px',
+                        left: '1em',
+                        padding: '6px',
+                        backgroundColor: '#777'
+                    }
+                }, 'Appearance'),
+                FieldBuilders.buildSelect('profile.avatarOption'),
+                FieldBuilders.buildSelect('profile.gravatarDefault', {
+                    //condition: 'profile.avatarOption() === "gravatar"'
+                }),
             ])
         ]);
         return content;
+    }
+
+    function buildSaveButton() {
+        return button({
+            class: 'btn btn-primary',
+            type: 'button',
+            dataBind: {
+                click: 'doSaveProfile',
+                enable: 'formCanSave'
+            }
+        }, 'Save');
     }
 
     function buildSaver() {
@@ -340,80 +385,135 @@ define([
                 style: {
                     textAlign: 'center'
                 }
-            }, button({
-                class: 'btn btn-primary',
-                type: 'button',
-                dataBind: {
-                    click: 'doSaveProfile',
-                    enable: 'formCanSave'
-                }
-            }, 'Save'))
+            }, buildSaveButton())
         ]);
     }
 
     function buildTemplate() {
         return div({
-            class: 'row'
+            style: {
+                display: 'flex',
+                flexDirection: 'column',
+                flex: '1 1 0px'
+            }
         }, [
             div({
-                class: 'col-md-6',
                 style: {
-                    height: '100%',
+                    flex: '0 0 auto',
+                    backgroundColor: 'rgba(255,185,2,0.5)',
+                    padding: '6px',
                     display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-start',
-                    alignItems: 'stretch',
-                    alignContent: 'stretch'
-                }
-            }, div({
-                style: {
-                    //overflowY: 'auto',
-                    flex: 1,
-                    // position: 'relative',
-                    // top: 0,
-                    // bottom: 0,
-                    // overflowY: 'auto'
-                    overflowY: 'auto',
-                    //height: 'calc(100vh - 150px)'
-                    //height: '100vh'
-                }
-            }, [
-                buildSaver(),
-                div({
-                    style: {
-                        height: '10px'
-                    }
-                }),
-                buildForm(),
-                buildSaver(),
-                div({
-                    style: {
-                        height: '10px'
-                    }
-                }),
-            ])),
-            div({
-                class: 'col-md-6',
-                style: {
-                    overflowY: 'auto'
+                    flexDirection: 'row'
                 }
             }, [
                 div({
-                    id: 'profilePreview',
                     style: {
-                        position: 'relative'
+                        flex: '2',
+                        color: 'rgba(0,121,98,1)', // 0, 121, 98
+                        fontSize: '130%',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                    }
+                }, 'Edit Your Profile'),
+                div({
+                    style: {
+                        flex: '1',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
                     },
                     dataBind: {
-                        component: {
-                            name: '"profile-view"',
-                            params: {
-                                profile: 'exportedProfile()'
-                            }
-                        }
+                        text: 'message'
                     }
                 }),
-                //buildPreview(),
-                // buildSaver()
+                div({
+                    style: {
+                        flex: '1',
+                        textAlign: 'right'
+                    }
+                }, [
+                    a({
+                        class: 'btn btn-link',
+                        href: '#people'
+                    }, 'Open Your Profile Page'),
+                    buildSaveButton()
+                ])
+            ]),
+            div({
+                style: {
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flex: '1 1 0px',
+                    alignItems: 'stretch',
+                    overflowY: 'auto',
+                    padding: '5px'
+                }
+            }, [
+                div({
+                    style: {
+                        // flexDirection: 'column',
+                        // justifyContent: 'flex-start',
+                        // alignItems: 'stretch',
+                        // alignContent: 'stretch',
+                        flex: '1 1 0px',
+                        overflowY: 'auto',
+                        padding: '0 10px 0 5px'
+                    }
+                }, [
+
+                    div({
+                        style: {
+                            height: '10px'
+                        }
+                    }),
+                    buildForm(),
+                    // buildSaver(),
+                    div({
+                        style: {
+                            height: '10px'
+                        }
+                    }),
+                ]),
+                div({
+                    style: {
+                        flex: '1 1 0px',
+                        overflowY: 'auto',
+                        padding: '0 10px 0 5px'
+                    }
+                }, [
+                    // buildSaver(),
+                    // '<hr>',
+                    div({
+                        style: {
+                            textAlign: 'center'
+                        }
+                    }, [
+                        span({
+                            style: {
+                                fontWeight: 'bold',
+                                fontSize: '120%'
+                            }
+                        }, 'Preview')
+                    ]),
+                    div({
+                        id: 'profilePreview',
+                        style: {
+                            position: 'relative'
+                        },
+                        dataBind: {
+                            component: {
+                                name: '"profile-view"',
+                                params: {
+                                    profile: 'exportedProfile()'
+                                }
+                            }
+                        }
+                    })
+                ])
             ])
         ]);
     }
@@ -516,7 +616,6 @@ define([
                 }
             }
         });
-
 
         var realname = {
             ready: true,
@@ -672,12 +771,8 @@ define([
             dataSource: dataSource.getFilter('researchInterests'),
             label: 'Research Interests',
             doc: {
-                description: 'Please indicate one or more areas of research interest',
-                more: div([
-                    p([
-                        'Blah blah'
-                    ])
-                ]),
+                description: null, // 'Please indicate one or more areas of research interest',
+                more: null,
                 showMore: ko.observable(false),
                 toggleShowMore: function () {
                     this.showMore(!this.showMore());
@@ -833,29 +928,39 @@ define([
         var affils = profile.profile.userdata.affiliations || [];
 
         function affiliationVm(affil) {
-            var title = ko.observable(affil && affil.title).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
-                dirty: false
-            });
-            var institution = ko.observable(affil && affil.institution).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
-                dirty: false
-            });
-            var start_year = ko.observable(affil && affil.start_year).extend({
-                required: true,
-                year: true,
-                dirty: false
-            });
+            var title = {
+                field: ko.observable(affil && affil.title).extend({
+                    required: true,
+                    minLength: 2,
+                    maxLength: 100,
+                    dirty: false
+                })
+            };
 
-            var end_year = ko.observable(affil && affil.end_year).extend({
-                required: false,
-                year: true,
-                dirty: false
-            });
+            var institution = {
+                field: ko.observable(affil && affil.institution).extend({
+                    required: true,
+                    minLength: 2,
+                    maxLength: 100,
+                    dirty: false
+                }),
+                dataSource: dataSource.getFilter('organizations')
+            };
+            var start_year = {
+                field: ko.observable(affil && affil.start_year).extend({
+                    required: true,
+                    year: true,
+                    dirty: false
+                })
+            };
+
+            var end_year = {
+                field: ko.observable(affil && affil.end_year).extend({
+                    required: false,
+                    year: true,
+                    dirty: false
+                })
+            };
 
             return {
                 title: title,
@@ -902,12 +1007,7 @@ define([
                 description: span([
                     'Describe yourself to fellow Narrators'
                 ]),
-                more: [],
-                showMore: ko.observable(false),
-                toggleShowMore: function () {
-                    this.showMore(!this.showMore());
-                }
-
+                more: null
             }
         };
         var personalStatementDisplay = ko.pureComputed(function () {
@@ -980,10 +1080,10 @@ define([
                         fudingSource: fundingSource.field(),
                         affiliations: affiliations.field().map(function (af) {
                             return {
-                                title: af.title(),
-                                institution: af.institution(),
-                                start_year: af.start_year(),
-                                end_year: af.end_year()
+                                title: af.title.field(),
+                                institution: af.institution.field(),
+                                start_year: af.start_year.field(),
+                                end_year: af.end_year.field()
                             };
                         }),
                         personalStatement: personalStatement.field(),
@@ -1080,10 +1180,10 @@ define([
                         // just bundle the whole thing up...
                         var newAffiliations = affiliations.field().map(function (af) {
                             return {
-                                title: af.title(),
-                                institution: af.institution(),
-                                start_year: af.start_year(),
-                                end_year: af.end_year()
+                                title: af.title.field(),
+                                institution: af.institution.field(),
+                                start_year: af.start_year.field(),
+                                end_year: af.end_year.field()
                             };
                         });
                         profile.profile.userdata.affiliations = newAffiliations;
@@ -1181,28 +1281,6 @@ define([
                     });
             });
         }
-
-        // Global event listeners
-        // TODO: how to tear these down?
-        // var mainWindowNode = document.querySelector('.kb-mainwindow-body');
-        // var originalY = previewNode.getBoundingClientRect().y;
-
-        // document.addEventListener('scroll', function () {
-        //     var previewNode = document.getElementById('profilePreview');
-        //     var mainWindowNode = document.querySelector('.kb-mainwindow-body');
-        //     // var mainScrolled = mainWindowNode.scrollTop;
-        //     var mainRect = mainWindowNode.getBoundingClientRect();
-        //     var previewRect = previewNode.getBoundingClientRect();
-
-        //     var tippyTop = 70;
-        //     console.log('??', previewRect.y, tippyTop, previewNode.style.top);
-        //     if (previewRect.y < tippyTop) {
-        //         // previewNode.style.display = 'absolute';
-        //         previewNode.style.top =
-        //     }
-
-        //     // console.log('scrolled!', mainRect, previewRect);
-        // });
 
         return {
             // fields being edited or displayed

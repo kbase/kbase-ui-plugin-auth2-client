@@ -65,6 +65,7 @@ define([
                     label: 'Main',
                     content: BS.buildPanel({
                         type: 'default',
+                        classes: ['kb-panel-light'],
                         title: 'Your Current User Policy Agreements',
                         body: div({
                             class: 'row'
@@ -90,31 +91,25 @@ define([
                 }]
             });
 
-            container.innerHTML = tabs.content;
+            container.innerHTML = div({
+                style: {
+                    marginTop: '10px'
+                }
+            }, tabs.content);
             bindVm();
         }
 
         function niceDate(epoch) {
             var date = new Date(epoch);
             return [date.getMonth() + 1, date.getDate(), date.getFullYear()].join('/');
-            // return date.toUTCString();
         }
 
         function render() {
             renderAgreements();
             renderIntro();
-            // renderCurrentAgreement();
         }
 
         function doSelectAgreement(agreement) {
-            // var agreement = vm.agreements.value[name];
-
-            // var index = vm.latestPoliciesIndex.value[agreement.id];
-            // var file = index.versions[agreement.version].file;
-            // var spec = {
-            //     name: agreement.id,
-            //     file: file
-            // };
             vm.agreement.node.innerHTML = html.loading('Loading agreement');
             userAgreements.getPolicyFile({
                     id: agreement.id,
@@ -140,7 +135,6 @@ define([
             ]);
             events.attachEvents();
         }
-
 
         function renderAgreements() {
             var events = DomEvents.make({
@@ -183,10 +177,6 @@ define([
                     }
                 })
                 .map(function (agreement) {
-                    // var agreement = vm.agreements.value[name];
-                    //var policy = userAgreements.getPolicy(agreement.id); //vm.index.value[agreement.id];
-                    //var policyVersion = userAgreements.getPolicyVersion(agreement.id, agreement.version); // policy.versions[agreement.version];
-
                     return div({
                         class: 'btn btn-default agreement',
                         style: {

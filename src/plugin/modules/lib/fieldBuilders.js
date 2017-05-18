@@ -95,7 +95,10 @@ define([
         }
         return div({
             dataElement: 'more',
-            class: 'field-doc'
+            class: 'field-doc',
+            dataBind: {
+                if: 'more'
+            }
         }, [
             div([
                 span({
@@ -145,18 +148,10 @@ define([
 
     // description, content, name
     // context is the vm field.
-    function buildDoc2() {
-        return div({
-            dataBind: {
-                if: 'doc'
-            }
-        }, div({
-            class: 'field-doc',
-            dataBind: {
-                with: 'doc'
-            }
-        }, [
-            div([
+
+    function buildDocWithMore() {
+        return div([
+            div({}, [
                 span({
                     style: {
                         padding: '2px',
@@ -196,63 +191,79 @@ define([
                     html: 'more'
                 },
                 style: {
-                    border: '1px silver dashed',
-                    padding: '6px'
+                    borderLeft: '2px silver solid',
+                    marginLeft: '4px',
+                    padding: '4px'
                 }
             })
+        ]);
+    }
+
+    function buildDocNoMore() {
+        return div({
+            dataBind: {
+                html: 'description'
+            }
+        });
+    }
+
+    function buildDoc() {
+        return div({
+            dataBind: {
+                if: 'doc'
+            }
+        }, div({
+            class: 'field-doc',
+            dataBind: {
+                with: 'doc'
+            }
+        }, [
+            div({
+                dataBind: {
+                    if: 'more'
+                }
+            }, buildDocWithMore()),
+            div({
+                dataBind: {
+                    ifnot: 'more'
+                }
+            }, buildDocNoMore())
         ]));
     }
 
-    function buildInput(field) {
-        var id = html.genId();
-        return div({
-            class: 'form-group form-row'
+    function buildLabel(id) {
+        return label({
+            for: id
         }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                        class: 'col-md-12'
-                    }, [
-                        label({
-                            for: id
-                        }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                        div({}, fieldDoc(field.description, field.more, field.name))
-                    ]
+            span({
+                dataBind: {
+                    html: 'label'
+                }
+            }),
+            buildRequiredIcon2(),
+            buildDirtyIcon2()
+        ]);
+    }
 
-                )
-            ]),
+    function buildFieldGroup(id, control) {
+        return div({
+            class: 'form-group'
+        }, [
+            buildLabel(id),
+            buildDoc(),
+            control,
             div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    input({
-                        type: 'text',
-                        class: 'form-control',
-                        id: id,
-                        placeholder: field.placeholder,
-                        dataBind: {
-                            textInput: field.vmId,
-                            // valueUpdate: wrapString('afterkeydown')
-                        }
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId
-                        }
-                    })
-                ])
-
-            ])
+                class: 'alert alert-danger',
+                dataBind: {
+                    validationMessage: 'field'
+                }
+            })
         ]);
     }
 
     function buildLabelRow(id) {
         return div({
-            class: 'row'
+            class: 'row row-edgeless'
         }, [
             div({
                 class: 'col-md-12'
@@ -268,14 +279,14 @@ define([
                     buildRequiredIcon2(),
                     buildDirtyIcon2()
                 ]),
-                buildDoc2()
+                buildDoc()
             ])
         ]);
     }
 
     function buildFieldRow(control) {
         return div({
-            class: 'row'
+            class: 'row row-edgeless'
         }, [
             div({
                 class: 'col-md-12'
@@ -291,160 +302,53 @@ define([
         ]);
     }
 
-    function buildInput2(vmPath, options) {
+    function buildInput(vmPath, options) {
         var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row',
+        var control = input({
+            type: 'text',
+            class: 'form-control',
+            id: id,
+            // placeholder: 'placeholder',
             dataBind: {
-                if: 'ready'
+                textInput: 'field'
             }
-        };
+        });
         return div({
+            class: 'form-row',
             dataBind: {
                 with: vmPath
             }
-        }, div(attribs, [
-            buildLabelRow(id),
-            buildFieldRow(input({
-                type: 'text',
-                class: 'form-control',
-                id: id,
-                // placeholder: 'placeholder',
-                dataBind: {
-                    textInput: 'field'
-                }
-            }))
-        ]));
-    }
-
-    function buildTextarea2(vmPath, options) {
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row',
+        }, div({
             dataBind: {
                 if: 'ready'
             }
-        };
+        }, buildFieldGroup(id, control)));
+    }
+
+    function buildTextarea(vmPath, options) {
+        var id = html.genId();
+        var control = textarea({
+            class: 'form-control',
+            style: options.style,
+            id: id,
+            dataBind: {
+                textInput: 'field'
+            }
+        });
         return div({
+            class: 'form-row',
             dataBind: {
                 with: vmPath
             }
-        }, div(attribs, [
-            buildLabelRow(id),
-            buildFieldRow(textarea({
-                class: 'form-control',
-                style: options.style,
-                id: id,
-                //placeholder: 'placeholder',
-                dataBind: {
-                    textInput: 'field'
-                }
-            }))
-        ]));
-    }
-
-    function buildTextarea(field) {
-        var id = html.genId();
-        var style = field.style || {};
-        return div({
-            class: 'form-group  form-row'
-        }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                        class: 'col-md-12'
-                    }, [
-                        label({
-                            for: id
-                        }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                        div({}, fieldDoc(field.description, field.more, field.name))
-                    ]
-
-                )
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    textarea({
-                        class: 'form-control',
-                        style: style,
-                        id: id,
-                        placeholder: field.placeholder,
-                        dataBind: {
-                            textInput: field.vmId
-                                // valueUpdate: wrapString('afterkeydown')
-                        }
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildTypeahead(field, options) {
-        var id = html.genId();
-        return div({
-            class: 'form-group  form-row'
-        }, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                    div({}, fieldDoc(field.description, field.more, field.name))
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    div({
-                        dataBind: {
-                            component: {
-                                name: '"typeahead-input"',
-                                params: {
-                                    inputValue: field.vmId,
-                                    dataSource: field.vmId + '_dataSource'
-                                        // availableValues: field.name + 'Values'
-                                }
-                            }
-                        }
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildTypeahead2(vmPath, options) {
-
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row',
+        }, div({
             dataBind: {
                 if: 'ready'
             }
-        };
+        }, buildFieldGroup(id, control)));
+    }
+
+    function buildTypeahead(vmPath, options) {
+        var id = html.genId();
         var control = div({
             dataBind: {
                 component: {
@@ -458,317 +362,45 @@ define([
             }
         });
         return div({
+            class: 'form-row',
             dataBind: {
                 with: vmPath
             }
-        }, div(attribs, [
-            buildLabelRow(id),
-            buildFieldRow(control)
-        ]));
-        // var id = html.genId();
-        // return div({
-        //     class: 'form-group  form-row'
-        // }, [
-        //     div({
-        //         class: 'row'
-        //     }, [
-        //         div({
-        //             class: 'col-md-12'
-        //         }, [
-        //             label({
-        //                 for: id
-        //             }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-        //             div({}, fieldDoc(field.description, field.more, field.name))
-        //         ])
-        //     ]),
-        //     div({
-        //         class: 'row'
-        //     }, [
-        //         div({
-        //             class: 'col-md-12'
-        //         }, [
-        //             div({
-        //                 dataBind: {
-        //                     component: {
-        //                         name: '"typeahead-input"',
-        //                         params: {
-        //                             inputValue: field.vmId,
-        //                             dataSource: field.vmId + '_dataSource'
-        //                                 // availableValues: field.name + 'Values'
-        //                         }
-        //                     }
-        //                 }
-        //             }),
-        //             div({
-        //                 class: 'alert alert-danger',
-        //                 dataBind: {
-        //                     validationMessage: field.vmId
-        //                 }
-        //             })
-        //         ])
-        //     ])
-        // ]);
-    }
-
-    function buildSelect(field, options) {
-        options = options || {};
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row'
-        };
-        if (options.condition) {
-            attribs.dataBind = {
-                if: options.condition
-            };
-        }
-        var controlBinding = {
-            value: field.vmId,
-            options: field.vmId + 'Values',
-            optionsText: '"label"',
-            optionsValue: '"value"'
-        };
-        if (options.optionsCaption) {
-            controlBinding.optionsCaption = '"' + options.optionsCaption.replace(/"/g, '\\"') + '"';
-            // controlBinding.optionsCaption = '"enter a value"';
-        }
-        return div(attribs, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                    fieldDoc(field.description, field.more, field.name)
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    select({
-                        class: 'form-control',
-                        id: id,
-                        dataBind: controlBinding
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildSelect2(vmPath, options) {
-        options = options || {};
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row',
-            // dataBind: {
-            //     if: 'ready'
-            // }
-        };
-
-        return div({
-            dataBind: {
-                with: vmPath
-            }
-        }, div(attribs, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [
-                        span({
-                            dataBind: {
-                                text: 'label'
-                            }
-                        }),
-                        buildRequiredIcon2(),
-                        buildDirtyIcon2()
-                    ]),
-                    buildDoc2()
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, div({
-                        dataBind: {
-                            component: {
-                                name: '"select-input"',
-                                params: {
-                                    field: 'field',
-                                    dataSource: 'dataSource',
-                                    emptyLabel: 'emptyLabel'
-                                }
-                            }
-                        }
-                    },
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: 'field'
-                        }
-                    })
-                ))
-            ])
-        ]));
-    }
-
-    function buildSelect2x(vmPath, options) {
-        options = options || {};
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row'
-        };
-        if (options.condition) {
-            attribs.dataBind = {
-                if: options.condition
-            };
-        }
-        var controlBinding = {
-            value: vmPath + '.value',
-            options: vmPath + '.values',
-            optionsText: '"label"',
-            optionsValue: '"value"'
-        };
-        if (options.optionsCaption) {
-            controlBinding.optionsCaption = '"' + options.optionsCaption.replace(/"/g, '\\"') + '"';
-            // controlBinding.optionsCaption = '"enter a value"';
-        }
-        return div(attribs, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [
-                        span({
-                            dataBind: {
-                                text: vmPath + '.label'
-                            }
-                        }),
-
-                        // requiredIcon(field),
-                        // dirtyIcon(field)
-                    ]),
-                    fieldDoc2(vmPath)
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    select({
-                        class: 'form-control',
-                        id: id,
-                        dataBind: controlBinding
-                    }),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: vmPath
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildCheckboxes(field, condition) {
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row'
-        };
-        if (condition) {
-            attribs.dataBind = {
-                if: condition
-            };
-        }
-        return div(attribs, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [field.label, requiredIcon(field), dirtyIcon(field)]),
-                    fieldDoc(field.description, field.more, field.name)
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    div({
-                        dataBind: {
-                            foreach: field.vmId
-                        }
-                    }, div({
-                            class: 'checkbox'
-                        },
-                        label({
-                            style: {
-                                marginLeft: '1em'
-                            }
-                        }, [
-                            input({
-                                type: 'checkbox',
-                                dataBind: {
-                                    checked: 'checked',
-                                    value: 'value'
-                                }
-                            }),
-                            span({
-                                dataBind: {
-                                    text: 'label'
-                                }
-                            })
-                        ])
-                    )),
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: field.vmId
-                        }
-                    })
-                ])
-            ])
-        ]);
-    }
-
-    function buildCheckboxes2(vmPath, options) {
-        options = options || {};
-        var id = html.genId();
-        var attribs = {
-            class: 'form-group  form-row',
+        }, div({
             dataBind: {
                 if: 'ready'
             }
-        };
+        }, buildFieldGroup(id, control)));
+    }
+
+    function buildSelect(vmPath, options) {
+        var id = html.genId();
+        var control = div({
+            dataBind: {
+                component: {
+                    name: '"select-input"',
+                    params: {
+                        field: 'field',
+                        dataSource: 'dataSource',
+                        emptyLabel: 'emptyLabel'
+                    }
+                }
+            }
+        });
+        return div({
+            class: 'form-row',
+            dataBind: {
+                with: vmPath
+            }
+        }, div({
+            // dataBind: {
+            //     if: 'ready'
+            // }
+        }, buildFieldGroup(id, control)));
+    }
+
+    function buildCheckboxes(vmPath, options) {
+        var id = html.genId();
         var control = div({
             dataBind: {
                 component: {
@@ -780,48 +412,16 @@ define([
                 }
             }
         });
-
         return div({
+            class: 'form-row',
             dataBind: {
                 with: vmPath
             }
-        }, div(attribs, [
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, [
-                        span({
-                            dataBind: {
-                                text: 'label'
-                            }
-                        }),
-                        buildRequiredIcon2(),
-                        buildDirtyIcon2()
-                    ]),
-                    buildDoc2()
-                ])
-            ]),
-            div({
-                class: 'row'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    control,
-                    div({
-                        class: 'alert alert-danger',
-                        dataBind: {
-                            validationMessage: 'field'
-                        }
-                    })
-                ])
-            ])
-        ]));
+        }, div({
+            dataBind: {
+                if: 'ready'
+            }
+        }, buildFieldGroup(id, control)));
     }
 
     function buildDisplay(field) {
@@ -830,7 +430,7 @@ define([
             class: 'form-group  form-row'
         }, [
             div({
-                class: 'row'
+                class: 'row row-edgeless'
             }, [
                 div({
                     class: 'col-md-12'
@@ -842,7 +442,7 @@ define([
                 ])
             ]),
             div({
-                class: 'row'
+                class: 'row row-edgeless'
             }, [
                 div({
                     class: 'col-md-12'
@@ -860,7 +460,7 @@ define([
             class: 'form-group'
         }, [
             div({
-                class: 'row'
+                class: 'row row-edgeless'
             }, [
                 div({
                     class: 'col-md-12'
@@ -871,21 +471,16 @@ define([
 
     return {
         buildInput: buildInput,
-        buildInput2: buildInput2,
         buildTextarea: buildTextarea,
-        buildTextarea2: buildTextarea2,
         buildTypeahead: buildTypeahead,
-        buildTypeahead2: buildTypeahead2,
         buildSelect: buildSelect,
-        buildSelect2: buildSelect2,
         buildCheckboxes: buildCheckboxes,
-        buildCheckboxes2: buildCheckboxes2,
         buildDislay: buildDisplay,
         buildContent: buildContent,
         requiredIcon: requiredIcon,
         dirtyIcon: dirtyIcon,
         fieldDoc: fieldDoc,
-        buildDoc2: buildDoc2,
+        buildDoc: buildDoc,
         buildLabelRow: buildLabelRow,
         buildFieldRow: buildFieldRow
     };
