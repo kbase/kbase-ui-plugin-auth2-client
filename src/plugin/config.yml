@@ -75,10 +75,6 @@ install:
             module: logout
             id: auth2_logout
             type: factory
-        -
-            module: profileViewer
-            id: auth2_profileViewer
-            type: factory
     routes:
         -
             path: ['login']
@@ -133,8 +129,4 @@ install:
             path: ['auth2', 'interrupted']
             widget: auth2_interrupted
             authorization: false
-        -
-            path: ['people2']
-            widget: auth2_profileViewer
-            authorization: true
     menu:
