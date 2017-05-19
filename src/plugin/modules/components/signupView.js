@@ -10,11 +10,7 @@ define([
     'kb_common_ts/Auth2Error',
     '../lib/utilsKO',
     // loaded for effect
-    'bootstrap',
-    './errorView',
-    './signupComponent',
-    './signinForm',
-    './globusProviders'
+    'bootstrap'
 ], function (
     Promise,
     ko,

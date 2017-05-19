@@ -1,4 +1,3 @@
-/* global Promise */
 define([
     'knockout',
     'kb_common/html',

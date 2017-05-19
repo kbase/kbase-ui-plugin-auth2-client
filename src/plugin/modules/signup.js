@@ -12,9 +12,7 @@ define([
     './widgets/errorWidget',
     './lib/policies',
     // loaded for effect
-    'bootstrap',
-    './components/errorView',
-    './components/signupView'
+    'bootstrap'
 ], function (
     Promise,
     ko,

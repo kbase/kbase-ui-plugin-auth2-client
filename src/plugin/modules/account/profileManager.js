@@ -3,8 +3,7 @@ define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_service/client/userProfile',
-    'knockout',
-    './components/profileEditor'
+    'knockout'
 ], function (
     html,
     BS,

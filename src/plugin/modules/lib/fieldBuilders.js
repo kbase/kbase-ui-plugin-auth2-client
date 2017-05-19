@@ -4,11 +4,7 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common/format',
     'kb_service/userProfile',
-    'kb_service/client/userProfile',
-
-    '../components/typeaheadInput',
-    '../components/checkboxesInput',
-    '../components/selectInput'
+    'kb_service/client/userProfile'
 ], function (
     ko,
     html,

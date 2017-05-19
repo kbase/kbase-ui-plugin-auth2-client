@@ -9,10 +9,7 @@ define([
     'kb_common_ts/Auth2',
     '../lib/utilsKO',
     // loaded for effect
-    'bootstrap',
-    './signupComponent',
-    './signinForm',
-    './globusProviders'
+    'bootstrap'
 ], function (
     Promise,
     ko,

@@ -14,9 +14,7 @@ define([
     './lib/format',
 
     // loaded for effect
-    'bootstrap',
-    './components/signinView',
-    './components/errorView'
+    'bootstrap'
 ], function (
     Promise,
     ko,

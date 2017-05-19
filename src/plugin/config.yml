@@ -75,6 +75,52 @@ install:
             module: logout
             id: auth2_logout
             type: factory
+    ko-components:
+        -
+            name: profile-editor
+            module: account/components/profileEditor
+        -
+            name: user-info-editor
+            module: account/components/userInfoEditor
+        -
+            name: user-roles
+            module: account/components/userRoles
+        -
+            name: checkboxes-input
+            module: components/checkboxesInput
+        -
+            name: error-view
+            module: components/errorView
+        -
+            name: globus-providers
+            module: components/globusProviders
+        -
+            name: login-view
+            module: components/loginView
+        -
+            name: policy-resolver
+            module: components/policyComponent
+        -
+            name: select-input
+            module: components/selectInput
+        -
+            name: signin-form
+            module: components/signinForm
+        -
+            name: signin-view
+            module: components/signinView
+        -
+            name: signup-form
+            module: components/signupComponent
+        -
+            name: signup-view
+            module: components/signupView
+        -
+            name: typeahead-input
+            module: components/typeaheadInput
+
+
+
     routes:
         -
             path: ['login']
