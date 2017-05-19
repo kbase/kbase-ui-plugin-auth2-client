@@ -10,8 +10,7 @@ define([
     '../../lib/fieldBuilders',
     'kb_plugin_auth2-client',
     '../../lib/geoNames',
-    '../../lib/dataSource',
-    '../../components/profileView'
+    '../../lib/dataSource'
 ], function (
     ko,
     md5,

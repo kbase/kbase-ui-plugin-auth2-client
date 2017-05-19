@@ -6,12 +6,7 @@ define([
     'kb_common_ts/Auth2Error',
     'kb_service/client/userProfile',
     '../lib/format',
-    '../lib/dataSource',
-
-    /* for effect */
-    './policyComponent',
-    './errorView',
-    './typeaheadInput'
+    '../lib/dataSource'
 ], function (
     ko,
     html,

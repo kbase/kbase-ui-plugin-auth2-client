@@ -4,8 +4,7 @@ define([
     'md5',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    'kb_service/client/userProfile',
-    './components/userInfoEditor'
+    'kb_service/client/userProfile'
 ], function (
     Promise,
     ko,

@@ -5,7 +5,6 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common_ts/Auth2Error',
     // for effect
-    './components/loginView',
     'bootstrap'
 ], function (
     ko,
