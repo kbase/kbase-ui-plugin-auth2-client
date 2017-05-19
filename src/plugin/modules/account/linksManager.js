@@ -230,6 +230,49 @@ define([
             ]));
         }
 
+        function renderInfo() {
+            var canUnlink = (vm.identities.value.length > 1);
+            var content = [
+                p([
+                    'This tab provides access to all of the the external accounts which you have set up sign in to your KBase account.',
+                ]),
+                p([
+                    'You should be able to recognize the account from the "Provider" and "Username" columns.. '
+                ]),
+                div({
+                    class: 'alert alert-warning'
+                }, [
+                    'Note: You may only link an external sign-in account to a single KBase account.',
+                    'If you attempt to link an external sign-in account which is already linked to another ',
+                    'KBase account you will receive an error message'
+                ])
+
+            ];
+            if (canUnlink) {
+                content = content.concat([
+                    p([
+                        'You may unlink any linked sign-in account from your KBase Account at any time.'
+                    ])
+                ]);
+            } else {
+                content = content.concat([
+                    p([
+                        'You may unlink any linked sign-in account from your KBase Account at any time.'
+                    ]),
+                    p([
+                        'However, since you ',
+                        'at present have just a single linked account, you will not be able to unlink it. A KBase account ',
+                        'must always have at least one linked identity to ensure that it is accessible.'
+                    ]),
+                    p([
+                        'If you wish to unlink this account, you must first link at least ',
+                        'one additional sign-in account.'
+                    ])
+                ]);
+            }
+            return content;
+        }
+
         function render() {
             var events = DomEvents.make({
                 node: container
@@ -240,7 +283,7 @@ define([
                 initialTab: 0,
                 tabs: [{
                     name: 'main',
-                    label: 'Main',
+                    label: 'Manage Your Linked Sign-in Accounts',
                     content: div([
                         BS.buildPanel({
                             name: 'linkForm',
@@ -308,53 +351,16 @@ define([
                     ])
                 }, {
                     name: 'about',
-                    label: 'About',
+                    // label: 'About',
+                    icon: 'info-circle',
                     content: div({
                         style: {
                             maxWidth: '60em',
-                            marginTop: '10px'
+                            margin: '10px auto 0 auto'
                         }
-                    }, (function () {
-                        var content = [
-                            p([
-                                'This tab provides access to all of the the external accounts which you have set up sign in to your KBase account.',
-                            ]),
-                            p([
-                                'You should be able to recognize the account from the "Provider" and "Username" columns.. '
-                            ]),
-                            div({
-                                class: 'alert alert-warning'
-                            }, [
-                                'Note: You may only link an external sign-in account to a single KBase account.',
-                                'If you attempt to link an external sign-in account which is already linked to another ',
-                                'KBase account you will receive an error message'
-                            ])
+                    }, renderInfo())
 
-                        ];
-                        if (canUnlink) {
-                            content = content.concat([
-                                p([
-                                    'You may unlink any linked sign-in account from your KBase Account at any time.'
-                                ])
-                            ]);
-                        } else {
-                            content = content.concat([
-                                p([
-                                    'You may unlink any linked sign-in account from your KBase Account at any time.'
-                                ]),
-                                p([
-                                    'However, since you ',
-                                    'at present have just a single linked account, you will not be able to unlink it. A KBase account ',
-                                    'must always have at least one linked identity to ensure that it is accessible.'
-                                ]),
-                                p([
-                                    'If you wish to unlink this account, you must first link at least ',
-                                    'one additional sign-in account.'
-                                ])
-                            ]);
-                        }
-                        return content;
-                    }()))
+
                 }]
             });
 

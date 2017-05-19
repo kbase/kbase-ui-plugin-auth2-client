@@ -1,17 +1,17 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     '../userAgreements'
 ], function (
+    Promise,
     html,
     DomEvents,
     BS,
     UserAgreements
 ) {
-    var // t = html.tagMaker(),
-        t = html.tag,
+    var t = html.tag,
         div = t('div'),
         p = t('p');
 
@@ -62,12 +62,11 @@ define([
                 },
                 tabs: [{
                     name: 'main',
-                    label: 'Main',
-                    content: BS.buildPanel({
-                        type: 'default',
-                        classes: ['kb-panel-light'],
-                        title: 'Your Current User Policy Agreements',
-                        body: div({
+                    label: 'Your Current User Policy Agreements',
+                    body: div({
+                        class: 'container-fluid'
+                    }, [
+                        div({
                             class: 'row'
                         }, [
                             div({ class: 'col-md-3' }, [
@@ -81,10 +80,10 @@ define([
                                 })
                             ]),
                         ])
-                    })
+                    ])
                 }, {
                     name: 'about',
-                    label: 'About',
+                    icon: 'info-circle',
                     content: div({
                         id: vm.intro.id
                     })
@@ -106,7 +105,7 @@ define([
 
         function render() {
             renderAgreements();
-            renderIntro();
+            renderInfo();
         }
 
         function doSelectAgreement(agreement) {
@@ -124,16 +123,18 @@ define([
                 });
         }
 
-        function renderIntro() {
-            var events = DomEvents.make({
-                node: container
-            });
-            vm.intro.node.innerHTML = div([
+        function renderInfo() {
+            vm.intro.node.innerHTML = div({
+                style: {
+                    maxWidth: '60em',
+                    margin: '0 auto'
+                }
+            }, [
+
                 p([
                     'This tab lists the Usage Policies you have agreed to during signup or signin to KBase.'
                 ])
             ]);
-            events.attachEvents();
         }
 
         function renderAgreements() {
@@ -219,8 +220,6 @@ define([
             }, 'Select an existing agreement on the left to view it here');
             events.attachEvents();
         }
-
-
 
         function attach(node) {
             return Promise.try(function () {

@@ -75,12 +75,11 @@ install:
             module: logout
             id: auth2_logout
             type: factory
+        -
+            module: profileViewer
+            id: auth2_profileViewer
+            type: factory
     routes:
-        # -
-        #     path: ['auth2', 'info']
-        #     widget: auth2Info
-        #     queryParams:
-        #         nextrequest: {}
         -
             path: ['login']
             widget: auth2_login
@@ -134,26 +133,8 @@ install:
             path: ['auth2', 'interrupted']
             widget: auth2_interrupted
             authorization: false
-                
+        -
+            path: ['people2']
+            widget: auth2_profileViewer
+            authorization: true
     menu:
-        # -
-        #     name: auth2info
-        #     menus: ['authenticated', 'unauthenticated']
-        #     definition:
-        #         path: ['auth2', 'info']
-        #         label: Auth2 Info
-        #         icon: flask                
-        # -
-        #     name: auth2login
-        #     menus: ['authenticated', 'unauthenticated']
-        #     definition:
-        #         path: ['auth2', 'login']
-        #         label: Auth2 Login
-        #         icon: flask
-        # -
-        #     name: auth2account
-        #     menus: ['authenticated', 'unathenticated']
-        #     definition: 
-        #         path: ['auth2', 'account']
-        #         label: Auth2 Account
-        #         icon: user-circle-o

@@ -212,11 +212,12 @@ define([
     */
     function viewModel(params) {
         // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
+        // console.log('params', params);
         var userProfile = params.profile;
         var gravatarUrl = ko.pureComputed(function () {
             switch (userProfile.profile.userdata.avatarOption) {
             case 'gravatar':
-                return 'https://www.gravatar.com/avatar/' + userProfile.synced.gravatarHash + '?s=200&amp;r=pg&d=' + userProfile.profile.userdata.gravatarDefault;
+                return 'https://www.gravatar.com/avatar/' + userProfile.profile.synced.gravatarHash + '?s=200&amp;r=pg&d=' + userProfile.profile.userdata.gravatarDefault;
             case 'mysteryman':
                 return Plugin.plugin.fullPath + '/images/nouserpic.png';
             }
@@ -244,56 +245,4 @@ define([
         };
     }
     ko.components.register('profile-view', component());
-
-    // function factory(config) {
-    //     var hostNode, container,
-    //         runtime = config.runtime;
-
-    //     function attach(node) {
-    //         return Promise.try(function () {
-    //             hostNode = node;
-    //             container = hostNode.appendChild(document.createElement('div'));
-    //         });
-    //     }
-
-    //     function start() {
-    //         return Promise.try(function () {
-    //             container.innerHTML = div({
-    //                 dataBind: {
-    //                     component: {
-    //                         name: 'profile-view',
-    //                         params: {
-    //                             profile: 'profile'
-    //                         }
-    //                     }
-    //                 }
-    //             });
-    //         });
-    //     }
-
-    //     function stop() {
-    //         return Promise.try(function () {});
-    //     }
-
-    //     function detach() {
-    //         return Promise.try(function () {
-    //             if (hostNode && container) {
-    //                 hostNode.removeChild(container);
-    //             }
-    //         });
-    //     }
-
-    //     return {
-    //         attach: attach,
-    //         start: start,
-    //         stop: stop,
-    //         detach: detach
-    //     };
-    // }
-
-    // return {
-    //     make: function (config) {
-    //         return factory(config);
-    //     }
-    // };
 });

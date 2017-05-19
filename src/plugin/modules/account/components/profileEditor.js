@@ -1089,11 +1089,12 @@ define([
                         personalStatement: personalStatement.field(),
                         avatarOption: avatarOption.field(),
                         gravatarDefault: gravatarDefault.field(),
+                    },
+                    synced: {
+                        gravatarHash: gravatarHash
                     }
                 },
-                synced: {
-                    gravatarHash: gravatarHash
-                }
+
             };
         });
 
