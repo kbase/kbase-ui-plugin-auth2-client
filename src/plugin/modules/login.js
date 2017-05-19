@@ -68,13 +68,13 @@ define([
                     if (nextRequest) {
                         runtime.send('app', 'navigate', nextRequest);
                     } else {
-                        runtime.send('app', 'navigate', '');
+                        runtime.send('app', 'navigate', 'dashboard');
                     }
                 } catch (ex) {
-                    runtime.send('app', 'navigate', '');
+                    runtime.send('app', 'navigate', 'dashboard');
                 }
             } else {
-                runtime.send('app', 'navigate', '');
+                runtime.send('app', 'navigate', 'dashboard');
             }
         }
 

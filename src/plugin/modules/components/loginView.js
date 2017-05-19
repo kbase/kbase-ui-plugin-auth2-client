@@ -35,49 +35,57 @@ define([
                 dataBind: {
                     foreach: 'tabs'
                 }
-            }, li({
-                role: 'presentation',
-                style: {
-                    fontWeight: 'bold'
-                },
-                dataBind: {
-                    visible: 'show',
-                    css: {
-                        active: 'active'
-                    }
-                }
-            }, a({
-                dataBind: {
-                    attrs: {
-                        id: 'name',
-                        href: '"#" + name'
+            }, [
+                '<!-- ko if: show -->',
+                li({
+                    role: 'presentation',
+                    style: {
+                        fontWeight: 'bold'
                     },
-                    text: 'label',
-                    click: '$component.doSelectTab'
-                }
-            }))),
+                    dataBind: {
+                        css: {
+                            active: 'active'
+                        }
+                    }
+                }, a({
+                    dataBind: {
+                        attrs: {
+                            id: 'name',
+                            href: '"#" + name'
+                        },
+                        text: 'label',
+                        click: '$component.doSelectTab'
+                    }
+                })),
+                '<!-- /ko -->'
+            ]),
             div({
                 class: 'tab-content',
                 dataBind: {
                     foreach: 'tabs'
                 }
-            }, div({
-                role: 'tabpanel',
-                class: 'tab-pane',
-                style: {
-                    paddingTop: '10px'
-                },
-                dataBind: {
-                    visible: 'show',
-                    css: {
-                        active: 'active'
+            }, [
+                '<!-- ko if: show -->',
+                div({
+                    role: 'tabpanel',
+                    class: 'tab-pane',
+                    style: {
+                        paddingTop: '10px'
                     },
-                    attrs: {
-                        id: 'name'
-                    },
-                    html: 'content'
-                }
-            }))
+                    dataBind: {
+                        css: {
+                            active: 'active'
+                        },
+                        attrs: {
+                            id: 'name'
+                        },
+                        template: {
+                            nodes: 'template'
+                        }
+                    }
+                }),
+                '<!-- /ko -->'
+            ])
         ]);
     }
 
@@ -143,67 +151,6 @@ define([
         ]);
     }
 
-    // function buildSigninButton() {
-    //     return button({
-    //         class: 'btn btn-default',
-    //         style: {
-    //             textAlign: 'center'
-    //         },
-    //         dataBind: {
-    //             click: '$parent.doSignin',
-    //             disable: 'disabled',
-    //             attr: {
-    //                 'data-control': '"signin-provider-button"',
-    //                 'data-provider': 'id'
-    //             }
-    //         }
-    //     }, div({
-    //         style: {
-    //             display: 'inline-block',
-    //             // width: '50%',
-    //             //textAlign: 'left',
-    //             //fontWeight: 'bold',
-    //             //verticalAlign: 'middle'
-    //         }
-    //     }, [
-    //         span({
-    //             style: {
-    //                 display: 'inline-block',
-    //                 // width: '50px',
-    //                 textAlign: 'center'
-    //             }
-    //         }, img({
-    //             dataBind: {
-    //                 attr: {
-    //                     src: 'imageSource'
-    //                 }
-    //             },
-    //             style: {
-    //                 height: '24px',
-    //                 // marginRight: '10px',
-    //                 verticalAlign: 'middle'
-    //             }
-    //         })),
-    //         // span({
-    //         //     style: {
-    //         //         verticalAlign: 'middle'
-    //         //     },
-    //         //     dataBind: {
-    //         //         text: 'label'
-    //         //     }
-    //         // }),
-    //         span({
-    //             class: 'fa fa-spinner fa-pulse',
-    //             style: {
-    //                 marginLeft: '6px'
-    //             },
-    //             dataBind: {
-    //                 visible: 'loading'
-    //             }
-    //         })
-
-    //     ]));
-    // }
 
     function buildLoginControl(runtime) {
         return div({
@@ -380,11 +327,10 @@ define([
 
         }, [
             h3({
-                    style: {
-                        marginTop: '0'
-                    }
-                },
-                'Sign in Changes'),
+                style: {
+                    marginTop: '0'
+                }
+            }, 'Sign in Changes'),
             p([
                 'On 5/25/17 KBase launched a new authentication and authorization system. ',
                 'One of the changes is to replace a direct login to KBase with an authorization ',
@@ -430,7 +376,7 @@ define([
                 a({
                     dataBind: {
                         attr: {
-                            href: 'docs.narrativeGuide.url'
+                            href: '$component.docs.narrativeGuide.url'
                         }
                     }
                     //href: runtime.config('resources.documentation.narrativeGuide.url') 
@@ -443,7 +389,7 @@ define([
                 a({
                     dataBind: {
                         attr: {
-                            href: 'docs.tutorials.url'
+                            href: '$component.docs.tutorials.url'
                         }
                     }
                     // href: runtime.config('resources.documentation.tutorials.url') 
@@ -456,10 +402,18 @@ define([
     function buildAuthorizationRequired() {
         return div([
             p([
-                'Authorization is required to access this path.'
+                'Authorization is required to access the path: ',
+                span({
+                    style: {
+                        fontWeight: 'bold'
+                    },
+                    dataBind: {
+                        text: '$component.nextRequest.original'
+                    }
+                })
             ]),
             p([
-                'After signing in you will be redirected to the requested resource.'
+                'After signing in you will be redirected to the requested path.'
                 // span({
                 //     dataBind: {
                 //         text: '"stuff"'
@@ -528,6 +482,12 @@ define([
                     stayLoggedIn: false
                 });
             });
+    }
+
+    function makeNodes(markup) {
+        var node = document.createElement('div');
+        node.innerHTML = markup;
+        return [node.firstChild];
     }
 
     function viewModel(params) {
@@ -641,29 +601,26 @@ define([
 
         // var title = ko.observable();
         var tabs = ko.observableArray([{
-                name: 'authorization',
-                label: 'Authorization Required',
-                show: ko.computed(function () {
-                    return (source === 'authorization');
-                }),
-                active: ko.observable(false),
-                content: buildAuthorizationRequired()
-            },
-            {
-                name: 'welcome',
-                label: 'Welcome',
-                show: true,
-                active: ko.observable(false),
-                content: buildWelcomeTab()
-            },
-            {
-                name: 'about',
-                label: 'About',
-                show: true,
-                active: ko.observable(false),
-                content: buildAboutTab()
-            }
-        ]);
+            name: 'authorization',
+            label: 'Authorization Required',
+            show: ko.computed(function () {
+                return (source === 'authorization');
+            }),
+            active: ko.observable(false),
+            template: makeNodes(buildAuthorizationRequired())
+        }, {
+            name: 'welcome',
+            label: 'Welcome',
+            show: true,
+            active: ko.observable(false),
+            template: makeNodes(buildWelcomeTab())
+        }, {
+            name: 'about',
+            label: 'About',
+            show: true,
+            active: ko.observable(false),
+            template: makeNodes(buildAboutTab())
+        }]);
         if (source === 'authorization') {
             tabs()[0].active(true);
         } else {
@@ -689,6 +646,8 @@ define([
         var filteredTabs = tabs.filter(function (item) {
             return item.show;
         });
+
+        //console.log('next request', nextRequest);
 
         return {
             runtime: runtime,
