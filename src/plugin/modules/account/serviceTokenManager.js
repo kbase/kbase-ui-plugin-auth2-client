@@ -1,5 +1,5 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
@@ -7,6 +7,7 @@ define([
     '../lib/format',
     '../lib/utils'
 ], function (
+    Promise,
     html,
     DomEvent,
     BS,
@@ -41,11 +42,6 @@ define([
             roles: {
                 value: null
             },
-            toolbar: {
-                id: html.genId(),
-                enabled: false,
-                value: null
-            },
             alerts: {
                 id: html.genId(),
                 enabled: true,
@@ -56,7 +52,7 @@ define([
                 enabled: true,
                 value: null
             },
-            allTokens: {
+            serviceTokens: {
                 id: html.genId(),
                 enabled: true,
                 value: null
@@ -76,8 +72,7 @@ define([
             bindVmNode(vm.addTokenForm);
             bindVmNode(vm.alerts);
             bindVmNode(vm.newToken);
-            bindVmNode(vm.allTokens);
-            bindVmNode(vm.toolbar);
+            bindVmNode(vm.serviceTokens);
         }
 
         function timeRemaining(time) {
@@ -110,24 +105,17 @@ define([
 
         function renderLayout() {
             container.innerHTML = div({
-                class: 'container-fluid',
                 style: {
                     marginTop: '10px'
                 }
-            }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({ class: 'col-md-12' }, [
-                        div({
-                            id: vm.toolbar.id
-                        }),
-
+            }, BS.buildTabs({
+                tabs: [{
+                    title: 'Manage Your Service Tokens',
+                    body: [
                         BS.buildPanel({
-                            type: 'default',
                             classes: ['kb-panel-light'],
-                            title: 'Manage Your Service Tokens',
-                            body: div([
+                            title: 'Add a New Service Token',
+                            body: [
                                 div({
                                     id: vm.alerts.id
                                 }),
@@ -139,15 +127,19 @@ define([
                                 }),
                                 div({
                                     id: vm.newToken.id
-                                }),
-                                div({
-                                    id: vm.allTokens.id
                                 })
-                            ])
+                            ]
+                        }),
+                        BS.buildPanel({
+                            classes: ['kb-panel-light'],
+                            title: 'Your Active Service Tokens',
+                            body: div({
+                                id: vm.serviceTokens.id
+                            })
                         })
-                    ])
-                ])
-            ]);
+                    ]
+                }]
+            }).content);
             bindVm();
         }
 
@@ -161,13 +153,14 @@ define([
             return Format.niceElapsedTime(date);
         }
 
-        function doRevokeToken(tokenId) {
-            // Revoke
+        function doRevokeToken(tokenId, button) {
+            button.disabled = true;
             return runtime.service('session').getClient().revokeToken(tokenId)
                 .then(function () {
                     return render();
                 })
                 .catch(function (err) {
+                    button.disabled = false;
                     console.error('ERROR', err);
                 });
         }
@@ -266,10 +259,9 @@ define([
                     type: 'service'
                 })
                 .then(function (result) {
-                    renderAllTokens();
                     vm.newToken.value = result;
                     renderNewToken();
-                    return null;
+                    return render();
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
@@ -312,12 +304,12 @@ define([
             events.attachEvents();
         }
 
-        function renderTokens() {
+        function renderServiceTokens() {
             var events = DomEvent.make({
-                node: vm.allTokens.node
+                node: vm.serviceTokens.node
             });
             var revokeAllButton;
-            if (vm.allTokens.value.length > 0) {
+            if (vm.serviceTokens.value.length > 0) {
                 revokeAllButton = button({
                     type: 'button',
                     class: 'btn btn-danger',
@@ -333,7 +325,7 @@ define([
                     disabled: true
                 }, 'Revoke All');
             }
-            vm.allTokens.node.innerHTML = table({
+            vm.serviceTokens.node.innerHTML = table({
                 class: 'table table-striped',
                 style: {
                     width: '100%'
@@ -362,7 +354,7 @@ define([
                         }
                     }, revokeAllButton)
                 ])
-            ].concat(vm.allTokens.value.map(function (token) {
+            ].concat(vm.serviceTokens.value.map(function (token) {
                 return tr([
                     td(niceDate(token.created)),
                     // td(niceElapsed(token.expires)),
@@ -379,8 +371,8 @@ define([
                         type: 'button',
                         id: events.addEvent({
                             type: 'click',
-                            handler: function () {
-                                doRevokeToken(token.id);
+                            handler: function (e) {
+                                doRevokeToken(token.id, e.target);
                             }
                         })
                     }, 'Revoke'))
@@ -389,65 +381,32 @@ define([
             events.attachEvents();
         }
 
-
-        function doRevokeAll() {
-            return Promise.all(vm.allTokens.value.map(function (token) {
+        function doRevokeAll(e) {
+            e.target.disabled = true;
+            return Promise.all(vm.serviceTokens.value.map(function (token) {
                     return runtime.service('session').getClient().revokeToken(token.id);
                 }))
                 .then(function () {
                     return render();
                 })
                 .catch(function (err) {
+                    e.target.disabled = false;
                     console.error('ERROR', err);
                 });
-        }
-
-        function renderToolbar() {
-            var events = DomEvent.make({
-                node: container
-            });
-            vm.toolbar.node.innerHTML = div({
-                class: 'btn-toolbar',
-                role: 'toolbar',
-                style: {
-                    margin: '10px 0 10px 0'
-                }
-            }, [
-                div({
-                    class: 'btn-group pull-right',
-                    role: 'group'
-                }, [
-                    // button({
-                    //     type: 'button',
-                    //     class: 'btn btn-danger',
-                    //     // id: events.addEvent({
-                    //     //     type: 'click',
-                    //     //     handler: 
-                    //     // })
-                    // }, 'NOOP')
-                ])
-            ]);
-            events.attachEvents();
         }
 
         function render() {
             return runtime.service('session').getClient().getTokens()
                 .then(function (result) {
-
-                    renderToolbar();
-
-                    // Render "other" tokens
-
-                    vm.allTokens.value = result.tokens
+                    vm.serviceTokens.value = result.tokens
                         .filter(function (token) {
                             return (token.type === 'Service');
                         });
-
-                    renderTokens();
+                    renderServiceTokens();
                     renderAddTokenForm();
                 })
                 .catch(function (err) {
-                    vm.serverTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
+                    vm.serviceTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
                 });
         }
 

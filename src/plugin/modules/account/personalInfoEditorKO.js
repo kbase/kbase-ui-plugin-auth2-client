@@ -1,5 +1,5 @@
-/*global Promise*/
 define([
+    'bluebird',
     'knockout',
     'md5',
     'kb_common/html',
@@ -7,14 +7,14 @@ define([
     'kb_service/client/userProfile',
     './components/userInfoEditor'
 ], function (
+    Promise,
     ko,
     md5,
     html,
     BS,
     UserProfileService
 ) {
-    var // t = html.tagMaker(),
-        t = html.tag,
+    var t = html.tag,
         div = t('div'),
         p = t('p');
 
@@ -23,12 +23,11 @@ define([
         var hostNode, container;
         var vm;
 
-
         function render(id) {
             var tabs = BS.buildTabs({
                 initialTab: 0,
                 tabs: [{
-                    label: 'Main',
+                    label: 'Manage your account',
                     name: 'main',
                     content: div({
                         style: {
@@ -48,11 +47,12 @@ define([
                         }
                     })
                 }, {
-                    label: 'About',
+                    icon: 'info-circle',
                     name: 'about',
                     content: div({
                         style: {
-                            marginTop: '10px'
+                            margin: '10px auto 0 auto',
+                            width: '60em'
                         }
                     }, [
                         p('You may view and edit edit your basic account information here.'),
@@ -60,16 +60,11 @@ define([
                     ])
                 }]
             });
-            return div({
-                id: id,
-                class: 'container-fluid',
+            return container.innerHTML = div({
                 style: {
                     marginTop: '10px'
                 }
-            }, [
-                p([]),
-                tabs.content
-            ]);
+            }, tabs.content);
         }
 
         function attach(node) {
@@ -82,7 +77,6 @@ define([
         function start() {
             return runtime.service('session').getClient().getMe()
                 .then(function (account) {
-                    var id = html.genId();
                     vm = {
                         realname: account.display,
                         email: account.email,
@@ -112,8 +106,8 @@ define([
                         }
 
                     };
-                    container.innerHTML = render(id);
-                    ko.applyBindings(vm, document.getElementById(id));
+                    container.innerHTML = render();
+                    ko.applyBindings(vm, container);
                 });
         }
 

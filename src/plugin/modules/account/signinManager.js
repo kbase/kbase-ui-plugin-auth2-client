@@ -200,7 +200,7 @@ define([
                 },
                 tabs: [{
                     name: 'main',
-                    label: 'Manage your sign-ins',
+                    label: 'Manage Your Sign-ins',
                     content: div({}, [
                         div({
                             id: vm.toolbar.id
@@ -224,7 +224,7 @@ define([
                     ])
                 }, {
                     name: 'about',
-                    label: 'About',
+                    icon: 'info-circle',
                     content: div({
                         id: vm.intro.id
                     })
@@ -239,7 +239,7 @@ define([
             bindVm();
         }
 
-        function renderIntro() {
+        function renderInfo() {
             vm.intro.node.innerHTML = div({
                 style: {
                     maxWidth: '60em',
@@ -659,7 +659,7 @@ define([
             return runtime.service('session').getClient().getTokens()
                 .then(function (result) {
 
-                    renderIntro();
+                    renderInfo();
 
                     renderToolbar();
 

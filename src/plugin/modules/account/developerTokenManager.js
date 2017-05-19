@@ -41,11 +41,6 @@ define([
             roles: {
                 value: null
             },
-            toolbar: {
-                id: html.genId(),
-                enabled: false,
-                value: null
-            },
             alerts: {
                 id: html.genId(),
                 enabled: true,
@@ -77,7 +72,6 @@ define([
             bindVmNode(vm.alerts);
             bindVmNode(vm.newToken);
             bindVmNode(vm.allTokens);
-            bindVmNode(vm.toolbar);
         }
 
         function showAlert(type, message) {
@@ -110,43 +104,47 @@ define([
 
         function renderLayout() {
             container.innerHTML = div({
-                class: 'container-fluid',
                 style: {
                     marginTop: '10px'
                 }
             }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({ class: 'col-md-12' }, [
-                        div({
-                            id: vm.toolbar.id
-                        }),
-
-                        BS.buildPanel({
-                            type: 'default',
-                            classes: ['kb-panel-light'],
-                            title: 'Manage Your Developer Tokens',
-                            body: div([
-                                div({
-                                    id: vm.alerts.id
-                                }),
-                                div({
-                                    id: vm.addTokenForm.id,
-                                    style: {
-                                        marginBottom: '10px'
-                                    }
-                                }),
-                                div({
-                                    id: vm.newToken.id
-                                }),
-                                div({
+                BS.buildTabs({
+                    tabs: [{
+                        name: 'main',
+                        title: 'Manage Your Developer Tokens',
+                        body: div({
+                            style: {
+                                marginTop: '10px'
+                            }
+                        }, [
+                            div({
+                                id: vm.alerts.id
+                            }),
+                            BS.buildPanel({
+                                classes: ['kb-panel-light'],
+                                title: 'Add a new developer token',
+                                body: [
+                                    div({
+                                        id: vm.addTokenForm.id,
+                                        style: {
+                                            marginBottom: '10px'
+                                        }
+                                    }),
+                                    div({
+                                        id: vm.newToken.id
+                                    })
+                                ]
+                            }),
+                            BS.buildPanel({
+                                classes: ['kb-panel-light'],
+                                title: 'Your active developer tokens',
+                                body: div({
                                     id: vm.allTokens.id
                                 })
-                            ])
-                        })
-                    ])
-                ])
+                            })
+                        ])
+                    }]
+                }).content
             ]);
             bindVm();
         }
@@ -382,7 +380,6 @@ define([
             events.attachEvents();
         }
 
-
         function doRevokeAll() {
             return Promise.all(vm.allTokens.value.map(function (token) {
                     return runtime.service('session').getClient().revokeToken(token.id);
@@ -395,30 +392,9 @@ define([
                 });
         }
 
-        function renderToolbar() {
-            var events = DomEvent.make({
-                node: container
-            });
-            vm.toolbar.node.innerHTML = div({
-                class: 'btn-toolbar',
-                role: 'toolbar',
-                style: {
-                    margin: '10px 0 10px 0'
-                }
-            }, [
-                div({
-                    class: 'btn-group pull-right',
-                    role: 'group'
-                }, [])
-            ]);
-            events.attachEvents();
-        }
-
         function render() {
             return runtime.service('session').getClient().getTokens()
                 .then(function (result) {
-                    renderToolbar();
-
                     vm.allTokens.value = result.tokens
                         .filter(function (token) {
                             return (token.type === 'Developer');
