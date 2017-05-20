@@ -425,11 +425,6 @@ define([
 
     function buildIntroNormal() {
         return div({}, [
-            // h1({
-            //     dataBind: {
-            //         text: 'title'
-            //     }
-            // }),
             buildTabs()
         ]);
     }
@@ -643,7 +638,7 @@ define([
 
         }
 
-        var filteredTabs = tabs.filter(function (item) {
+        var filteredTabs = tabs().filter(function (item) {
             return item.show;
         });
 
