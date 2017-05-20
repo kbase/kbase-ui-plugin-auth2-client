@@ -15,7 +15,6 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
-        br = t('br'),
         p = t('p'),
         a = t('a'),
         b = t('b'),
@@ -228,8 +227,7 @@ define([
                                 textAlign: 'center'
                             }
                         }, [
-                            'Choose Globus if you signed up',
-                            br(),
+                            'Choose Globus if you signed upx',
                             'before 5/25/17'
                         ]),
                         div({
@@ -425,11 +423,6 @@ define([
 
     function buildIntroNormal() {
         return div({}, [
-            // h1({
-            //     dataBind: {
-            //         text: 'title'
-            //     }
-            // }),
             buildTabs()
         ]);
     }
@@ -643,7 +636,7 @@ define([
 
         }
 
-        var filteredTabs = tabs.filter(function (item) {
+        var filteredTabs = tabs().filter(function (item) {
             return item.show;
         });
 
