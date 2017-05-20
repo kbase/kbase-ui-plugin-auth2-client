@@ -15,6 +15,7 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
+        br = t('br'),
         p = t('p'),
         a = t('a'),
         b = t('b'),
@@ -227,7 +228,8 @@ define([
                                 textAlign: 'center'
                             }
                         }, [
-                            'Choose Globus if you signed upx',
+                            'Choose Globus if you signed up',
+                            br(),
                             'before 5/25/17'
                         ]),
                         div({
