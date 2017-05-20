@@ -15,7 +15,7 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
-        br = t('br'),
+        br = t('br', { close: false }),
         p = t('p'),
         a = t('a'),
         b = t('b'),
