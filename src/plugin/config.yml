@@ -48,10 +48,6 @@ install:
             id: auth2_linkContinue
             type: factory
         -
-            module: legacyLogin
-            id: auth2_legacyLogin
-            type: factory
-        -
             module: signup
             id: auth2_signup
             type: factory
@@ -118,8 +114,9 @@ install:
         -
             name: typeahead-input
             module: components/typeaheadInput
-
-
+        -
+            name: signin-button
+            module: components/signinButton
 
     routes:
         -
@@ -133,9 +130,6 @@ install:
             widget: auth2Logout
             queryParams:
                 nextrequest: {}
-        -
-            path: ['auth2', 'login', 'legacy']
-            widget: auth2_legacyLogin
         -
             path: ['auth2', 'login', 'continue']
             widget: auth2LoginContinue
