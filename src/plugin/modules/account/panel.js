@@ -109,7 +109,7 @@ define([
                 style: {
                     padding: '0 10px'
                 },
-                initialTab: 'profile',
+                initialTab: params.tab || 'profile',
                 tabs: [{
                         name: 'profile',
                         label: 'Your Profile',
