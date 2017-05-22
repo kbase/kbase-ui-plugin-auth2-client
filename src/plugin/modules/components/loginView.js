@@ -19,7 +19,6 @@ define([
         p = t('p'),
         a = t('a'),
         b = t('b'),
-        img = t('img'),
         button = t('button'),
         h3 = t('h3'),
         legend = t('legend'),
@@ -88,69 +87,6 @@ define([
             ])
         ]);
     }
-
-    function buildSigninButton() {
-        return div({
-            style: {
-                textAlign: 'center',
-                margin: '4px',
-                padding: '4px',
-                position: 'relative'
-            }
-        }, [
-
-            img({
-                style: {
-                    height: '44px',
-                    cursor: 'pointer'
-                },
-                class: 'signin-button',
-                dataBind: {
-                    click: '$parent.doSignin',
-                    event: {
-                        mouseover: 'doMouseOver',
-                        mouseout: 'doMouseOut'
-                    },
-                    attr: {
-                        src: 'imageSource'
-                    }
-                }
-            }),
-            div({
-                style: {
-                    position: 'absolute',
-                    top: '0',
-                    left: '0',
-                    width: '100%',
-                    height: '100%',
-                    textAlign: 'center',
-                    paddingTop: '4px',
-                    pointerEvents: 'none'
-                },
-                dataBind: {
-                    visible: 'loading'
-                }
-            }, span({
-                    style: {
-                        width: '50px',
-                        backgroundColor: 'rgba(255,255,255,0.5)'
-                    }
-                }, img({
-                    src: Plugin.plugin.fullPath + '/images/spinner5.gif'
-                })
-                //span({
-                //     style: {
-                //         color: 'rgba(52, 159, 50, 1)'
-                //     },
-                //     class: 'fa fa-2x fa-spinner fa-pulse',
-                //     // dataBind: {
-                //     //     visible: 'loading'
-                //     // }
-                // })
-            ))
-        ]);
-    }
-
 
     function buildLoginControl(runtime) {
         return div({
@@ -233,17 +169,28 @@ define([
                             'before 5/25/17'
                         ]),
                         div({
-                                // class: 'btn-group-vertical',
-                                style: {
-                                    width: '100%',
-                                    display: 'inline-block',
-                                },
-                                dataBind: {
-                                    foreach: 'providers'
-                                }
+                            // class: 'btn-group-vertical',
+                            style: {
+                                width: '100%',
+                                display: 'inline-block',
                             },
-                            buildSigninButton()
-                        )
+                            dataBind: {
+                                foreach: 'providers'
+                            }
+                        }, div({
+                            dataBind: {
+                                component: {
+                                    name: '"signin-button"',
+                                    params: {
+                                        provider: '$data',
+                                        runtime: '$component.runtime',
+                                        nextRequest: '$component.nextRequest',
+                                        assetsPath: '$component.assetsPath',
+                                        origin: '"login"'
+                                    }
+                                }
+                            }
+                        }))
                         // div({
                         //     style: {
                         //         marginTop: '0.5em',
@@ -414,11 +361,6 @@ define([
             ]),
             p([
                 'After signing in you will be redirected to the requested path.'
-                // span({
-                //     dataBind: {
-                //         text: '"stuff"'
-                //     }
-                // })
             ])
         ]);
     }
@@ -452,33 +394,6 @@ define([
         ]);
     }
 
-    function loginStart(runtime, providerId, state) {
-        runtime.service('session').getClient().loginCancel()
-            .catch(Auth2Error.AuthError, function (err) {
-                // ignore this specific error...
-                if (err.code !== '10010') {
-                    throw err;
-                }
-            })
-            .catch(function (err) {
-                // TODO: show error.
-                console.error('Skipping error', err);
-            })
-            .finally(function () {
-                //  don 't care whether it succeeded or failed.
-                return runtime.service('session').loginStart({
-                    // TODO: this should be either the redirect url passed in 
-                    // or the dashboard.
-                    // We just let the login page do this. When the login page is 
-                    // entered with a valid token, redirect to the nextrequest,
-                    // and if that is empty, the dashboard.
-                    state: state,
-                    provider: providerId,
-                    stayLoggedIn: false
-                });
-            });
-    }
-
     function makeNodes(markup) {
         var node = document.createElement('div');
         node.innerHTML = markup;
@@ -505,60 +420,18 @@ define([
         var username = runtime.service('session').getUsername();
 
         var providers = runtime.service('session').getProviders().sort(function (a, b) {
-                if (a.id === 'Google') {
-                    return -1;
-                } else if (b.id === 'Google') {
-                    return 1;
-                }
-                if (a.id < b.id) {
-                    return -1;
-                } else if (a.id > b.id) {
-                    return 1;
-                }
-                return 0;
-            })
-            .map(function (provider) {
-                var imageBase = Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '/signin-button/';
-                provider.state = ko.observable('normal');
-                provider.doMouseOver = function () {
-                    provider.state('hover');
-                };
-                provider.doMouseOut = function () {
-                    provider.state('normal');
-                };
-                provider.imageSource = ko.pureComputed(function () {
-                    switch (provider.state()) {
-                    case 'normal':
-                        return imageBase + 'normal.png';
-                    case 'hover':
-                        return imageBase + 'pressed.png';
-                    case 'disabled':
-                        return imageBase + 'disabled.png';
-                    default:
-                        return imageBase + 'normal.png';
-                    }
-                });
-                // ['normal', 'disabled', 'focus', 'pressed'].forEach(function (state) {
-                //     provider.imageSource[state] = imageBase + state + '.png';
-                // });
-                provider.disabled = ko.observable(false);
-                provider.loading = ko.observable(false);
-
-                return provider;
-            });
-
-        function doSignin(data) {
-            // set last provider...
-            data.loading(true);
-            providers.forEach(function (provider) {
-                provider.state('disabled');
-                provider.disabled(true);
-            });
-            loginStart(runtime, data.id, {
-                nextrequest: nextRequest,
-                origin: 'login'
-            });
-        }
+            if (a.id === 'Google') {
+                return -1;
+            } else if (b.id === 'Google') {
+                return 1;
+            }
+            if (a.id < b.id) {
+                return -1;
+            } else if (a.id > b.id) {
+                return 1;
+            }
+            return 0;
+        });
 
         function doSignup() {
             runtime.service('session').getClient().loginCancel()
@@ -645,13 +518,14 @@ define([
         return {
             runtime: runtime,
             nextRequest: nextRequest,
+            assetsPath: Plugin.plugin.fullPath,
             source: source,
             docs: docs,
             // isSessionPersistent: isSessionPersistent,
             providers: providers,
             authorized: authorized,
             username: username,
-            doSignin: doSignin,
+            // doSignin: doSignin,
             doSignup: doSignup,
             doSetSigninMode: doSetSigninMode,
             doSetSignupMode: doSetSignupMode,

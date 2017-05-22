@@ -2,15 +2,11 @@
 define([
     'knockout',
     'kb_common/html',
-    'kb_common/bootstrapUtils',
-    'kb_common_ts/Auth2Error',
     // for effect
     'bootstrap'
 ], function (
     ko,
-    html,
-    BS,
-    Auth2Error
+    html
 ) {
     var t = html.tag,
         div = t('div');
