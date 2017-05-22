@@ -212,12 +212,12 @@ define([
     */
     function viewModel(params) {
         // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
-        // console.log('params', params);
         var userProfile = params.profile;
         var gravatarUrl = ko.pureComputed(function () {
             switch (userProfile.profile.userdata.avatarOption) {
             case 'gravatar':
                 return 'https://www.gravatar.com/avatar/' + userProfile.profile.synced.gravatarHash + '?s=200&amp;r=pg&d=' + userProfile.profile.userdata.gravatarDefault;
+            case 'silhouette':
             case 'mysteryman':
                 return Plugin.plugin.fullPath + '/images/nouserpic.png';
             }

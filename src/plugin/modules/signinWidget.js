@@ -59,7 +59,7 @@ define([
             var avatarUrl;
             switch (profile.profile.userdata.avatarOption || 'gravatar') {
             case 'gravatar':
-                var gravatarDefault = profile.profile.userdata.gravatarDefault || 'monsterid';
+                var gravatarDefault = profile.profile.userdata.gravatarDefault || 'wavatar';
                 var gravatarHash = profile.profile.synced.gravatarHash;
                 if (gravatarHash) {
                     avatarUrl = 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
@@ -67,6 +67,7 @@ define([
                     avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
                 }
                 break;
+            case 'silhouette':
             case 'mysteryman':
             default:
                 avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
