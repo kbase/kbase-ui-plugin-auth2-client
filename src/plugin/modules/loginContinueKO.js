@@ -49,7 +49,6 @@ define([
         function calcTimeRemaining() {
             var now = new Date().getTime();
             //var elapsed = now - startTime;
-            // console.log('remaining', tick, now, elapsed, countdownTo);
             timeRemaining = countdownTo - now;
         }
         calcTimeRemaining();

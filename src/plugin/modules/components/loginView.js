@@ -642,8 +642,6 @@ define([
             return item.show;
         });
 
-        //console.log('next request', nextRequest);
-
         return {
             runtime: runtime,
             nextRequest: nextRequest,

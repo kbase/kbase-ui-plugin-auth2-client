@@ -399,7 +399,8 @@ define([
             div({
                 style: {
                     flex: '0 0 auto',
-                    backgroundColor: 'rgba(255,185,2,0.5)',
+                    // backgroundColor: 'rgba(255,185,2,0.5)',
+                    backgroundColor: '#DDD',
                     padding: '6px',
                     display: 'flex',
                     flexDirection: 'row'
@@ -408,7 +409,7 @@ define([
                 div({
                     style: {
                         flex: '2',
-                        color: 'rgba(0,121,98,1)', // 0, 121, 98
+                        // color: 'rgba(0,121,98,1)', // 0, 121, 98
                         fontSize: '130%',
                         fontWeight: 'bold',
                         textAlign: 'center',
@@ -1025,6 +1026,7 @@ define([
                 switch (avatarOption.field()) {
                 case 'gravatar':
                     return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault.field();
+                case 'silhouette':
                 case 'mysteryman':
                     return Plugin.plugin.fullPath + '/images/nouserpic.png';
                 }
