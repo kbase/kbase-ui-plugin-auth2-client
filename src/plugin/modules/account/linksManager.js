@@ -216,7 +216,6 @@ define([
                                     menuLabelNode.innerHTML = buildProviderLabel(provider);
                                     var n = document.getElementById(providerMenuId);
                                     n.style.display = 'none';
-                                    runtime.service('session').getClient().setLastProvider(provider.id);
                                 })
                             }, buildProviderLabel(provider)));
                         }))

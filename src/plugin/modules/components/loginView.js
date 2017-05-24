@@ -4,13 +4,15 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
+    'yaml!../config.yml',
     'bootstrap'
 ], function (
     ko,
     html,
     BS,
     Auth2Error,
-    Plugin
+    Plugin,
+    config
 ) {
     var t = html.tag,
         div = t('div'),
@@ -166,7 +168,12 @@ define([
                         }, [
                             'Choose Globus if you signed up',
                             br(),
-                            'before 5/25/17'
+                            'before ',
+                            span({
+                                dataBind: {
+                                    text: '$component.config.launchDate'
+                                }
+                            })
                         ]),
                         div({
                             // class: 'btn-group-vertical',
@@ -279,7 +286,13 @@ define([
                 }
             }, 'Sign in Changes'),
             p([
-                'On 5/25/17 KBase launched a new authentication and authorization system. ',
+                'On ',
+                span({
+                    dataBind: {
+                        text: '$component.config.launchDate'
+                    }
+                }),
+                ' KBase launched a new authentication and authorization system. ',
                 'One of the changes is to replace a direct login to KBase with an authorization ',
                 'system using Google and Globus for user identification.'
             ]),
@@ -532,7 +545,7 @@ define([
             mode: mode,
             tabs: filteredTabs,
             doSelectTab: doSelectTab,
-            test: 'this is a tset'
+            config: config
         };
     }
 
