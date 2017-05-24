@@ -83,7 +83,6 @@ define([
                     textAlign: 'center'
                 },
                 id: events.addEvent('click', function () {
-                    runtime.service('session').getClient().setLastProvider(provider.id);
                     doLogin(provider.id, state);
                 })
             }, div({
@@ -122,7 +121,6 @@ define([
                     fontWeight: 'bold'
                 },
                 id: events.addEvent('click', function () {
-                    runtime.service('session').getClient().setLastProvider(provider.id);
                     doLogin(provider.id, state);
                 })
             }, buildProviderLabel(provider));

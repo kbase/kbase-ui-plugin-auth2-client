@@ -8,6 +8,7 @@ define([
     'kb_common_ts/HttpClient',
     'kb_common_ts/Auth2',
     'kb_common_ts/Auth2Error',
+    'yaml!../config.yml',
     // loaded for effect
     'bootstrap'
 ], function (
@@ -19,7 +20,8 @@ define([
     Plugin,
     HttpClient,
     Auth2,
-    Auth2Error
+    Auth2Error,
+    config
 ) {
     var t = html.tag,
         div = t('div'),
@@ -56,7 +58,13 @@ define([
                     //     })
                     // ]),
                     p([
-                        'KBase accounts created before 5/25/17 utilized Globus ID exclusively.'
+                        'KBase accounts created before ',
+                        span({
+                            dataBind: {
+                                text: '$component.config.launchDate'
+                            }
+                        }),
+                        ' utilized Globus ID exclusively.'
                     ])
                 ])
             }
@@ -107,46 +115,7 @@ define([
                     }
                 })
             ]),
-            // div({
-            //     class: 'row',
-            //     style: {
-            //         marginTop: '1em'
-            //     }
-            // }, [
-            //     div({
-            //         class: 'col-md-3'
-            //     }, [
-            //         div({
-            //             class: 'checkbox',
-            //             dataControl: 'stay-signed-in'
-            //         }, label([
-            //             input({
-            //                 type: 'checkbox',
-            //                 dataBind: {
-            //                     checked: 'staySignedIn'
-            //                 }
-            //             }),
-            //             ' Stay signed in'
-            //         ]))
-            //     ]),
-            //     div({
-            //         class: 'col-md-9',
-            //         style: {
-            //             textAlign: 'left',
-            //             marginTop: '6px'
-            //         }
-            //     }, [
-            //         p([
-            //             'When checked, this option will instruct your browser to keep your ',
-            //             'KBase sign-in cookie active until it expires. Without this option ',
-            //             'your browser will delete the cookie when your browser is exited.'
-            //         ]),
-            //         p([
-            //             'If you stay signed in, your KBase sign-in will be active for two weeks, or until you ',
-            //             'sign out or delete your browser cookies. '
-            //         ])
-            //     ])
-            // ]),
+
             BS.buildCollapsiblePanel({
                 collapsed: true,
                 type: 'default',
@@ -591,30 +560,11 @@ define([
     }
 
     function template() {
-        // var doodlePath = Plugin.plugin.fullPath + '/doodle.png';
-
         return div({
             class: 'container-fluid',
-            //  style: 'margin-top: 4em',
-            // dataWidget: 'login'
             dataComponent: 'signup-view'
         }, [
-            // div({}, [
-            //     div({
-            //         style: {
-            //             position: 'absolute',
-            //             backgroundImage: 'url(' + doodlePath + ')',
-            //             backgroundRepeat: 'no-repeat',
-            //             backgroundSize: '35%',
-            //             top: '0',
-            //             left: '0',
-            //             bottom: '0',
-            //             right: '0',
-            //             opacity: '0.1',
-            //             zIndex: '-1000'
-            //         }
-            //     })
-            // ]),
+
             div({ class: 'row' }, [
                 div({
                     class: 'col-sm-10 col-sm-offset-1',
@@ -630,129 +580,108 @@ define([
         ]);
     }
 
+    function viewModel(params) {
+        var runtime = params.runtime;
+
+        var choice = params.choice;
+
+        var policiesToResolve = params.policiesToResolve;
+
+        var providersInfo = getProviders();
+
+        var providersMap = {};
+        runtime.service('session').getProviders().forEach(function (provider) {
+            provider.description = providersInfo[provider.id.toLowerCase()].description;
+            providersMap[provider.id.toLowerCase()] = provider;
+        });
+
+        var nextRequest = params.nextRequest;
+
+        var staySignedIn = ko.observable(true);
+
+        // UI state
+        var uiState = {
+            auth: ko.observable(false),
+            signin: ko.observable(false),
+            signup: ko.observable(false),
+            error: ko.observable(false)
+        };
+        if (choice) {
+            uiState.auth(true);
+            if (choice.login.length === 1) {
+                uiState.signin(true);
+            } else {
+                uiState.signup(true);
+            }
+        }
+
+        function loginStart(runtime, providerId, state) {
+            runtime.service('session').getClient().loginCancel()
+                .catch(Auth2Error.AuthError, function (err) {
+                    // ignore this specific error...
+                    if (err.code !== '10010') {
+                        throw err;
+                    }
+                })
+                .catch(function (err) {
+                    // TODO: show error.
+                    console.error('Skipping error', err);
+                })
+                .finally(function () {
+                    //  don 't care whether it succeeded or failed.
+                    return runtime.service('session').loginStart({
+                        // TODO: this should be either the redirect url passed in 
+                        // or the dashboard.
+                        // We just let the login page do this. When the login page is 
+                        // entered with a valid token, redirect to the nextrequest,
+                        // and if that is empty, the dashboard.
+                        state: state,
+                        provider: providerId,
+                        stayLoggedIn: false
+                    });
+                });
+        }
+
+        function doSignin(data) {
+            data.loading(true);
+            data.disabled(true);
+            loginStart(runtime, data.id, {
+                nextrequest: nextRequest,
+                origin: 'signup'
+            });
+        }
+
+        var error = ko.observable();
+        var isError = ko.pureComputed(function () {
+            if (error()) {
+                return true;
+            }
+            return false;
+        });
+
+        // no assumptions ... this is set by the signup component, if any.
+        var signupState = ko.observable();
+
+        return {
+            runtime: runtime,
+            uiState: uiState,
+            providers: providersMap,
+            nextRequest: nextRequest,
+            staySignedIn: staySignedIn,
+            choice: choice,
+            policiesToResolve: policiesToResolve,
+            doSignin: doSignin,
+            signupState: signupState,
+            error: error,
+            isError: isError,
+            assetsPath: Plugin.plugin.fullPath,
+            config: config
+        };
+    }
+
     function component() {
         return {
-            viewModel: function (data) {
-                var runtime = data.runtime;
-
-                // var step = data.step;
-
-                var choice = data.choice;
-
-                var policiesToResolve = data.policiesToResolve;
-
-                var providersInfo = getProviders();
-
-                var providersMap = {};
-                runtime.service('session').getProviders().forEach(function (provider) {
-                    provider.description = providersInfo[provider.id.toLowerCase()].description;
-                    providersMap[provider.id.toLowerCase()] = provider;
-                });
-
-                var nextRequest = data.nextRequest;
-
-                var staySignedIn = ko.observable(true);
-
-                // UI state
-                var uiState = {
-                    auth: ko.observable(false),
-                    signin: ko.observable(false),
-                    signup: ko.observable(false),
-                    error: ko.observable(false)
-                };
-                if (choice) {
-                    uiState.auth(true);
-                    if (choice.login.length === 1) {
-                        uiState.signin(true);
-                    } else {
-                        uiState.signup(true);
-                    }
-                }
-
-                // function doStaySignedIn() {
-                //     var checked = e.target.checked;
-                //     var auth2Client = runtime.service('session').getClient();
-                //     auth2Client.setSessionPersistent(checked);
-                // }
-                function loginStart(runtime, providerId, state) {
-                    runtime.service('session').getClient().loginCancel()
-                        .catch(Auth2Error.AuthError, function (err) {
-                            // ignore this specific error...
-                            if (err.code !== '10010') {
-                                throw err;
-                            }
-                        })
-                        .catch(function (err) {
-                            // TODO: show error.
-                            console.error('Skipping error', err);
-                        })
-                        .finally(function () {
-                            //  don 't care whether it succeeded or failed.
-                            return runtime.service('session').loginStart({
-                                // TODO: this should be either the redirect url passed in 
-                                // or the dashboard.
-                                // We just let the login page do this. When the login page is 
-                                // entered with a valid token, redirect to the nextrequest,
-                                // and if that is empty, the dashboard.
-                                state: state,
-                                provider: providerId,
-                                stayLoggedIn: false
-                            });
-                        });
-                }
-
-                function doSignin(data) {
-                    // set last provider...
-                    data.loading(true);
-                    data.disabled(true);
-                    // providers.forEach(function (provider) {
-                    //     provider.state('disabled');
-                    //     provider.disabled(true);
-                    // });
-                    loginStart(runtime, data.id, {
-                        nextrequest: nextRequest,
-                        origin: 'signup'
-                    });
-                }
-
-                // function doProviderSignin(provider) {
-                //     console.log('starting login with', nextRequest);
-                //     runtime.service('session').loginStart({
-                //         state: {
-                //             nextrequest: JSON.stringify(nextRequest),
-                //             origin: 'signup'
-                //         },
-                //         provider: provider.id,
-                //         stayLoggedIn: false
-                //     });
-                // }
-
-                var error = ko.observable();
-                var isError = ko.pureComputed(function () {
-                    if (error()) {
-                        return true;
-                    }
-                    return false;
-                });
-
-                // no assumptions ... this is set by the signup component, if any.
-                var signupState = ko.observable();
-
-                return {
-                    runtime: runtime,
-                    uiState: uiState,
-                    providers: providersMap,
-                    nextRequest: nextRequest,
-                    staySignedIn: staySignedIn,
-                    choice: choice,
-                    policiesToResolve: policiesToResolve,
-                    doSignin: doSignin,
-                    signupState: signupState,
-                    error: error,
-                    isError: isError,
-                    assetsPath: Plugin.plugin.fullPath
-                };
-            },
+            viewModel: viewModel,
             template: template()
         };
     }
