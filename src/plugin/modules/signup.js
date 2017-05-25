@@ -134,7 +134,7 @@ define([
                     if (params.nextrequest) {
                         nextRequest = JSON.parse(params.nextrequest);
                     } else {
-                        nextRequest = '';
+                        nextRequest = null;
                     }
 
                     vm.main.node.innerHTML = div({

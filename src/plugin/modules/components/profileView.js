@@ -207,21 +207,32 @@ define([
         });
     }
 
+    function buildAvatarUrl(profile) {
+        switch (profile.profile.userdata.avatarOption || 'silhouette') {
+        case 'gravatar':
+            var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
+            var gravatarHash = profile.profile.synced.gravatarHash;
+            if (gravatarHash) {
+                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
+            } else {
+                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
+        case 'silhouette':
+        case 'mysteryman':
+        default:
+            return Plugin.plugin.fullPath + '/images/nouserpic.png';
+        }
+    }
+
     /*
         incoming params is a raw user profile. We turn that into a view model
     */
     function viewModel(params) {
         // just a parasitic widget... var gravatarUrl = ko.pureComputed(function () {
+        console('in the view model', params);
         var userProfile = params.profile;
         var gravatarUrl = ko.pureComputed(function () {
-            switch (userProfile.profile.userdata.avatarOption) {
-            case 'gravatar':
-                return 'https://www.gravatar.com/avatar/' + userProfile.profile.synced.gravatarHash + '?s=200&amp;r=pg&d=' + userProfile.profile.userdata.gravatarDefault;
-            case 'silhouette':
-            case 'mysteryman':
-                return Plugin.plugin.fullPath + '/images/nouserpic.png';
-            }
-
+            buildAvatarUrl(params.profile);
         });
         var personalStatementDisplay = ko.pureComputed(function () {
             var text = userProfile.profile.userdata.personalStatement;
@@ -239,6 +250,7 @@ define([
     }
 
     function component() {
+        console.log('creating component');
         return {
             template: template(),
             viewModel: viewModel

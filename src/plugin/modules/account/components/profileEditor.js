@@ -1,5 +1,5 @@
-/* global Promise*/
 define([
+    'bluebird',
     'knockout-plus',
     'md5',
     'kb_common/html',
@@ -12,6 +12,7 @@ define([
     '../../lib/geoNames',
     '../../lib/dataSource'
 ], function (
+    Promise,
     ko,
     md5,
     html,
@@ -24,11 +25,11 @@ define([
     GeoNames,
     DataSource
 ) {
+    'use strict';
+
     var t = html.tag,
         div = t('div'),
         span = t('span'),
-        h2 = t('h2'),
-        h3 = t('h3'),
         a = t('a'),
         p = t('p'),
         input = t('input'),
@@ -536,6 +537,24 @@ define([
 
     };
 
+    function buildAvatarUrl(profile) {
+        switch (profile.profile.userdata.avatarOption || 'silhouette') {
+        case 'gravatar':
+            var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
+            var gravatarHash = profile.profile.synced.gravatarHash;
+            if (gravatarHash) {
+                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
+            } else {
+                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
+        case 'silhouette':
+        case 'mysteryman':
+        default:
+            return Plugin.plugin.fullPath + '/images/nouserpic.png';
+        }
+    }
+
+
     function viewModel(params) {
         var runtime = params.runtime;
         var profile = params.profile;
@@ -874,7 +893,7 @@ define([
         };
         var gravatarDefault = {
             ready: ko.observable(true),
-            field: ko.observable(profile.profile.userdata.gravatarDefault || 'monsterid').extend({
+            field: ko.observable(profile.profile.userdata.gravatarDefault).extend({
                 required: false,
                 minLength: 2,
                 maxLength: 100,
@@ -1023,9 +1042,9 @@ define([
         var gravatarHash = profile.profile.synced.gravatarHash;
         var gravatarUrl = ko.pureComputed(function () {
             try {
-                switch (avatarOption.field()) {
+                switch (avatarOption.field() || 'silhoutte') {
                 case 'gravatar':
-                    return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault.field();
+                    return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault.field() || 'identicon';
                 case 'silhouette':
                 case 'mysteryman':
                     return Plugin.plugin.fullPath + '/images/nouserpic.png';

@@ -51,27 +51,29 @@ define([
                 });
         }
 
+        function buildAvatarUrl(profile) {
+            switch (profile.profile.userdata.avatarOption || 'silhouette') {
+            case 'gravatar':
+                var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
+                var gravatarHash = profile.profile.synced.gravatarHash;
+                if (gravatarHash) {
+                    return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
+                } else {
+                    return Plugin.plugin.fullPath + '/images/nouserpic.png';
+                }
+            case 'silhouette':
+            case 'mysteryman':
+            default:
+                return Plugin.plugin.fullPath + '/images/nouserpic.png';
+            }
+        }
+
         function buildAvatar(profile) {
             if (!profile || !profile.profile) {
                 console.warn('no profile?', profile);
                 return '';
             }
-            var avatarUrl;
-            switch (profile.profile.userdata.avatarOption || 'gravatar') {
-            case 'gravatar':
-                var gravatarDefault = profile.profile.userdata.gravatarDefault || 'wavatar';
-                var gravatarHash = profile.profile.synced.gravatarHash;
-                if (gravatarHash) {
-                    avatarUrl = 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
-                } else {
-                    avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
-                }
-                break;
-            case 'silhouette':
-            case 'mysteryman':
-            default:
-                avatarUrl = Plugin.plugin.fullPath + '/images/nouserpic.png';
-            }
+            var avatarUrl = buildAvatarUrl(profile);
 
             return img({
                 src: avatarUrl,
