@@ -292,8 +292,8 @@ define([
                         text: '$component.config.launchDate'
                     }
                 }),
-                ' KBase launched a new authentication and authorization system. ',
-                'One of the changes is to replace a direct login to KBase with an authorization ',
+                ' KBase launched a new sign-in system. ',
+                'One of the changes is to replace a direct login to KBase with a sign-in ',
                 'system using Google and Globus for user identification.'
             ]),
             p([
@@ -304,21 +304,19 @@ define([
             ]),
             p({
                 style: {
-                    fontStyle: 'italic'
+                    xfontStyle: 'italic'
                 }
             }, [
                 'The reason your KBase username and password work at Globus is that KBase has always ',
-                'used Globus and Globus ID behind the scenes.'
+                'used Globus and Globus ID behind the scenes. You may remember originally signing up with Globus, ',
+                'but have likely not been exposed to it since.'
             ]),
             p([
-                'If you are a ',
-                b('new user'),
-                ' you may simply use the identity provider more convenient for you. ',
-                a({ href: 'http://kbase.us/help/identity-providers', target: '_blank' }, 'Read more'), ' about our identity providers.'
+                b('If you are a new user'),
+                ' you may simply use the identity provider most convenient for you. '
             ]),
             p([
-                'For more detailed information and instructions for see ',
-                a({ href: '#auth2/login/legacy' }, 'this page.')
+                a({ href: 'http://kbase.us/auth-update-2017' }, 'Read more about the update')
             ])
 
         ]);
