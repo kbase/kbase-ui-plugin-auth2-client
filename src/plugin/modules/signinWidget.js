@@ -52,7 +52,7 @@ define([
         }
 
         function buildAvatarUrl(profile) {
-            switch (profile.profile.userdata.avatarOption || 'silhouette') {
+            switch (profile.profile.userdata.avatarOption || 'gravatar') {
             case 'gravatar':
                 var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
                 var gravatarHash = profile.profile.synced.gravatarHash;

@@ -359,7 +359,7 @@ define([
                 // var events = DomEvent.make({
                 //     node: container
                 // });
-                runtime.send('ui', 'setTitle', 'Link to External Identity');
+                runtime.send('ui', 'setTitle', 'Link to Sign-In Account');
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
                     .then(function (result) {
@@ -390,19 +390,21 @@ define([
                         case '60000':
                             showMessage({
                                 type: 'danger',
-                                title: 'Identity already linked',
+                                title: 'Sign-in account already linked',
                                 message: div([
                                     p([
-                                        'Sorry, this identity ',
-
-                                        'is already linked to this account'
+                                        'Sorry, you may not link this sign-in account to your KBase account, ',
+                                        'since it is already linked to a KBase account.'
+                                    ]),
+                                    p([
+                                        'A sign-in account may only be linked to one KBase account at a time.'
                                     ]),
                                     p([
                                         'You may ',
                                         a({
                                             href: '#auth2/account?tab=links'
                                         }, 'return to the linking tab'),
-                                        ' and start again, this time choosing a different identity to link.'
+                                        ' and start again, this time choosing a different sign-in account to link to.'
                                     ])
                                 ])
                             });
