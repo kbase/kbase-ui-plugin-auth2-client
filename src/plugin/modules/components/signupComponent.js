@@ -549,6 +549,10 @@ define([
                     file: 'nationalLabs.yaml',
                     type: 'yaml'
                 },
+                otherLabs: {
+                    file: 'otherLabs.yaml',
+                    type: 'yaml'
+                },
 
                 // A computed data source.
                 organizations: {
@@ -557,6 +561,14 @@ define([
                             translate: false,
                         },
                         nationalLabs: {
+                            translate: function (item) {
+                                return {
+                                    value: item.name,
+                                    label: item.name + ' (' + item.initials + ')'
+                                };
+                            }
+                        },
+                        otherLabs: {
                             translate: function (item) {
                                 return {
                                     value: item.name,

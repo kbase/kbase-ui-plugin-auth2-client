@@ -85,7 +85,7 @@ define([
                 div({
                     class: 'col-sm-10',
                     dataBind: {
-                        with: 'institution'
+                        with: 'organization'
                     }
                 }, div({
                     dataBind: {
@@ -111,7 +111,7 @@ define([
                 }, input({
                     class: 'form-control',
                     dataBind: {
-                        textInput: 'start_year.field'
+                        textInput: 'started.field'
                     }
                 })),
                 div({
@@ -122,7 +122,7 @@ define([
                 }, input({
                     class: 'form-control',
                     dataBind: {
-                        textInput: 'end_year.field'
+                        textInput: 'ended.field'
                     }
                 }))
             ])
@@ -257,9 +257,13 @@ define([
                 }, 'Position'),
                 FieldBuilders.buildTypeahead('profile.organization', {}),
                 FieldBuilders.buildInput('profile.department'),
+                // FieldBuilders.buildTypeahead('profile.jobTitle', {}),
                 FieldBuilders.buildSelect('profile.jobTitle', {
                     optionsCaption: ' - '
                 }),
+                '<!-- ko if: profile.jobTitleOther.field.isEnabled -->',
+                FieldBuilders.buildInput('profile.jobTitleOther'),
+                '<!-- /ko -->',
                 buildAffiliations('profile.affiliations')
             ]),
             div({
@@ -282,13 +286,17 @@ define([
                     }
                 }, 'Location'),
                 // buildUseMyLocation(),
-                FieldBuilders.buildInput('profile.city'),
-                FieldBuilders.buildInput('profile.state'),
-                FieldBuilders.buildInput('profile.postalCode'),
                 FieldBuilders.buildSelect('profile.country', {
                     // optionsCaption: fields.country.emptyValueLabel,
                     // defaultValue: fields.country.defaultValue
-                })
+                }),
+                FieldBuilders.buildInput('profile.city'),
+                '<!-- ko if: profile.state.field.isEnabled -->',
+                FieldBuilders.buildSelect('profile.state'),
+                '<!-- /ko -->',
+                '<!-- ko if: profile.postalCode.field.isEnabled -->',
+                FieldBuilders.buildInput('profile.postalCode'),
+                '<!-- /ko -->'
             ]),
             div({
                 style: {
@@ -313,7 +321,7 @@ define([
                 FieldBuilders.buildSelect('profile.fundingSource', {
                     optionsCaption: ' - '
                 }),
-                FieldBuilders.buildTextarea('profile.personalStatement', {
+                FieldBuilders.buildTextarea('profile.researchStatement', {
                     style: {
                         height: '10em'
                     }
@@ -534,8 +542,9 @@ define([
                 return target();
             }
         };
-
+        return target;
     };
+
 
     function buildAvatarUrl(profile) {
         switch (profile.profile.userdata.avatarOption || 'silhouette') {
@@ -554,10 +563,10 @@ define([
         }
     }
 
-
     function viewModel(params) {
         var runtime = params.runtime;
         var profile = params.profile;
+        var ready = ko.observable(false);
         var dataSource = DataSource({
             sources: {
                 // Raw data source
@@ -577,6 +586,10 @@ define([
                 },
                 nationalLabs: {
                     file: 'nationalLabs.yaml',
+                    type: 'yaml'
+                },
+                otherLabs: {
+                    file: 'otherLabs.yaml',
                     type: 'yaml'
                 },
                 researchInterests: {
@@ -609,6 +622,16 @@ define([
                         };
                     }
                 },
+                states: {
+                    file: 'states.json',
+                    type: 'json',
+                    translate: function (item) {
+                        return {
+                            value: item.name,
+                            label: item.name
+                        };
+                    }
+                },
                 gravatarDefaults: {
                     file: 'gravatarDefaults.json',
                     type: 'json'
@@ -630,6 +653,14 @@ define([
                                     label: item.name + ' (' + item.initials + ')'
                                 };
                             }
+                        },
+                        otherLabs: {
+                            translate: function (item) {
+                                return {
+                                    value: item.name,
+                                    label: item.name + ' (' + item.initials + ')'
+                                };
+                            }
                         }
                     }
                 }
@@ -640,9 +671,22 @@ define([
             ready: true,
             field: ko.observable(profile.user.realname)
                 .extend({
-                    required: true,
-                    minLength: 2,
-                    maxLength: 100,
+                    constraint: {
+                        required: true,
+                        validate: function (value) {
+                            if (value.length < 2) {
+                                return {
+                                    message: 'Must be at least two characters long'
+                                };
+                            }
+                            if (value.length > 100) {
+                                return {
+                                    message: 'Must be less than 100 characters long'
+                                };
+                            }
+                        }
+                    },
+
                     dirty: false
                 }),
             label: 'Name',
@@ -667,13 +711,20 @@ define([
         var organization = {
             ready: ko.observable(true),
             field: ko.observable(profile.profile.userdata.organization).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
+                constraint: {
+                    required: true,
+                    validate: function (value) {
+                        if (value.length < 2) {
+                            return 'The organization name must be at least two characters long';
+                        }
+                        if (value.length > 100) {
+                            return 'The organization name cannot be longer than 100 characters';
+                        }
+                    }
+                },
                 dirty: false
             }),
             dataSource: dataSource.getFilter('organizations'),
-            required: true,
             label: 'Organization',
             doc: {
                 description: 'Your primary association - organization, institution, business',
@@ -708,20 +759,23 @@ define([
         var department = {
             ready: ko.observable(true),
             field: ko.observable(profile.profile.userdata.department).extend({
-                required: false,
-                minLength: 2,
-                maxLength: 100,
+                constraint: {
+                    required: false,
+                    validate: function (value) {
+                        if (value.length < 2) {
+                            return 'The department must be at least two characters long';
+                        }
+                        if (value.length > 50) {
+                            return 'The department cannot be longer than 50 characters';
+                        }
+                    }
+                },
                 dirty: false
             }),
-            required: false,
             label: 'Department',
             doc: {
                 description: 'Your department or area of specialization within the organization',
-                more: div([
-                    p([
-                        'additional details here...'
-                    ])
-                ]),
+                more: null,
                 showMore: ko.observable(false),
                 toggleShowMore: function () {
                     this.showMore(!this.showMore());
@@ -760,11 +814,18 @@ define([
 
         var jobTitle = {
             ready: ko.observable(false),
-            required: true,
             field: ko.observable(profile.profile.userdata.jobTitle).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
+                constraint: {
+                    required: true,
+                    validate: function (value) {
+                        if (value.length < 2) {
+                            return 'The job title must be at least two characters long';
+                        }
+                        if (value.length > 50) {
+                            return 'The job title cannot be longer than 50 characters';
+                        }
+                    }
+                },
                 dirty: false
             }),
             emptyLabel: ' - ',
@@ -772,7 +833,7 @@ define([
             label: 'Job Title',
             doc: {
                 description: 'Your job title or position',
-                more: 'this is more stuff',
+                more: null,
                 showMore: ko.observable(false),
                 toggleShowMore: function () {
                     this.showMore(!this.showMore());
@@ -780,13 +841,54 @@ define([
             }
         };
 
+        var jobTitleOther = {
+            ready: ko.pureComputed(function () {
+                return true;
+                // return (jobTitle.field() === 'Other');
+            }),
+            field: ko.observable(profile.profile.userdata.jobTitleOther)
+                .extend({
+                    constraint: {
+                        required: ko.pureComputed(function () {
+                            return (jobTitle.field() === 'Other');
+                        }),
+                        validate: function (value) {
+                            if (value.length < 2) {
+                                return 'The field must be at least two characters long';
+                            }
+                            if (value.length > 50) {
+                                return 'The field cannot be longer than 50 characters';
+                            }
+                        }
+                    },
+                    enabled: {
+                        observable: jobTitle.field,
+                        fun: function (value) {
+                            return (value === 'Other');
+                        }
+                    },
+                    dirty: false
+                }),
+            label: 'Job Title (Other)',
+            doc: null
+        };
+
         var researchInterests = {
             ready: true,
             field: ko.observableArray(profile.profile.userdata.researchInterests || []).extend({
-                required: true,
+                logChange: 'ha!',
+                // mytest: true,
+                constraint: {
+                    description: 'Your research interests',
+                    required: true,
+                    validate: function (value) {
+                        // ensure in the list...
+                    }
+                },
+                // required: true,
                 dirty: false,
             }),
-            required: true,
+            // required: true,
             dataSource: dataSource.getFilter('researchInterests'),
             label: 'Research Interests',
             doc: {
@@ -802,7 +904,13 @@ define([
         var fundingSource = {
             ready: ko.observable(false),
             field: ko.observable(profile.profile.userdata.fundingSource).extend({
-                required: false,
+                constraint: {
+                    required: false,
+                    validate: function (value) {
+                        // TODO
+                        // ensure in the data source
+                    }
+                },
                 dirty: false
             }),
             dataSource: dataSource.getFilter('fundingSource'),
@@ -820,49 +928,33 @@ define([
 
         var city = {
             ready: ko.observable(true),
-            required: true,
             field: ko.observable(profile.profile.userdata.city).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
+                constraint: {
+                    required: true,
+                    validate: function (value) {
+                        if (value.length < 2) {
+                            return 'The city must be at least two characters long';
+                        }
+                        if (value.length > 100) {
+                            return 'The city cannot be longer than 100 characters';
+                        }
+                    }
+                },
                 dirty: false
             }),
             label: 'City',
             doc: null
         };
 
-        var state = {
-            ready: ko.observable(true),
-            required: true,
-            field: ko.observable(profile.profile.userdata.state).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
-                dirty: false
-            }),
-            label: 'State, Province, or Region',
-            doc: null
-        };
-        var postalCode = {
-            ready: ko.observable(true),
-            required: true,
-            field: ko.observable(profile.profile.userdata.postalCode).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
-                dirty: false
-            }),
-            label: 'Zip or Postal Code',
-            doc: null
-        };
-
         var country = {
             ready: ko.observable(false),
-            required: true,
             field: ko.observable(profile.profile.userdata.country).extend({
-                required: true,
-                minLength: 2,
-                maxLength: 100,
+                constraint: {
+                    required: true,
+                    validate: function (value) {
+                        // todo: ensure in list of countries.
+                    }
+                },
                 dirty: false
             }),
             label: 'Country',
@@ -871,11 +963,79 @@ define([
             dataSource: dataSource.getFilter('countries')
         };
 
+        var state = {
+            ready: ko.observable(true),
+            // required: true,
+            field: ko.observable(profile.profile.userdata.state).extend({
+                constraint: {
+                    required: ko.pureComputed(function () {
+                        return (country.field() === 'United States');
+                    }),
+                    validate: function (value) {
+                        // todo: ensure in list of countries.
+                    }
+                },
+                enabled: {
+                    observable: country.field,
+                    fun: function (newCountry) {
+                        return (newCountry === 'United States');
+                    }
+                },
+                // required: {
+                //     onlyIf: function () {
+                //         return (country.field() === 'United States');
+                //     }
+                // },
+                // minLength: 2,
+                // maxLength: 100,
+                dirty: false
+            }),
+            label: 'State, Province, or Region',
+            doc: null,
+            emptyLabel: ' - ',
+            dataSource: dataSource.getFilter('states')
+        };
+
+        var postalCode = {
+            ready: ko.observable(true),
+            // required: {
+            //     onlyIf: function () {
+            //         return (country.field() === 'United States');
+            //     }
+            // },
+            field: ko.observable(profile.profile.userdata.postalCode).extend({
+                constraint: {
+                    required: ko.pureComputed(function () {
+                        return (country.field() === 'United States');
+                    }),
+                    validate: function (value) {
+                        if (!/^[0-9]{5}$/.test(value)) {
+                            return 'Invalid zip format, expecting #####';
+                        }
+                    }
+                },
+                enabled: {
+                    observable: country.field,
+                    fun: function (newCountry) {
+                        return (newCountry === 'United States');
+                    }
+                },
+                // required: true,
+                // pattern: '^[0-9]{5}$',
+                dirty: false
+            }),
+            label: 'Zip or Postal Code',
+            doc: null
+        };
+
         var avatarOption = {
             field: ko.observable(profile.profile.userdata.avatarOption).extend({
-                required: false,
-                minLength: 2,
-                maxLength: 100,
+                constraint: {
+                    required: false,
+                    validate: function (value) {
+                        // todo ensure in list
+                    }
+                },
                 dirty: false
             }),
             emptyLabel: ' - ',
@@ -894,9 +1054,12 @@ define([
         var gravatarDefault = {
             ready: ko.observable(true),
             field: ko.observable(profile.profile.userdata.gravatarDefault).extend({
-                required: false,
-                minLength: 2,
-                maxLength: 100,
+                constraint: {
+                    required: false,
+                    validate: function (value) {
+                        // todo ensure in linst
+                    }
+                },
                 dirty: false
             }),
             required: false,
@@ -933,15 +1096,15 @@ define([
             }
         };
 
-        ko.validation.rules['year'] = {
-            validator: function (val) {
-                if (!/^[0-9][0-9][0-9][0-9]$/.test(val)) {
-                    return false;
-                }
-                return true;
-            },
-            message: 'A username may only contain the characters a-z, 0-0, and _.'
-        };
+        // ko.validation.rules['year'] = {
+        //     validator: function (val) {
+        //         if (!/^[0-9][0-9][0-9][0-9]$/.test(val)) {
+        //             return false;
+        //         }
+        //         return true;
+        //     },
+        //     message: 'A username may only contain the characters a-z, 0-0, and _.'
+        // };
         ko.validation.registerExtenders();
 
         var affils = profile.profile.userdata.affiliations || [];
@@ -949,53 +1112,88 @@ define([
         function affiliationVm(affil) {
             var title = {
                 field: ko.observable(affil && affil.title).extend({
-                    required: true,
-                    minLength: 2,
-                    maxLength: 100,
+                    constraint: {
+                        required: true,
+                        validate: function (value) {
+                            if (value.length < 2) {
+                                return 'The title must be at least two characters long';
+                            }
+                            if (value.length > 50) {
+                                return 'The title cannot be longer than 50 characters';
+                            }
+                        }
+                    },
                     dirty: false
                 })
             };
 
-            var institution = {
-                field: ko.observable(affil && affil.institution).extend({
-                    required: true,
-                    minLength: 2,
-                    maxLength: 100,
+            var organization = {
+                field: ko.observable(affil && affil.organization).extend({
+                    constraint: {
+                        required: false,
+                        validate: function (value) {
+                            // todo ensure in list
+                        }
+                    },
                     dirty: false
                 }),
                 dataSource: dataSource.getFilter('organizations')
             };
-            var start_year = {
-                field: ko.observable(affil && affil.start_year).extend({
-                    required: true,
-                    year: true,
+            var started = {
+                field: ko.observable(affil && affil.started).extend({
+                    constraint: {
+                        required: true,
+                        validate: function (value) {
+                            if (!/^[0-9][0-9][0-9][0-9]$/.test(value)) {
+                                return 'Invalid year format, expecting ####';
+                            }
+                        }
+                    },
                     dirty: false
                 })
             };
 
-            var end_year = {
-                field: ko.observable(affil && affil.end_year).extend({
-                    required: false,
-                    year: true,
+            var ended = {
+                field: ko.observable(affil && affil.ended).extend({
+                    constraint: {
+                        required: false,
+                        validate: function (value) {
+                            if (!/^[0-9][0-9][0-9][0-9]$/.test(value)) {
+                                return 'Invalid year format, expecting ####';
+                            }
+                        }
+                    },
                     dirty: false
                 })
             };
 
             return {
                 title: title,
-                institution: institution,
-                start_year: start_year,
-                end_year: end_year
+                organization: organization,
+                started: started,
+                ended: ended
             };
         }
 
         var affiliations = {
             field: ko.observableArray(affils.map(function (affil) {
-                return affiliationVm(affil);
-            })).extend({
-                required: false,
-                dirty: false
-            }),
+                    return affiliationVm(affil);
+                }))
+                // .sort(function (a, b) {
+                //     if (a.started.field() < b.started.field()) {
+                //         return -1;
+                //     } else if (a.started.field() > b.started.field()) {
+                //         return 1;
+                //     } else {
+                //         return 0;
+                //     }
+                // })
+                .extend({
+                    constraint: {
+                        required: false
+                    },
+                    dirty: false
+                }),
             label: 'Affiliations',
             required: false,
             doc: {
@@ -1012,25 +1210,31 @@ define([
             }
         };
 
-        var personalStatement = {
+        var researchStatement = {
             ready: ko.observable(true),
-            field: ko.observable(profile.profile.userdata.personalStatement).extend({
-                required: false,
-                minLength: 2,
-                maxLength: 400,
+            field: ko.observable(profile.profile.userdata.researchStatement).extend({
+                constraint: {
+                    required: true,
+                    validate: function (value) {
+                        if (value.length < 2) {
+                            return 'The research statement must be at least two characters long';
+                        }
+                        if (value.length > 1000) {
+                            return 'The research statement cannot be longer than 1000 characters';
+                        }
+                    }
+                },
                 dirty: false
             }),
             required: false,
             label: 'Research or Personal Statement',
             doc: {
-                description: span([
-                    'Describe yourself to fellow Narrators'
-                ]),
+                description: null,
                 more: null
             }
         };
-        var personalStatementDisplay = ko.pureComputed(function () {
-            var text = personalStatement.field();
+        var researchStatementDisplay = ko.pureComputed(function () {
+            var text = researchStatement.field();
             if (!text) {
                 return '';
             }
@@ -1057,8 +1261,8 @@ define([
         var vmFields = [
             realname.field, city.field, state.field, postalCode.field, country.field, organization.field,
             department.field, avatarOption.field, gravatarDefault.field, affiliations.field,
-            personalStatement.field, researchInterests.field, fundingSource.field,
-            jobTitle.field
+            researchStatement.field, researchInterests.field, fundingSource.field,
+            jobTitle.field, jobTitleOther.field
         ];
 
         var someDirty = ko.pureComputed(function () {
@@ -1068,17 +1272,28 @@ define([
             });
         });
         var someInvalid = ko.pureComputed(function () {
-            return vmFields.some(function (field) {
+            var oldStyle = vmFields.some(function (field) {
                 if (field.isValid) {
+                    // console.log('is valid?', field.label, field.isValid());
                     return !field.isValid();
                 } else {
                     return false;
                 }
             });
+            var newStyle = vmFields.some(function (field) {
+                if (field.constraint) {
+                    return !field.constraint.isValid();
+                }
+                return false;
+            });
+            return (oldStyle || newStyle);
         });
 
         var formCanSave = ko.pureComputed(function () {
-            return someDirty() && !someInvalid();
+            var d = someDirty();
+            var iv = someInvalid();
+            // console.log(d, iv);
+            return d && !iv;
         });
 
         var exportedProfile = ko.pureComputed(function () {
@@ -1090,6 +1305,7 @@ define([
                 profile: {
                     userdata: {
                         jobTitle: jobTitle.field(),
+                        jobTitleOther: jobTitleOther.field(),
                         organization: organization.field(),
                         department: department.field(),
                         city: city.field(),
@@ -1097,16 +1313,16 @@ define([
                         postalCode: postalCode.field(),
                         country: country.field(),
                         researchInterests: researchInterests.field(),
-                        fudingSource: fundingSource.field(),
+                        fundingSource: fundingSource.field(),
                         affiliations: affiliations.field().map(function (af) {
                             return {
                                 title: af.title.field(),
-                                institution: af.institution.field(),
-                                start_year: af.start_year.field(),
-                                end_year: af.end_year.field()
+                                organization: af.organization.field(),
+                                started: af.started.field(),
+                                ended: af.ended.field()
                             };
                         }),
-                        personalStatement: personalStatement.field(),
+                        researchStatement: researchStatement.field(),
                         avatarOption: avatarOption.field(),
                         gravatarDefault: gravatarDefault.field(),
                     },
@@ -1202,9 +1418,9 @@ define([
                         var newAffiliations = affiliations.field().map(function (af) {
                             return {
                                 title: af.title.field(),
-                                institution: af.institution.field(),
-                                start_year: af.start_year.field(),
-                                end_year: af.end_year.field()
+                                organization: af.organization.field(),
+                                started: af.started.field(),
+                                ended: af.ended.field()
                             };
                         });
                         profile.profile.userdata.affiliations = newAffiliations;
@@ -1212,15 +1428,21 @@ define([
                         profileChanges = true;
                     }
 
-                    if (personalStatement.field.isDirty()) {
-                        profile.profile.userdata.personalStatement = personalStatement.field();
-                        personalStatement.field.markClean();
+                    if (researchStatement.field.isDirty()) {
+                        profile.profile.userdata.researchStatement = researchStatement.field();
+                        researchStatement.field.markClean();
                         profileChanges = true;
                     }
 
                     if (jobTitle.field.isDirty()) {
                         profile.profile.userdata.jobTitle = jobTitle.field();
                         jobTitle.field.markClean();
+                        profileChanges = true;
+                    }
+
+                    if (jobTitleOther.field.isDirty()) {
+                        profile.profile.userdata.jobTitleOther = jobTitleOther.field();
+                        jobTitleOther.field.markClean();
                         profileChanges = true;
                     }
 
@@ -1254,11 +1476,17 @@ define([
         function doSaveProfile() {
             saveProfile()
                 .then(function () {
-                    message('Successfully Saved');
-                    messageType({
-                        'alert-success': true,
-                        hidden: false
+                    runtime.send('notification', 'notify', {
+                        type: 'success',
+                        icon: 'thumbs-up',
+                        message: 'Successfuly saved your profile',
+                        autodismiss: 3000
                     });
+                    // message('Successfully Saved');
+                    // messageType({
+                    //     'alert-success': true,
+                    //     hidden: false
+                    // });
                 })
                 .catch(function (err) {
                     console.error('boo', err);
@@ -1306,6 +1534,7 @@ define([
         return {
             // fields being edited or displayed
             profile: {
+                ready: ready,
                 username: username,
                 realname: realname,
                 organization: organization,
@@ -1317,9 +1546,10 @@ define([
                 avatarOption: avatarOption,
                 gravatarDefault: gravatarDefault,
                 affiliations: affiliations,
-                personalStatement: personalStatement,
-                personalStatementDisplay: personalStatementDisplay,
+                researchStatement: researchStatement,
+                researchStatementDisplay: researchStatementDisplay,
                 jobTitle: jobTitle,
+                jobTitleOther: jobTitleOther,
                 researchInterests: researchInterests,
                 fundingSource: fundingSource,
 

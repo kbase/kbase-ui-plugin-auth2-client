@@ -59,6 +59,23 @@ define([
         return result;
     }
 
+    function buildRequiredIcon3() {
+        var result = span({
+            dataBind: {
+                if: '$data.field.constraint.isRequired()'
+            }
+        }, span({
+            class: 'glyphicon',
+            dataBind: {
+                css: '{"glyphicon-asterisk text-danger": field.constraint.isValid() === false, "glyphicon-ok text-success": field.constraint.isValid()}'
+            },
+            style: {
+                marginLeft: '4px'
+            }
+        }));
+        return result;
+    }
+
     function dirtyIcon(field) {
         var result = span({
             class: 'glyphicon',
@@ -241,6 +258,20 @@ define([
         ]);
     }
 
+    function buildLabel3(id) {
+        return label({
+            for: id
+        }, [
+            span({
+                dataBind: {
+                    html: 'label'
+                }
+            }),
+            buildRequiredIcon3(),
+            buildDirtyIcon2()
+        ]);
+    }
+
     function buildFieldGroup(id, control) {
         return div({
             class: 'form-group'
@@ -254,6 +285,27 @@ define([
                     validationMessage: 'field'
                 }
             })
+        ]);
+    }
+
+    function buildFieldGroup2(id, control) {
+        return div({
+            class: 'form-group'
+        }, [
+            buildLabel3(id),
+            buildDoc(),
+            control,
+            div({
+                dataBind: {
+                    if: '!field.constraint.isValid()'
+                }
+            }, div({
+                class: 'alert alert-danger',
+                dataBind: {
+                    // validationMessage: 'field'
+                    html: 'field.constraint.message'
+                }
+            }))
         ]);
     }
 
@@ -318,7 +370,7 @@ define([
             dataBind: {
                 if: 'ready'
             }
-        }, buildFieldGroup(id, control)));
+        }, buildFieldGroup2(id, control)));
     }
 
     function buildTextarea(vmPath, options) {
@@ -340,7 +392,7 @@ define([
             dataBind: {
                 if: 'ready'
             }
-        }, buildFieldGroup(id, control)));
+        }, buildFieldGroup2(id, control)));
     }
 
     function buildTypeahead(vmPath, options) {
@@ -366,7 +418,7 @@ define([
             dataBind: {
                 if: 'ready'
             }
-        }, buildFieldGroup(id, control)));
+        }, buildFieldGroup2(id, control)));
     }
 
     function buildSelect(vmPath, options) {
@@ -392,7 +444,7 @@ define([
             // dataBind: {
             //     if: 'ready'
             // }
-        }, buildFieldGroup(id, control)));
+        }, buildFieldGroup2(id, control)));
     }
 
     function buildCheckboxes(vmPath, options) {
@@ -417,7 +469,7 @@ define([
             dataBind: {
                 if: 'ready'
             }
-        }, buildFieldGroup(id, control)));
+        }, buildFieldGroup2(id, control)));
     }
 
     function buildDisplay(field) {

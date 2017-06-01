@@ -448,7 +448,7 @@ define([
                             fontWeight: 'bold'
                         }
                     }, [
-                        incompleteStep('①', true),
+                        incompleteStep('②', true),
                         span({
                             style: {
                                 verticalAlign: 'middle'
