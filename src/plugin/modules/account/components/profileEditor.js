@@ -816,7 +816,7 @@ define([
             ready: ko.observable(false),
             field: ko.observable(profile.profile.userdata.jobTitle).extend({
                 constraint: {
-                    required: true,
+                    required: false,
                     validate: function (value) {
                         if (value.length < 2) {
                             return 'The job title must be at least two characters long';
