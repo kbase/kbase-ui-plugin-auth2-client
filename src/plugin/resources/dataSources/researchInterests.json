@@ -33,5 +33,9 @@
     {
         "value": "util",
         "label": "Utilities"
+    },
+    {
+        "value": "other",
+        "label": "Other"
     }
 ]

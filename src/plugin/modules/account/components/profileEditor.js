@@ -318,6 +318,9 @@ define([
                     }
                 }, 'Research'),
                 FieldBuilders.buildCheckboxes('profile.researchInterests'),
+                '<!-- ko if: profile.researchInterestsOther.field.isEnabled -->',
+                FieldBuilders.buildInput('profile.researchInterestsOther'),
+                '<!-- /ko -->',
                 FieldBuilders.buildSelect('profile.fundingSource', {
                     optionsCaption: ' - '
                 }),
@@ -876,7 +879,6 @@ define([
         var researchInterests = {
             ready: true,
             field: ko.observableArray(profile.profile.userdata.researchInterests || []).extend({
-                logChange: 'ha!',
                 // mytest: true,
                 constraint: {
                     description: 'Your research interests',
@@ -899,6 +901,37 @@ define([
                     this.showMore(!this.showMore());
                 }
             }
+        };
+        var researchInterestsOther = {
+            ready: ko.pureComputed(function () {
+                return true;
+                // return (jobTitle.field() === 'Other');
+            }),
+            field: ko.observable(profile.profile.userdata.researchInterestsOther)
+                .extend({
+                    constraint: {
+                        required: ko.pureComputed(function () {
+                            return (researchInterests.field() === 'Other');
+                        }),
+                        validate: function (value) {
+                            if (value.length < 2) {
+                                return 'The field must be at least two characters long';
+                            }
+                            if (value.length > 50) {
+                                return 'The field cannot be longer than 50 characters';
+                            }
+                        }
+                    },
+                    enabled: {
+                        observable: researchInterests.field,
+                        fun: function (value) {
+                            return (value.indexOf('Other') >= 0);
+                        }
+                    },
+                    dirty: false
+                }),
+            label: 'Other research interest',
+            doc: null
         };
 
         var fundingSource = {
@@ -971,6 +1004,9 @@ define([
                     required: ko.pureComputed(function () {
                         return (country.field() === 'United States');
                     }),
+                    messages: {
+                        requiredButEmpty: 'The state is required if the country is "United States"'
+                    },
                     validate: function (value) {
                         // todo: ensure in list of countries.
                     }
@@ -1008,6 +1044,9 @@ define([
                     required: ko.pureComputed(function () {
                         return (country.field() === 'United States');
                     }),
+                    messages: {
+                        requiredButEmpty: 'The zip code is required if the country is "United States"'
+                    },
                     validate: function (value) {
                         if (!/^[0-9]{5}$/.test(value)) {
                             return 'Invalid zip format, expecting #####';
@@ -1261,7 +1300,7 @@ define([
         var vmFields = [
             realname.field, city.field, state.field, postalCode.field, country.field, organization.field,
             department.field, avatarOption.field, gravatarDefault.field, affiliations.field,
-            researchStatement.field, researchInterests.field, fundingSource.field,
+            researchStatement.field, researchInterests.field, researchInterestsOther.field, fundingSource.field,
             jobTitle.field, jobTitleOther.field
         ];
 
@@ -1313,6 +1352,7 @@ define([
                         postalCode: postalCode.field(),
                         country: country.field(),
                         researchInterests: researchInterests.field(),
+                        researchInterestsOther: researchInterestsOther.field(),
                         fundingSource: fundingSource.field(),
                         affiliations: affiliations.field().map(function (af) {
                             return {
@@ -1451,6 +1491,12 @@ define([
                         researchInterests.field.markClean();
                         profileChanges = true;
                     }
+                    if (researchInterestsOther.field.isDirty()) {
+                        profile.profile.userdata.researchInterestsOther = researchInterestsOther.field();
+                        researchInterestsOther.field.markClean();
+                        profileChanges = true;
+                    }
+
 
                     var changes = [];
                     if (profileChanges) {
@@ -1551,6 +1597,7 @@ define([
                 jobTitle: jobTitle,
                 jobTitleOther: jobTitleOther,
                 researchInterests: researchInterests,
+                researchInterestsOther: researchInterestsOther,
                 fundingSource: fundingSource,
 
                 // computed
