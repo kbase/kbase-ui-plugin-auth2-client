@@ -297,7 +297,7 @@ define([
             control,
             div({
                 dataBind: {
-                    if: '!field.constraint.isValid()'
+                    if: '!field.constraint.state() === "invalid"'
                 }
             }, div({
                 class: 'alert alert-danger',
