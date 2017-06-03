@@ -99,7 +99,7 @@ define([
             var providerId = providerSelect.value;
 
             try {
-                runtime.service('session').getClient().link({
+                runtime.service('session').getClient().linkStart({
                     provider: providerId,
                     node: container
                 });

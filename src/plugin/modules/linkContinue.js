@@ -120,10 +120,18 @@ define([
 
 
         function CountDownClock(config) {
-            var targetTime = config.time;
+            var targetTime;
+            // Either countdown until a specific time ...
+            if (config.until) {
+                targetTime = config.until;
+                // ... or for a quantity of time.
+            } else if (config.for) {
+                targetTime = new Date().getTime() + config.for;
+            }
             // var startTime;
             var tick = config.tick || 1000;
             var onTick = config.onTick;
+            var onExpired = config.onExpired;
             var timer;
 
             function start() {
@@ -131,6 +139,9 @@ define([
 
                 function runAgain() {
                     timer = window.setTimeout(function () {
+                        if (!timer) {
+                            return;
+                        }
                         var now = new Date().getTime();
                         var remaining = targetTime - now;
 
@@ -139,8 +150,10 @@ define([
                         } catch (ex) {
                             console.error('clock onRun: ' + ex.message);
                         }
-                        if (timer && remaining > 0) {
+                        if (remaining > 0) {
                             runAgain();
+                        } else {
+                            onExpired();
                         }
                     }, tick);
                 }
@@ -165,15 +178,24 @@ define([
             node.innerHTML = p([
                 'You have ',
                 span({ dataElement: 'clock' }),
-                ' to complete the linking process.'
+                ' until this linking session expires. After this, you will be returned to the linking tab.'
             ]);
-            var timeOffset = runtime.service('session').getClient().serverTimeOffset();
 
             clock = CountDownClock({
                 tick: 1000,
-                time: response.expires - timeOffset,
+                // until: response.expires - timeOffset,
+                for: 5000,
                 onTick: function (remaining) {
                     updateTimer(remaining);
+                },
+                onExpired: function () {
+                    cancelLink(response.id)
+                        .then(function () {
+                            runtime.send('notification', 'notify', {
+                                type: 'warn',
+                                message: 'Your linking session timed out.'
+                            });
+                        });
                 }
             });
             clock.start();
@@ -182,11 +204,6 @@ define([
         function updateTimer(remainingTime) {
             var node = ui.getElement('timer.clock');
             node.innerHTML = Format.niceDuration(remainingTime);
-        }
-
-        function destroyTimer() {
-            var node = ui.getElement('timer');
-            node.innerHTML = '';
         }
 
         function renderLayout() {
@@ -199,11 +216,6 @@ define([
                     div({
                         class: 'col-md-12'
                     }, [
-                        // div(
-                        //     h1({
-                        //         dataElement: 'main-title'
-                        //     }, 'Link to External Account')
-                        // ),
                         div({
                             dataElement: 'introduction'
                         }),
@@ -230,6 +242,7 @@ define([
         function doLink(accountId) {
             return runtime.service('session').getClient().linkPick(accountId)
                 .then(function () {
+                    clock.stop();
                     runtime.send('app', 'navigate', {
                         path: 'auth2/account',
                         params: {
@@ -242,8 +255,8 @@ define([
                 });
         }
 
-        function cancelLink() {
-            runtime.service('session').getClient().linkCancel()
+        function cancelLink(id) {
+            return runtime.service('session').getClient().linkCancel(id)
                 .catch(Auth2Error.AuthError, function (err) {
                     // just continue...
                     if (err.code === '10010') {
@@ -273,60 +286,43 @@ define([
             var events = DomEvent.make({
                 node: container
             });
-
-            var content = div({}, [
-                choiceData.idents.map(function (id) {
-                    var canLink = true;
-                    var message;
-                    if (id.maylink === 'no') {
-                        canLink = false;
-                        message = 'I\'m sorry, this ' + choiceData.provider + ' account may not be linked - it is already linked to another KBase account';
-                    } else {
-                        message = div([
-                            p([
-                                'You have requested to link the ' + b(choiceData.provider) + ' account ' + b(id.provusername),
-                                ' to your KBase account ' + b(choiceData.user)
-                            ])
-                        ]);
-                    }
-                    return div({
-                        class: 'row'
-                    }, [
-                        div({
-                            class: 'col-md-12'
-                        }, [
-                            div({}, message),
-                            div({}, [
-                                button({
-                                    class: 'btn btn-primary',
-                                    type: 'button',
-                                    disabled: !canLink,
-                                    id: events.addEvent({
-                                        type: 'click',
-                                        handler: function () {
-                                            doLink(id.id);
-                                        }
-                                    })
-                                }, 'Link ' + b(id.provusername)),
-                                button({
-                                    class: 'btn btn-default',
-                                    type: 'button',
-                                    disabled: !canLink,
-                                    id: events.addEvent({
-                                        type: 'click',
-                                        handler: function () {
-                                            cancelLink(id.id);
-                                        }
-                                    }),
-                                    style: {
-                                        marginLeft: '10px'
-                                    }
-                                }, 'Cancel &amp; Return to Links Page')
-                            ])
-                        ])
-                    ]);
-                })
-            ]);
+            var content = div({
+                class: 'row'
+            }, div({
+                class: 'col-md-12'
+            }, [
+                div({}, div([
+                    p([
+                        'You have requested to link the ' + b(choiceData.provider) + ' account ' + b(choiceData.provusername),
+                        ' to your KBase account ' + b(choiceData.user)
+                    ])
+                ])),
+                div({}, [
+                    button({
+                        class: 'btn btn-primary',
+                        type: 'button',
+                        id: events.addEvent({
+                            type: 'click',
+                            handler: function () {
+                                doLink(choiceData.id);
+                            }
+                        })
+                    }, 'Link ' + b(choiceData.provusername)),
+                    button({
+                        class: 'btn btn-default',
+                        type: 'button',
+                        id: events.addEvent({
+                            type: 'click',
+                            handler: function () {
+                                cancelLink(choiceData.id);
+                            }
+                        }),
+                        style: {
+                            marginLeft: '10px'
+                        }
+                    }, 'Cancel &amp; Return to Links Page')
+                ])
+            ]));
             node.innerHTML = BS.buildPanel({
                 title: 'Ready to Link',
                 body: content
@@ -363,8 +359,95 @@ define([
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
                     .then(function (result) {
-                        renderLinkChoice(result);
                         createTimer(result);
+                        if (result.canlink) {
+                            renderLinkChoice(result);
+                        } else {
+                            // it is already linked.
+                            if (result.linkeduser === runtime.service('session').getUsername()) {
+                                var events = DomEvent.make({ node: container });
+                                showMessage({
+                                    type: 'danger',
+                                    title: 'Sign-in account already linked',
+                                    message: div([
+                                        p([
+                                            'Sorry, you have already linked to this ',
+                                            span({
+                                                style: {
+                                                    fontWeight: 'bold'
+                                                }
+                                            }, result.provider),
+                                            ' sign-in account ',
+                                            span({
+                                                style: {
+                                                    fontWeight: 'bold'
+                                                }
+                                            }, result.provusername)
+                                        ]),
+                                        p([
+                                            'A sign-in account may only be linked once to any KBase account.'
+                                        ]),
+                                        p([
+                                            'You may ',
+                                            button({
+                                                class: 'btn btn-default',
+                                                type: 'button',
+                                                id: events.addEvent({
+                                                    type: 'click',
+                                                    handler: function () {
+                                                        cancelLink(result.id);
+                                                    }
+                                                }),
+                                            }, 'return to the linking tab'),
+
+                                            // a({
+                                            //     href: '#auth2/account?tab=links'
+                                            // }, 'return to the linking tab'),
+                                            ' and start again, this time choosing a different sign-in account to link to.'
+                                        ])
+                                    ])
+                                });
+                                events.attachEvents();
+                            } else {
+                                showMessage({
+                                    type: 'danger',
+                                    title: 'Sign-in account already linked',
+                                    message: div([
+                                        p([
+                                            'Sorry, you have already linked to this ',
+                                            span({
+                                                style: {
+                                                    fontWeight: 'bold'
+                                                }
+                                            }, result.provider),
+                                            ' sign-in account ',
+                                            span({
+                                                style: {
+                                                    fontWeight: 'bold'
+                                                }
+                                            }, result.provusername),
+                                            ' to the KBase account ',
+                                            span({
+                                                style: {
+                                                    fontWeight: 'bold'
+                                                }
+                                            }, result.linkeduser)
+                                        ]),
+                                        p([
+                                            'A sign-in account may only be linked to one KBase account at a time.'
+                                        ]),
+                                        p([
+                                            'You may ',
+                                            a({
+                                                href: '#auth2/account?tab=links'
+                                            }, 'return to the linking tab'),
+                                            ' and start again, this time choosing a different sign-in account to link to.'
+                                        ])
+                                    ])
+                                });
+                            }
+
+                        }
                     })
                     .catch(function (err) {
                         // TODO: use the error component here.
@@ -383,28 +466,6 @@ define([
                                             href: '#auth2/account?tab=links'
                                         }, 'return to the linking tab'),
                                         ' and try again.'
-                                    ])
-                                ])
-                            });
-                            break;
-                        case '60000':
-                            showMessage({
-                                type: 'danger',
-                                title: 'Sign-in account already linked',
-                                message: div([
-                                    p([
-                                        'Sorry, you may not link this sign-in account to your KBase account, ',
-                                        'since it is already linked to a KBase account.'
-                                    ]),
-                                    p([
-                                        'A sign-in account may only be linked to one KBase account at a time.'
-                                    ]),
-                                    p([
-                                        'You may ',
-                                        a({
-                                            href: '#auth2/account?tab=links'
-                                        }, 'return to the linking tab'),
-                                        ' and start again, this time choosing a different sign-in account to link to.'
                                     ])
                                 ])
                             });
