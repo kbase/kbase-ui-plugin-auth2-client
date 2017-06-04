@@ -129,35 +129,39 @@ define([
                 targetTime = new Date().getTime() + config.for;
             }
             // var startTime;
-            var tick = config.tick || 1000;
+            var tickInterval = config.tick || 1000;
             var onTick = config.onTick;
             var onExpired = config.onExpired;
             var timer;
 
-            function start() {
-                // startTime = new Date().getTime();
+            function tick() {
+                var now = new Date().getTime();
+                var remaining = targetTime - now;
 
-                function runAgain() {
-                    timer = window.setTimeout(function () {
-                        if (!timer) {
-                            return;
-                        }
-                        var now = new Date().getTime();
-                        var remaining = targetTime - now;
-
-                        try {
-                            onTick(remaining);
-                        } catch (ex) {
-                            console.error('clock onRun: ' + ex.message);
-                        }
-                        if (remaining > 0) {
-                            runAgain();
-                        } else {
-                            onExpired();
-                        }
-                    }, tick);
+                try {
+                    onTick(remaining);
+                } catch (ex) {
+                    console.error('clock onRun: ' + ex.message);
                 }
-                runAgain();
+                if (remaining > 0) {
+                    tock();
+                } else {
+                    onExpired();
+                }
+            }
+
+            function tock() {
+                timer = window.setTimeout(function () {
+                    if (!timer) {
+                        return;
+                    }
+                    tick();
+                }, tickInterval);
+            }
+
+            function start() {
+                tick();
+                tock();
             }
 
             function stop() {
@@ -170,21 +174,26 @@ define([
             };
         }
 
-
         var clock;
 
-        function createTimer(response) {
-            var node = ui.getElement('timer');
-            node.innerHTML = p([
+        function createTimer(container, response) {
+            var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+            var clockId = html.genId();
+            container.innerHTML = p([
                 'You have ',
-                span({ dataElement: 'clock' }),
+                span({ id: clockId }),
                 ' until this linking session expires. After this, you will be returned to the linking tab.'
             ]);
+            var clockNode = document.getElementById(clockId);
+
+            function updateTimer(remainingTime) {
+                clockNode.innerHTML = Format.niceDuration(remainingTime);
+            }
 
             clock = CountDownClock({
                 tick: 1000,
-                // until: response.expires - timeOffset,
-                for: 5000,
+                until: response.expires - timeOffset,
+                // for: 5000,
                 onTick: function (remaining) {
                     updateTimer(remaining);
                 },
@@ -199,11 +208,6 @@ define([
                 }
             });
             clock.start();
-        }
-
-        function updateTimer(remainingTime) {
-            var node = ui.getElement('timer.clock');
-            node.innerHTML = Format.niceDuration(remainingTime);
         }
 
         function renderLayout() {
@@ -359,7 +363,7 @@ define([
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
                     .then(function (result) {
-                        createTimer(result);
+                        createTimer(ui.getElement('timer'), result);
                         if (result.canlink) {
                             renderLinkChoice(result);
                         } else {
