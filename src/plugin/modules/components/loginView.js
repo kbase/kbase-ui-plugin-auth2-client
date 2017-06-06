@@ -297,7 +297,7 @@ define([
                 'system using Google and Globus for user identification.'
             ]),
             p([
-                b('If you previously logged in to KBase directly'),
+                b('If you already had a KBase account'),
                 ' you will now ',
                 'need to sign in using Globus. After clicking the Sign In button to the right, click the Globus button that appears, follow the steps to sign in, and use your KBase username (with your KBase password) as your Globus ID.'
             ]),
