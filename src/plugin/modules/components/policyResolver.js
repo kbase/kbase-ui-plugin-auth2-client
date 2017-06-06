@@ -113,7 +113,7 @@ define([
                                     padding: '4px',
                                     backgroundColor: '#EEE'
                                 },
-                                class: '-policy-markdown',
+                                class: 'policy-markdown',
                                 dataElement: 'policyViewer',
                                 dataMinMax: 'max',
                                 dataBind: {
@@ -243,7 +243,7 @@ define([
                                     padding: '4px',
                                     backgroundColor: '#EEE'
                                 },
-                                class: '-policy-markdown',
+                                class: 'policy-markdown',
                                 dataElement: 'policyViewer',
                                 dataMinMax: 'max',
                                 dataBind: {

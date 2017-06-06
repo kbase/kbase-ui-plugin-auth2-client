@@ -74,7 +74,7 @@ define([
                                     id: vm.agreements.id
                                 })
                             ]),
-                            div({ class: 'col-md-9' }, [
+                            div({ class: 'col-md-9 policy-markdown' }, [
                                 div({
                                     id: vm.agreement.id
                                 })
@@ -93,7 +93,9 @@ define([
             container.innerHTML = div({
                 style: {
                     marginTop: '10px'
-                }
+                },
+                class: 'widget-agreements-manager',
+                dataWidget: 'agreements-manager'
             }, tabs.content);
             bindVm();
         }
@@ -118,7 +120,7 @@ define([
                     vm.agreement.node.innerHTML = result;
                 })
                 .catch(function (err) {
-                    console.error('Boo', err);
+                    console.error('Error loading agreement policy file', err);
                     vm.agreement.node.innerHTML = 'ERROR: ' + err.message;
                 });
         }
@@ -247,7 +249,6 @@ define([
                 .then(function (result) {
                     vm.latestPolicies.value = userAgreements.getLatestPolicies();
                     vm.agreements.value = userAgreements.getUserAgreements();
-                    console.log('agreements', vm.agreements.value);
                     return (render());
                 });
         }
