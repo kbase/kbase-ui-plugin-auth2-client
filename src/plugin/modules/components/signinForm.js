@@ -29,10 +29,10 @@ define([
 
     function buildLogin() {
         return BS.buildPanel({
-            title: 'Log in to KBase',
+            title: 'Sign In to KBase',
             type: 'default',
             body: div({}, [
-                div({}, p('You may log into the following KBase account:')),
+                // div({}, p('You may log into the following KBase account:')),
                 div({
                     dataBind: {
                         component: {
@@ -65,7 +65,7 @@ define([
                                 disable: '!$parent.canSignin()'
                             }
                         }, [
-                            'Continue to the KBase account ',
+                            'Sign In to KBase account ',
                             span({
                                 dataBind: {
                                     text: 'user'
@@ -191,13 +191,40 @@ define([
                     'or sign up for a new one. Upon returning to KBase, you will be able to create a new KBase account.'
                 ]),
 
-                // p([
-                //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
-                //     'to do so.'
-                // ]),               
-                // p([
-                //     'After signing out you will need to '
-                // ]),
+                div({
+                    style: {
+                        marginBottom: '5px'
+                    },
+                    dataBind: {
+                        with: 'providersMap.Google'
+                    }
+                }, [
+                    span({
+                        class: 'fa fa-external-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        dataBind: {
+                            attr: {
+                                href: 'logoutUrl'
+                            }
+                        },
+                        target: '_blank'
+                    }, [
+                        'Log out from ',
+                        span({
+                            dataBind: {
+                                text: 'label'
+                            }
+                        })
+                    ])
+                ]),
+                p([
+                    'After signing out you will need to '
+                ]),
                 p([
                     span({
                         class: 'fa fa-link',
@@ -207,20 +234,9 @@ define([
                         }
                     }),
                     a({
-                        dataBind: {
-                            click: 'doRetrySignup'
-                        }
-                        // href: '#signup?cb=' + new Date().getTime()
-                    }, 'Sign up for KBase again')
+                        href: '#login'
+                    }, 'Signin to KBase again')
                 ])
-                // p({
-                //     style: {
-                //         marginTop: '18px'
-                //     }
-                // }, [
-                //     'Alternatively, you may continue to sign in with this account, link it to another account, ',
-                //     'unlink this account, and then sign up with it again'
-                // ]),
             ])
         });
     }
@@ -244,6 +260,9 @@ define([
 
     function template() {
         return div([
+            p([
+                'You are ready to sign in.'
+            ]),
             p([
                 'This ',
                 span({
@@ -273,8 +292,8 @@ define([
                     }
                 })
             ]),
-            buildLogin(),
-            buildOops()
+            buildOops(),
+            buildLogin()
         ]);
         // ui.setContent('main-title', 'KBase Login - Ready to Sign In');
     }
@@ -309,7 +328,6 @@ define([
         var choice = params.choice;
         var login = choice.login[0];
         var nextRequest = params.nextRequest;
-        var runtime = params.runtime;
         var source = params.source;
 
         var policiesToResolve = {

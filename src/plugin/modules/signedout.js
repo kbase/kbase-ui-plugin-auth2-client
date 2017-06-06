@@ -33,7 +33,11 @@ define([
                 div({
                     class: 'col-md-10'
                 }, [
-                    p('You are signed out of KBase.'),
+                    p({
+                        style: {
+                            fontWeight: 'bold'
+                        }
+                    }, 'You are signed out of KBase.'),
                     p([
                         'However, you may still be logged into a identity provider you have recently ',
                         'used to sign in to KBase in this browser. ',
