@@ -11,6 +11,9 @@ define([
     './lib/utilsKO',
     './widgets/errorWidget',
     './lib/policies',
+    './lib/countdownClock',
+    './lib/format',
+
     // loaded for effect
     'bootstrap'
 ], function (
@@ -25,15 +28,23 @@ define([
     Auth2Error,
     Utils,
     ErrorWidget,
-    Policies
+    Policies,
+    CountDownClock,
+    Format
 ) {
     var t = html.tag,
-        div = t('div');
+        div = t('div'),
+        p = t('p'),
+        span = t('span');
 
     function factory(config) {
         var hostNode, container,
             runtime = config.runtime,
             vm = {
+                clock: {
+                    id: html.genId(),
+                    node: null
+                },
                 main: {
                     id: html.genId(),
                     node: null
@@ -42,17 +53,36 @@ define([
                     id: html.genId(),
                     node: null
                 }
-            };
+            },
+            viewModel;
+
 
         function renderLayout() {
-            container.innerHTML = div([
-                div({
-                    id: vm.main.id
-                }),
-                div({
-                    id: vm.error.id
-                })
+            container.innerHTML = div({
+                class: 'container-fluid',
+                dataComponent: 'signup-view'
+            }, [
+
+                div({ class: 'row' }, [
+                    div({
+                        class: 'col-sm-10 col-sm-offset-1',
+                        style: {
+                            backgroundColor: 'white',
+                        }
+                    }, [
+                        div({
+                            id: vm.clock.id
+                        }),
+                        div({
+                            id: vm.main.id
+                        }),
+                        div({
+                            id: vm.error.id
+                        })
+                    ])
+                ])
             ]);
+            vm.clock.node = document.getElementById(vm.clock.id);
             vm.main.node = document.getElementById(vm.main.id);
             vm.error.node = document.getElementById(vm.error.id);
         }
@@ -80,6 +110,80 @@ define([
             ko.applyBindings(viewModel, node);
         }
 
+
+        function cancelLogin(id) {
+            return runtime.service('session').getClient().loginCancel()
+                .catch(Auth2Error.AuthError, function (err) {
+                    // just continue...
+                    if (err.code === '10010') {
+                        // simply continue
+                    } else {
+                        throw (err);
+                    }
+                })
+                .then(function () {
+                    if (clock) {
+                        clock.stop();
+                    }
+                    runtime.send('app', 'navigate', {
+                        path: 'login'
+                    });
+                })
+                .catch(function (err) {
+                    console.error('error', err);
+                });
+        }
+
+        var clock;
+
+        function createClock(container, response) {
+            var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+            var clockId = html.genId();
+            container.innerHTML = div({
+                style: {
+                    textAlign: 'right'
+                }
+            }, div({
+                style: {
+                    display: 'inline-block',
+                    padding: '6px',
+                    backgroundColor: '#999',
+                    color: '#FFF'
+                }
+            }, [
+                div([
+                    'You have ',
+                    span({ id: clockId }),
+                    ' until this signup session expires.'
+                ]),
+                div('After this, you will be returned to the sign-in page.')
+            ]));
+            var clockNode = document.getElementById(clockId);
+
+            function updateTimer(remainingTime) {
+                clockNode.innerHTML = Format.niceDuration(remainingTime);
+            }
+
+            clock = CountDownClock({
+                tick: 1000,
+                until: response.expires - timeOffset,
+                // for: 60000,
+                onTick: function (remaining) {
+                    updateTimer(remaining);
+                },
+                onExpired: function () {
+                    cancelLogin()
+                        .then(function () {
+                            runtime.send('notification', 'notify', {
+                                type: 'warn',
+                                message: 'Your sign-in session has expired.'
+                            });
+                        });
+                }
+            });
+            clock.start();
+        }
+
         // LIFECYCLE API
 
         function attach(node) {
@@ -100,6 +204,7 @@ define([
             runtime.send('ui', 'setTitle', 'Sign Up for KBase');
             return runtime.service('session').getClient().getClient().getLoginChoice()
                 .then(function (choice) {
+                    createClock(vm.clock.node, choice);
                     var policies = Policies.make({
                         runtime: runtime
                     });
@@ -147,17 +252,36 @@ define([
                                     requestedStep: 'step',
                                     nextRequest: 'nextRequest',
                                     choice: 'choice',
-                                    policiesToResolve: 'policiesToResolve'
+                                    policiesToResolve: 'policiesToResolve',
+                                    done: 'done'
                                 }
                             }
                         }
                     });
+
+                    // quick'n'dirty
+                    // TODO: done should be a boolean observable which 
+                    // signals that someone things the choice session is done...
+                    var done = ko.observable(false);
+
+                    done.subscribe(function (newDone) {
+                        if (newDone) {
+                            if (clock) {
+                                clock.stop();
+                            }
+                            if (vm.clock.node) {
+                                vm.clock.node.innerHTML = '';
+                            }
+                        }
+                    });
+
                     var viewModel = {
                         runtime: config.runtime,
                         step: step,
                         nextRequest: nextRequest,
                         choice: choice,
-                        policiesToResolve: policiesToResolve
+                        policiesToResolve: policiesToResolve,
+                        done: done
                     };
                     ko.applyBindings(viewModel, container);
                 })

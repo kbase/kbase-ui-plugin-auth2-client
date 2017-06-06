@@ -98,6 +98,9 @@ define([
             type: 'warning',
             collapsed: true,
             classes: ['kb-panel-help'],
+            style: {
+                marginBottom: '0'
+            },
             body: div([
                 p([
                     'Do you already have a KBase account and just want to log into it?'
@@ -109,11 +112,13 @@ define([
                             text: '$component.config.launchDate'
                         }
                     })]),
-                    ', we have prepared a ',
+                    ', you should log in through Globus using Globus ID. ',
+                    'Please consult our ',
                     a({
-                        href: '#auth2/login/legacy'
-                    }, 'special page for you '),
-                    ' to explain the changes and help you sign in for the first time with this new system.'
+                        href: 'http://kbase.us/auth-update-2017',
+                        target: '_blank'
+                    }, 'sign-in and account update announcement '),
+                    ' for further information.'
                 ]),
                 p([
                     'Or you may simply have chosen the wrong account to sign in with. ',
@@ -173,7 +178,7 @@ define([
                 ]),
                 ul({
                     dataBind: {
-                        foreach: 'providersList'
+                        with: 'providers.Google'
                     }
                 }, li(a({
                     dataBind: {
@@ -197,6 +202,99 @@ define([
                     }, 'signin'),
                     ' process again.'
                 ]),
+            ])
+        });
+    }
+
+    function buildGlobusOops() {
+        return BS.buildCollapsiblePanel({
+            title: 'Not the account you were expecting?',
+            type: 'warning',
+            collapsed: true,
+            classes: ['kb-panel-help'],
+            body: div([
+                div({
+                    dataBind: {
+                        if: '$component.source() === "signin"'
+                    }
+                }, [
+                    p([
+                        'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+                        'to Globus and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of Globus, and then try agin.'
+                    ])
+                ]),
+                div({
+                    dataBind: {
+                        if: '$component.source() === "signup"'
+                    }
+                }, [
+                    p([
+                        'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+                        'to Globus and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of Globus, and then try agin.'
+                    ]),
+                    p([
+                        'If you have signed in with a Globus account already linked to a KBase account, you will be unable ',
+                        'to create a new KBase account using that Globus account. '
+                    ]),
+                ]),
+                // p([
+                //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+                //     'to do so.'
+                // ]),
+                div({
+                    style: {
+                        marginBottom: '5px'
+                    },
+                    dataBind: {
+                        with: 'providers.Globus'
+                    }
+                }, [
+                    span({
+                        class: 'fa fa-external-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        dataBind: {
+                            attr: {
+                                href: 'logoutUrl'
+                            }
+                        },
+                        target: '_blank'
+                    }, [
+                        'Log out from ',
+                        span({
+                            dataBind: {
+                                text: 'label'
+                            }
+                        })
+                    ])
+                ]),
+                p([
+                    'After signing out you will need to '
+                ]),
+                p([
+                    span({
+                        class: 'fa fa-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        href: '#login'
+                    }, 'Signin to KBase again')
+                ])
             ])
         });
     }
@@ -303,10 +401,12 @@ define([
 
                         buildOopsLegacyUser(),
                         div({
-                            dataBind: {
-                                if: 'choice.provider === "Globus"'
-                            }
-                        }, buildOopsWrongGlobusAccount()),
+                                dataBind: {
+                                    if: 'choice.provider === "Globus"'
+                                }
+                            }, buildGlobusOops()
+                            // buildOopsWrongGlobusAccount()
+                        ),
                         div({
                             dataBind: {
                                 if: 'choice.provider === "Google"'
@@ -325,20 +425,20 @@ define([
                         }, span({
                             dataElement: 'title'
                         }, 'Ready to create a new KBase Account'))
-                    ]),
-                    div({
-                        dataBind: {
-                            if: 'signupState() === "success"'
-                        }
-                    }, [
-                        span({
-                            style: {
-                                verticalAlign: 'middle'
-                            }
-                        }, span({
-                            dataElement: 'title'
-                        }, 'KBase Account Successfully Created'))
-                    ]),
+                    ])
+                    // div({
+                    //     dataBind: {
+                    //         if: 'signupState() === "success"'
+                    //     }
+                    // }, [
+                    //     span({
+                    //         style: {
+                    //             verticalAlign: 'middle'
+                    //         }
+                    //     }, span({
+                    //         dataElement: 'title'
+                    //     }, 'KBase Account Successfully Created'))
+                    // ]),
                 ]),
                 div({
                     dataBind: {
@@ -351,7 +451,8 @@ define([
                                 policiesToResolve: 'policiesToResolve',
                                 // to communicate completion of the signup process
                                 // to tweak the ui.
-                                signupState: 'signupState'
+                                signupState: 'signupState',
+                                done: 'done'
                             }
                         }
                     }
@@ -384,7 +485,7 @@ define([
     // logoImage and description.
     function getProviders() {
         return {
-            google: {
+            Google: {
                 id: 'Google',
                 label: 'Google',
                 logoutUrl: 'https://accounts.google.com/Logout',
@@ -396,7 +497,7 @@ define([
                     ])
                 ])
             },
-            globus: {
+            Globus: {
                 id: 'Globus',
                 label: 'Globus',
                 logoutUrl: 'https://www.globus.org/app/logout',
@@ -446,7 +547,7 @@ define([
         return {
             viewModel: function (data) {
                 var runtime = data.runtime;
-
+                var done = data.done;
                 var choice = data.choice;
 
                 var policiesToResolve = data.policiesToResolve;
@@ -460,8 +561,8 @@ define([
 
                 var providers = getProviders();
                 var providersList = [
-                    providers.google,
-                    providers.globus
+                    providers.Google,
+                    providers.Globus
                 ];
 
                 // UI state
@@ -498,6 +599,8 @@ define([
                 // no assumptions ... this is set by the signup component, if any.
                 var signupState = ko.observable();
 
+                var source = ko.observable('signin');
+
                 return {
                     runtime: runtime,
                     uiState: uiState,
@@ -511,7 +614,9 @@ define([
                     policiesToResolve: policiesToResolve,
                     doProviderSignin: doProviderSignin,
                     signupState: signupState,
-                    config: config
+                    config: config,
+                    source: source,
+                    done: done
                 };
             },
             template: template()

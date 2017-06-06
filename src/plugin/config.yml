@@ -27,7 +27,7 @@ install:
             id: auth2LoginSuccess
             type: factory
         -
-            module: loginContinueKO 
+            module: loginContinue
             id: auth2LoginContinue
             type: factory
         -
@@ -95,7 +95,7 @@ install:
             module: components/loginView
         -
             name: policy-resolver
-            module: components/policyComponent
+            module: components/policyResolver
         -
             name: select-input
             module: components/selectInput
@@ -107,7 +107,7 @@ install:
             module: components/signinView
         -
             name: signup-form
-            module: components/signupComponent
+            module: components/signupForm
         -
             name: signup-view
             module: components/signupView

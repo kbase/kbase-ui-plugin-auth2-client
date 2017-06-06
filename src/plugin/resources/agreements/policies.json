@@ -2,35 +2,18 @@
         "id": "kbase-user",
         "title": "KBase User Agreement",
         "versions": [{
-                "version": 1,
-                "file": "v2.md",
-                "date": "2016-03-14"
-            },
-            {
-                "version": 2,
-                "file": "v2.md",
-                "date": "2017-03-14"
-            }
-        ]
+            "version": 1,
+            "file": "v1.md",
+            "date": "2015-01-01"
+        }]
     },
     {
         "id": "data-policy",
         "title": "KBase Data Policy",
         "versions": [{
-                "version": 1,
-                "file": "v1.md",
-                "date": "2016-03-13"
-            },
-            {
-                "version": 2,
-                "file": "v2.md",
-                "date": "2016-03-14"
-            },
-            {
-                "version": 3,
-                "file": "v3.md",
-                "date": "2017-03-14"
-            }
-        ]
+            "version": 1,
+            "file": "v1.md",
+            "date": "2015-01-01"
+        }]
     }
 ]

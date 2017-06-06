@@ -54,7 +54,7 @@ define([
                             id: 'name',
                             href: '"#" + name'
                         },
-                        text: 'label',
+                        html: 'label',
                         click: '$component.doSelectTab'
                     }
                 })),
@@ -495,7 +495,7 @@ define([
             template: makeNodes(buildWelcomeTab())
         }, {
             name: 'about',
-            label: 'About',
+            label: span({ class: 'fa fa-info-circle' }),
             show: true,
             active: ko.observable(false),
             template: makeNodes(buildAboutTab())

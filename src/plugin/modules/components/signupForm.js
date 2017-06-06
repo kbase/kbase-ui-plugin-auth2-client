@@ -469,48 +469,48 @@ define([
         ]);
     }
 
-    function buildClock() {
-        return div({
-            dataBind: {
-                if: 'signupState() === "incomplete" || signupState() === "complete"'
-            }
-        }, div({
-            dataBind: {
-                if: 'expiresIn() > 0'
-            },
-            style: {
-                marginBottom: '12px',
-                textAlign: 'right'
-            }
+    // function buildClock() {
+    //     return div({
+    //         dataBind: {
+    //             if: 'signupState() === "incomplete" || signupState() === "complete"'
+    //         }
+    //     }, div({
+    //         dataBind: {
+    //             if: 'expiresIn() > 0'
+    //         },
+    //         style: {
+    //             marginBottom: '12px',
+    //             textAlign: 'right'
+    //         }
 
-        }, p({
-            style: {
-                display: 'inline-block',
-                padding: '6px',
-                backgroundColor: '#999',
-                color: '#FFF'
-            }
-        }, [
-            'This sign-up session will expire in ',
-            span({
-                style: {
-                    fontFamily: 'monospace'
-                },
-                dataBind: {
-                    text: 'expiresMessage()'
-                }
-            })
-            // button({
-            //     class: 'btn btn-danger btn-sm',
-            //     style: {
-            //         marginLeft: '10px'
-            //     },
-            //     dataBind: {
-            //         click: 'doCancelChoiceSession'
-            //     }
-            // }, '&times;')
-        ])));
-    }
+    //     }, p({
+    //         style: {
+    //             display: 'inline-block',
+    //             padding: '6px',
+    //             backgroundColor: '#999',
+    //             color: '#FFF'
+    //         }
+    //     }, [
+    //         'This sign-up session will expire in ',
+    //         span({
+    //             style: {
+    //                 fontFamily: 'monospace'
+    //             },
+    //             dataBind: {
+    //                 text: 'expiresMessage()'
+    //             }
+    //         })
+    //         // button({
+    //         //     class: 'btn btn-danger btn-sm',
+    //         //     style: {
+    //         //         marginLeft: '10px'
+    //         //     },
+    //         //     dataBind: {
+    //         //         click: 'doCancelChoiceSession'
+    //         //     }
+    //         // }, '&times;')
+    //     ])));
+    // }
 
     function template() {
         return div({
@@ -525,15 +525,15 @@ define([
             }),
             buildSuccessResponse(),
             buildErrorResponse(),
-            buildClock(),
+            // buildClock(),
             buildExpired(),
             buildSignupForm()
         ]);
     }
 
-
     function viewModel(params) {
         var choice = params.choice;
+        var done = params.done;
         var create = choice.create[0];
         var runtime = params.runtime;
         var nextRequest = params.nextRequest;
@@ -749,8 +749,16 @@ define([
                         }
                     };
                     return userProfileClient.set_user_profile({
-                        profile: newProfile
-                    });
+                            profile: newProfile
+                        })
+                        .catch(function (err) {
+                            if (err.status === 500) {
+                                // TODO: return fancy error.
+                                throw new Error('Profile creation failed: ' + err.error.message);
+                            } else {
+                                throw err;
+                            }
+                        });
                 });
         }
 
@@ -805,6 +813,7 @@ define([
             // validateAll();
             submitSignup()
                 .catch(Auth2Error.AuthError, function (err) {
+                    console.error('auth error signing up', err);
                     error.code(err.code);
                     error.message(err.message);
                     error.detail(err.detail);
@@ -812,9 +821,21 @@ define([
                     signupState('error');
                 })
                 .catch(function (err) {
+                    console.error('error signing up', err);
                     signupState('error');
-                    error.code(err.name);
-                    error.message(err.message);
+                    if (err.status === 500) {
+                        // TODO: switch to generic client for better error handling
+                        error.code(String(err.error.name));
+                        error.message(err.error.message);
+                        error.detail(err.error.error);
+                        error.data(err);
+                    } else {
+                        error.code(err.name);
+                        error.message(err.message);
+                    }
+                })
+                .finally(function () {
+                    done(true);
                 });
         }
 
@@ -905,9 +926,9 @@ define([
         });
 
         // start clock... improve
-        var timer = window.setInterval(function () {
-            now(new Date().getTime());
-        }, 500);
+        // var timer = window.setInterval(function () {
+        //     now(new Date().getTime());
+        // }, 500);
 
         function doCancelChoiceSession() {
             runtime.service('session').getClient().loginCancel()
@@ -938,6 +959,9 @@ define([
                         detail: '',
                         data: ko.observable({})
                     });
+                })
+                .finally(function () {
+                    done(true);
                 });
         }
 

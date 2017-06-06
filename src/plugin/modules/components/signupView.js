@@ -243,19 +243,21 @@ define([
                         }
                     })
                 ]),
-                p([
-                    'Now you are ready to create your KBase account below, ',
-                    'which will be linked to this ',
-                    span({
-                        dataBind: {
-                            text: 'choice.provider'
-                        },
-                        style: {
-                            fontWeight: 'bold'
-                        }
-                    }),
-                    ' account.'
-                ])
+                // '<!-- ko if: uiState.complete() -->',
+                // p([
+                //     'Now you are ready to create your KBase account below, ',
+                //     'which will be linked to this ',
+                //     span({
+                //         dataBind: {
+                //             text: 'choice.provider'
+                //         },
+                //         style: {
+                //             fontWeight: 'bold'
+                //         }
+                //     }),
+                //     ' account.'
+                // ]),
+                // '<!-- /ko -->'
             ]), div({
                 dataBind: {
                     if: 'choice.login.length === 1'
@@ -395,7 +397,7 @@ define([
                         }
                     }, span({
                         dataElement: 'title'
-                    }, 'Already Logged In'))
+                    }, 'You are Already Signed Up'))
                 ]),
                 p([
                     'Interestingly, even though you apparently intended to sign up with this ',
@@ -418,7 +420,8 @@ define([
                                 runtime: 'runtime',
                                 source: '"signup"',
                                 nextRequest: 'nextRequest',
-                                policiesToResolve: 'policiesToResolve'
+                                policiesToResolve: 'policiesToResolve',
+                                done: 'done'
                             }
                         }
                     }
@@ -489,7 +492,7 @@ define([
                             fontWeight: 'bold'
                         }
                     }, [
-                        completeStep('③', true),
+                        completeStep('②', true),
                         span({
                             style: {
                                 verticalAlign: 'middle'
@@ -499,6 +502,21 @@ define([
                         }, 'KBase Account Successfully Created'))
                     ]))
                 ]),
+                '<!-- ko if: signupState() === "incomplete" -->',
+                p([
+                    'Now you are ready to create your KBase account below, ',
+                    'which will be linked to this ',
+                    span({
+                        dataBind: {
+                            text: 'choice.provider'
+                        },
+                        style: {
+                            fontWeight: 'bold'
+                        }
+                    }),
+                    ' account.'
+                ]),
+                '<!-- /ko -->',
                 div({
                     dataBind: {
                         component: {
@@ -510,7 +528,8 @@ define([
                                 policiesToResolve: 'policiesToResolve',
                                 // to communicate completion of the signup process
                                 // to tweak the ui.
-                                signupState: 'signupState'
+                                signupState: 'signupState',
+                                done: 'done'
                             }
                         }
                     }
@@ -561,27 +580,17 @@ define([
 
     function template() {
         return div({
-            class: 'container-fluid',
             dataComponent: 'signup-view'
         }, [
-
-            div({ class: 'row' }, [
-                div({
-                    class: 'col-sm-10 col-sm-offset-1',
-                    style: {
-                        backgroundColor: 'white',
-                    }
-                }, [
-                    buildError(),
-                    buildStep1(),
-                    buildStep2()
-                ])
-            ])
+            buildError(),
+            buildStep1(),
+            buildStep2()
         ]);
     }
 
     function viewModel(params) {
         var runtime = params.runtime;
+        var done = params.done;
 
         var choice = params.choice;
 
@@ -597,14 +606,13 @@ define([
 
         var nextRequest = params.nextRequest;
 
-        var staySignedIn = ko.observable(true);
-
         // UI state
         var uiState = {
             auth: ko.observable(false),
             signin: ko.observable(false),
             signup: ko.observable(false),
-            error: ko.observable(false)
+            error: ko.observable(false),
+            signedup: ko.observable(false)
         };
         if (choice) {
             uiState.auth(true);
@@ -667,7 +675,6 @@ define([
             uiState: uiState,
             providers: providersMap,
             nextRequest: nextRequest,
-            staySignedIn: staySignedIn,
             choice: choice,
             policiesToResolve: policiesToResolve,
             doSignin: doSignin,
@@ -675,7 +682,8 @@ define([
             error: error,
             isError: isError,
             assetsPath: Plugin.plugin.fullPath,
-            config: config
+            config: config,
+            done: done
         };
     }
 

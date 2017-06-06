@@ -155,12 +155,23 @@ define([
                 }, vm.agreements.value
                 .map(function (agreement) {
                     var policy = userAgreements.getPolicy(agreement.id);
+                    if (!policy) {
+                        console.warn('Policy not found for agreement, skipped', agreement);
+                        return;
+                    }
                     var policyVersion = userAgreements.getPolicyVersion(agreement.id, agreement.version);
+                    if (!policyVersion) {
+                        console.warn('Policy version not found for agreement, skipped', agreement);
+                        return;
+                    }
                     return {
                         agreement: agreement,
                         policy: policy,
                         version: policyVersion
                     };
+                })
+                .filter(function (policyAgreement) {
+                    return (policyAgreement ? true : false);
                 })
                 .sort(function (a, b) {
                     if (a.policy.id < b.policy.id) {
@@ -236,6 +247,7 @@ define([
                 .then(function (result) {
                     vm.latestPolicies.value = userAgreements.getLatestPolicies();
                     vm.agreements.value = userAgreements.getUserAgreements();
+                    console.log('agreements', vm.agreements.value);
                     return (render());
                 });
         }
