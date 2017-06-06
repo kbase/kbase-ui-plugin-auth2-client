@@ -260,8 +260,12 @@ define([
 
     function template() {
         return div([
-            p([
-                'You are ready to sign in.'
+            p({
+                style: {
+                    fontWeight: 'bold'
+                }
+            }, [
+                'Ready to sign in.'
             ]),
             p([
                 'This ',
