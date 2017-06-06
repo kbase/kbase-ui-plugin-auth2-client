@@ -152,7 +152,7 @@ define([
             }, [
                 label({
                     for: 'signup_email'
-                }, ['E-Mail', requiredIcon('email')]),
+                }, ['Email', requiredIcon('email')]),
                 input({
                     type: 'text',
                     class: 'form-control',
@@ -174,7 +174,7 @@ define([
                 [
                     div({}, [
                         p([
-                            'KBase may use this email address to communicate important information about KBase or your account.'
+                            'KBase may use this email address to communicate important information about KBase or your account.\nKBase will not share your email address with anyone, and other KBase users will not be able to see it.'
                         ])
                     ]),
                     div({
