@@ -299,8 +299,7 @@ define([
             p([
                 b('If you previously logged in to KBase directly'),
                 ' you will now ',
-                'need to sign in using Globus. Simply click the Globus button, choose the "Globus ID" identity provider ',
-                'on the Globus sign-in page, and sign in with your KBase username and password.'
+                'need to sign in using Globus. After clicking the Sign In button to the right, click the Globus button that appears, follow the steps to sign in, and use your KBase username (with your KBase password) as your Globus ID.'
             ]),
             p({
                 style: {
@@ -313,7 +312,7 @@ define([
             ]),
             p([
                 b('If you are a new user'),
-                ' you may simply use the identity provider most convenient for you. '
+                ' you may use the identity provider most convenient for you. '
             ]),
             p([
                 a({ href: 'http://kbase.us/auth-update-2017' }, 'Read more about the update')
