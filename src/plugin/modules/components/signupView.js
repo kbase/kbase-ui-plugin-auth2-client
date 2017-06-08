@@ -59,11 +59,7 @@ define([
                     // ]),
                     p([
                         'KBase accounts created before ',
-                        span({
-                            dataBind: {
-                                text: '$component.config.launchDate'
-                            }
-                        }),
+                        config.launchDate,
                         ' utilized Globus ID exclusively.'
                     ])
                 ])

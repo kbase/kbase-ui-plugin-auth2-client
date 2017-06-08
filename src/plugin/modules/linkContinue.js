@@ -147,7 +147,7 @@ define([
                     cancelLink(response.id)
                         .then(function () {
                             runtime.send('notification', 'notify', {
-                                type: 'warn',
+                                type: 'warning',
                                 message: 'Your linking session timed out.'
                             });
                         });

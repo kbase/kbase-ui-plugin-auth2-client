@@ -175,7 +175,7 @@ define([
                     cancelLogin()
                         .then(function () {
                             runtime.send('notification', 'notify', {
-                                type: 'warn',
+                                type: 'warning',
                                 message: 'Your sign-in session has expired.'
                             });
                         });

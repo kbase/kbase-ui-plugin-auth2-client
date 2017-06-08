@@ -365,7 +365,7 @@ define([
                         }, [
                             button({
                                 class: 'btn btn-primary',
-                                type: 'submit',
+                                type: 'button',
                                 dataElement: 'submit-button',
                                 dataBind: {
                                     click: 'doSubmitSignup',
@@ -373,6 +373,7 @@ define([
                                 }
                             }, 'Create KBase Account'),
                             button({
+                                type: 'button',
                                 class: 'btn btn-danger btn-sm',
                                 style: {
                                     marginLeft: '10px'
@@ -812,6 +813,10 @@ define([
                 });
         }
 
+        function doHandleSubmit() {
+            alert('please use the submit button below');
+        }
+
         function doSubmitSignup() {
             // validateAll();
             submitSignup()
@@ -991,7 +996,6 @@ define([
         //     label: 'Director'
         // }];
 
-
         return {
             choice: choice,
             create: create,
@@ -1009,6 +1013,7 @@ define([
             signupState: params.signupState,
 
             canSubmit: canSubmit,
+            doHandleSubmit: doHandleSubmit,
             doSubmitSignup: doSubmitSignup,
             doSignupSuccess: doSignupSuccess,
             doCancelChoiceSession: doCancelChoiceSession,
