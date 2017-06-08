@@ -26,7 +26,8 @@ define([
         legend = t('legend'),
         i = t('i'),
         ul = t('ul'),
-        li = t('li');
+        li = t('li'),
+        iframe = t('iframe');
 
     function buildTabs() {
         return div({}, [
@@ -285,6 +286,17 @@ define([
                     marginTop: '0'
                 }
             }, 'Sign in Changes'),
+
+            div({
+                class: 'embed-container',
+                style: {
+                    marginBottom: '12px'
+                }
+            }, iframe({
+                src: 'https://www.youtube.com/embed/6ql7HAUzU7U',
+                frameborder: '0',
+                allowfullscreen: true
+            })),
             p([
                 'On ',
                 span({
@@ -488,7 +500,7 @@ define([
             template: makeNodes(buildAuthorizationRequired())
         }, {
             name: 'welcome',
-            label: 'Welcome',
+            label: 'Updates',
             show: true,
             active: ko.observable(false),
             template: makeNodes(buildWelcomeTab())
