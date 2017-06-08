@@ -212,7 +212,7 @@ define([
                     style: {
                         verticalAlign: 'middle'
                     }
-                }, 'Sign-in with one of our supported Sign-In providers')
+                }, 'Sign in with one of our supported sign-In providers')
             ]),
             div({
                 dataBind: {
@@ -302,17 +302,15 @@ define([
                     style: {
                         verticalAlign: 'middle'
                     }
-                }, 'Sign-in with one of our supported Sign-In providers')
+                }, 'Sign in with one of our supported sign-In providers')
             ]),
             p({
                 style: {
                     maxWidth: '60em'
                 }
             }, [
-                'When you sign up for KBase, you do will not need to create a new password. ',
-                'Rather, you use a third-party service to sign-in with. ',
-                'This sign-in account is linked to your new KBase account when you first sign up.',
-                'Additional sign-in accounts may be linked to your KBase account at any time.'
+                'When you sign up for KBase, you will use your existing Google or Globus account, ',
+                'and it will be linked to your new KBase account during the sign-up process. ',
             ]),
             div({
                 class: 'well',
