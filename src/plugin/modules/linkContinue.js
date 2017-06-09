@@ -310,18 +310,25 @@ define([
                 runtime.service('session').getClient().getLinkChoice()
                     .then(function (result) {
                         createTimer(ui.getElement('timer'), result);
+                        var currentUsername = runtime.service('session').getUsername();
                         if (result.canlink) {
                             renderLinkChoice(result);
                         } else {
                             // it is already linked.
-                            if (result.linkeduser === runtime.service('session').getUsername()) {
+                            if (result.linkeduser === currentUsername) {
                                 var events = DomEvent.make({ node: container });
                                 showMessage({
                                     type: 'danger',
                                     title: 'Sign-in account already linked',
                                     message: div([
                                         p([
-                                            'Sorry, you have already linked to this ',
+                                            'Sorry, you have already linked your current KBase account ',
+                                            span({
+                                                style: {
+                                                    fontWeight: 'bold'
+                                                }
+                                            }, currentUsername),
+                                            ' to this ',
                                             span({
                                                 style: {
                                                     fontWeight: 'bold'
