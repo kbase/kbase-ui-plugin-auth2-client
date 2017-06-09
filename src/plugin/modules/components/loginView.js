@@ -293,7 +293,7 @@ define([
                     marginBottom: '12px'
                 }
             }, iframe({
-                src: 'https://www.youtube.com/embed/6ql7HAUzU7U',
+                src: 'https://www.youtube.com/embed/RkqrCqoAPMo',
                 frameborder: '0',
                 allowfullscreen: true
             })),
