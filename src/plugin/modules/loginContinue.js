@@ -38,61 +38,72 @@ define([
         p = t('p'),
         a = t('a');
 
-    // glues a countdown clock into the vm and the ui.
-    // function Clock(config) {
-    //     var runtime = config.runtime;
-    //     var clockVar = config.clock;
-    //     var doneVar = config.done;
-    //     var expires = config.expires;
-    //     var clock;
+    function Query(search) {
+        var query = {};
+        search.split('&').forEach(function (field) {
+            var parts = field.split('=');
+            var key = decodeURIComponent(parts[0]);
+            var value = decodeURIComponent(parts[1]);
+            query[key] = value;
+        });
+        return query;
+    }
 
-    //     function start() {
-    //         var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+    function URL(url) {
+        if (typeof url !== 'string') {
+            throw new TypeError('Incoming url must be a string, is ' + (typeof url));
+        }
+        var scheme, host, path, search, hash, query;
+        // get scheme
+        var fullUrl = /^(?:(http[s]*):\/\/)([^\/\?\#]*)(?:(.*))?/.exec(url);
+        var schemaLess;
+        if (fullUrl) {
+            // Either host + path or just host.
+            scheme = fullUrl[1];
+            host = fullUrl[2];
+            schemaLess = fullUrl[3] || '';
+        } else {
+            // If it has no schema, it is a url relative to the 
+            // current origin.
+            // TODO: add that in here?
+            schemaLess = url;
+        }
 
-    //         clock = CountDownClock({
-    //             // until: expires - timeOffset,
-    //             for: 60000,
-    //             onTick: function (remaining) {
-    //                 clockVar(remaining);
-    //             },
-    //             onExpired: function () {
-    //                 doneVar(true);
-    //             }
-    //         });
-    //         clock.start();
-    //     }
+        var theRest = /^(?:\/([^\?\#]*))?(?:\?([^\#]*))?(?:\#(.*))?/.exec(schemaLess);
 
-    //     function stop() {
-    //         clock.stop();
-    //         clockVar(null);
-    //     }
+        path = theRest[1];
+        search = theRest[2];
+        hash = theRest[3];
+        if (search) {
+            query = Query(search);
+        }
 
-    //     return {
-    //         start: start,
-    //         stop: stop
-    //     };
-    // }
+        return {
+            scheme: scheme,
+            host: host,
+            path: path,
+            search: search,
+            query: query,
+            hash: hash
+        };
+    }
 
     function getStateParam(choice) {
-        var q = {};
         if (choice.redirecturl) {
-            var u = new URL(choice.redirecturl);
-            var s = u.search;
-            if (s.length > 1) {
-                s = s.substr(1);
-            }
+            try {
+                var u = URL(choice.redirecturl);
 
-            s.split('&').forEach(function (field) {
-                var f = field.split('=').map(decodeURIComponent);
-                q[f[0]] = f[1];
-            });
-
-            // we just expect a state param.
-            if (q.state) {
-                return JSON.parse(q.state);
+                // we just expect a state param.
+                if (u.query && u.query.state) {
+                    return JSON.parse(u.query.state);
+                }
+            } catch (ex) {
+                console.warn('Error parsing state in redirect url', ex);
+                return {};
             }
+        } else {
+            return {};
         }
-        return q;
     }
 
     function factory(config) {
@@ -257,13 +268,6 @@ define([
                         })
                         .then(function (policiesToResolve) {
                             var step;
-                            // comes in as "nextrequest" all lower case, but known otherwise
-                            // as "nextRequest", camelCase
-                            // if (params.nextrequest) {
-                            //     nextRequest = JSON.parse(params.nextrequest);
-                            // } else {
-                            //     nextRequest = '';
-                            // }
 
                             // If no policies to resolve and google auth provider then just
                             // auto-signin.
@@ -272,65 +276,6 @@ define([
                                 choice.provider === 'Google') {
                                 return doSignIn(choice, stateParams.nextrequest);
                             }
-
-                            // Countdown clock, knockout style.
-                            // mounts.clock.innerHTML = div({
-                            //     dataBind: {
-                            //         if: 'clockTime'
-                            //     },
-                            //     style: {
-                            //         textAlign: 'right',
-                            //     }
-                            // }, p({
-                            //     style: {
-                            //         display: 'inline-block',
-                            //         padding: '6px',
-                            //         backgroundColor: '#999',
-                            //         color: '#FFF'
-                            //     }
-                            // }, [
-                            //     'You have ',
-                            //     span({
-                            //         dataBind: {
-                            //             text: 'clockDisplay'
-                            //         },
-                            //         style: {
-                            //             fontWeight: 'bold'
-                            //         }
-                            //     }),
-                            //     ' to complete the signin process.'
-                            // ]));
-                            // var clockVm = (function () {
-                            //     var clockTime = ko.observable();
-                            //     var clockDisplay = ko.pureComputed(function () {
-                            //         if (typeof clockTime() === 'number') {
-                            //             return Format.niceDuration(clockTime());
-                            //         } else {
-                            //             return '';
-                            //         }
-                            //     });
-                            //     var expired = ko.observable();
-                            //     expired.subscribe(function (newExpired) {
-                            //         if (newExpired) {
-                            //             clock.stop();
-                            //             cancelLogin();
-                            //         }
-                            //     });
-                            //     clock = Clock({
-                            //         runtime: runtime,
-                            //         expires: choice.expires,
-                            //         clock: clockTime,
-                            //         done: expired
-                            //     });
-                            //     return {
-                            //         clockTime: clockTime,
-                            //         clockDisplay: clockDisplay,
-                            //         expired: expired,
-                            //         clock: clock
-                            //     };
-                            // }());
-                            // ko.applyBindings(clockVm, mounts.clock);
-                            // clockVm.clock.start();
 
                             clock = (function (container, expires) {
                                 var clockId = html.genId();
@@ -434,7 +379,7 @@ define([
                     default:
                         nextErr = err;
                     }
-
+                    console.error('Auth Error', err);
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
                     var viewModel = {
@@ -458,29 +403,29 @@ define([
                     });
                     ko.applyBindings(viewModel, mounts.error);
                 })
-
-            .catch(function (err) {
-                var viewModel = {
-                    code: err.code,
-                    message: err.message,
-                    detail: err.detail || '',
-                    data: ko.observable(err.data || {})
-                };
-                mounts.error.innerHTML = div({
-                    dataBind: {
-                        component: {
-                            name: '"error-view"',
-                            params: {
-                                code: 'code',
-                                message: 'message',
-                                detail: 'detail',
-                                data: 'data'
+                .catch(function (err) {
+                    console.error('Error', err);
+                    var viewModel = {
+                        code: err.code,
+                        message: err.message,
+                        detail: err.detail || '',
+                        data: ko.observable(err.data || {})
+                    };
+                    mounts.error.innerHTML = div({
+                        dataBind: {
+                            component: {
+                                name: '"error-view"',
+                                params: {
+                                    code: 'code',
+                                    message: 'message',
+                                    detail: 'detail',
+                                    data: 'data'
+                                }
                             }
                         }
-                    }
+                    });
+                    ko.applyBindings(viewModel, mounts.error);
                 });
-                ko.applyBindings(viewModel, mounts.error);
-            });
         }
 
         function stop() {
