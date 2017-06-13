@@ -111,7 +111,6 @@ define([
                 position: 'relative'
             }
         }, [
-
             img({
                 style: {
                     height: '44px',
@@ -144,18 +143,11 @@ define([
                     visible: 'loading'
                 }
             }, span({
+                class: 'fa fa-spinner fa-pulse fa-3x',
                 style: {
-                    width: '50px',
-                    backgroundColor: 'rgba(255,255,255,0.5)'
+                    color: '#FFF'
                 }
-            }, img({
-                dataBind: {
-                    attr: {
-                        src: 'assetsPath + "/images/spinner5.gif"'
-                    }
-                }
-                // src: Plugin.plugin.fullPath + '/images/spinner5.gif'
-            })))
+            }))
         ]);
     }
 
