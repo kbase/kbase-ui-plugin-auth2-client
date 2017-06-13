@@ -71,6 +71,14 @@ install:
             module: logout
             id: auth2_logout
             type: factory
+        -
+            module: dev/sendToken
+            id: auth2_dev_sendToken
+            type: factory
+        -
+            module: dev/receiveToken
+            id: auth2_dev_receiveToken
+            type: factory
     ko-components:
         -
             name: profile-editor
@@ -161,6 +169,16 @@ install:
             path: ['auth2', 'admin', 'user', {type: param, name: username}]
             widget: auth2_adminUser
             authorization: true
+        -
+            path: ['auth2', 'dev', 'sendToken']
+            widget: auth2_dev_sendToken
+            authorization: true
+        -
+            path: ['auth2', 'dev', 'receiveToken']
+            widget: auth2_dev_receiveToken
+            authorization: false
+            queryParams: 
+                msg: {}
         -
             path: ['auth2', 'signedout']
             widget: auth2_signedout
