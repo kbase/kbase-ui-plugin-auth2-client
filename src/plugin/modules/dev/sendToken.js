@@ -21,7 +21,13 @@ define([
 
     var envs = {
         ci: {
-            targets: {
+            exportTo: {
+                cialt: {
+                    label: 'Alt CI',
+                    host: 'cialt.kbase.us'
+                },
+            },
+            importFrom: {
                 cialt: {
                     label: 'Alt CI',
                     host: 'cialt.kbase.us'
@@ -29,7 +35,13 @@ define([
             }
         },
         cialt: {
-            targets: {
+            exportTo: {
+                ci: {
+                    label: 'CI',
+                    host: 'ci.kbase.us'
+                }
+            },
+            importFrom: {
                 ci: {
                     label: 'CI',
                     host: 'ci.kbase.us'
@@ -37,15 +49,22 @@ define([
             }
         },
         prod: {
-            targets: {
+            exportTo: {
                 appdev: {
                     label: 'App Dev',
                     host: 'appdev.kbase.us'
                 }
             }
+        },
+        appdev: {
+            importFrom: {
+                prod: {
+                    label: 'Prod',
+                    host: 'narrative.kbase.us'
+                }
+            }
         }
     };
-
 
     function factory(config) {
         var runtime = config.runtime,
@@ -92,11 +111,11 @@ define([
         function start(params) {
 
             var envConfig = envs[currentEnv];
-            if (!envConfig) {
+            if (!envConfig || !envConfig.exportTo) {
                 renderUnsupported();
                 return;
             }
-            targets = envs[currentEnv].targets;
+            targets = envConfig.exportTo;
 
             // var supportedEnvs = ['prod'];
             // if (supportedEnvs.indexOf(runtime.config('deploy.environment')) === -1) {

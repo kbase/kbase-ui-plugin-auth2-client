@@ -18,7 +18,13 @@ define([
 
     var envs = {
         ci: {
-            targets: {
+            exportTo: {
+                cialt: {
+                    label: 'Alt CI',
+                    host: 'cialt.kbase.us'
+                },
+            },
+            importFrom: {
                 cialt: {
                     label: 'Alt CI',
                     host: 'cialt.kbase.us'
@@ -26,7 +32,13 @@ define([
             }
         },
         cialt: {
-            targets: {
+            exportTo: {
+                ci: {
+                    label: 'CI',
+                    host: 'ci.kbase.us'
+                }
+            },
+            importFrom: {
                 ci: {
                     label: 'CI',
                     host: 'ci.kbase.us'
@@ -34,10 +46,18 @@ define([
             }
         },
         prod: {
-            targets: {
+            exportTo: {
                 appdev: {
                     label: 'App Dev',
                     host: 'appdev.kbase.us'
+                }
+            }
+        },
+        appdev: {
+            importFrom: {
+                prod: {
+                    label: 'Prod',
+                    host: 'narrative.kbase.us'
                 }
             }
         }
@@ -107,30 +127,30 @@ define([
                             html.loading(),
                             '<!-- /ko -->'
                         ])
-                    }),
-                    '<!-- ko if: token() -->',
-                    BS.buildPanel({
-                        title: 'Logout',
-                        body: div([
-                            p([
-                                'Logging out from the login widget does not work in the ',
-                                span({
-                                    dataBind: {
-                                        text: 'deployEnvironment'
-                                    }
-                                }),
-                                ' environment. You will need to use a special logout feature below.'
-                            ]),
-                            p(['Please use ', button({
-                                type: 'button',
-                                class: 'btn btn-danger',
-                                dataBind: {
-                                    click: 'doLogout'
-                                }
-                            }, 'This Logout Button')])
-                        ])
-                    }),
-                    '<!-- /ko -->'
+                    })
+                    // '<!-- ko if: token() -->',
+                    // BS.buildPanel({
+                    //     title: 'Logout',
+                    //     body: div([
+                    //         p([
+                    //             'Logging out from the login widget does not work in the ',
+                    //             span({
+                    //                 dataBind: {
+                    //                     text: 'deployEnvironment'
+                    //                 }
+                    //             }),
+                    //             ' environment. You will need to use a special logout feature below.'
+                    //         ]),
+                    //         p(['Please use ', button({
+                    //             type: 'button',
+                    //             class: 'btn btn-danger',
+                    //             dataBind: {
+                    //                 click: 'doLogout'
+                    //             }
+                    //         }, 'This Logout Button')])
+                    //     ])
+                    // }),
+                    // '<!-- /ko -->'
                 ])
             ])
         ]);
@@ -143,7 +163,7 @@ define([
         var deployEnvironment = runtime.config('deploy.environment');
 
         var canSend = false;
-        if (envs[deployEnvironment] && envs[deployEnvironment].targets) {
+        if (envs[deployEnvironment] && envs[deployEnvironment].exportTo) {
             canSend = true;
         }
 
@@ -237,9 +257,9 @@ define([
             useToken(newToken);
         }
 
-        function doLogout() {
-            runtime.service('session').logout();
-        }
+        // function doLogout() {
+        //     runtime.service('session').logout();
+        // }
 
         runtime.recv('session', 'loggedin', function () {
             token(runtime.service('session').getAuthToken());
@@ -255,8 +275,8 @@ define([
             canSend: canSend,
 
             doSwitchToken: doSwitchToken,
-            doUseToken: doUseToken,
-            doLogout: doLogout
+            doUseToken: doUseToken
+                // doLogout: doLogout
         };
     }
 
@@ -300,8 +320,36 @@ define([
                 title: 'Unsupported Deploy Environment',
                 body: div([
                     p([
-                        'The ', runtime.config('deploy.environment'),
+                        'The ',
+                        span({
+                            style: {
+                                fontWeight: 'bold'
+                            }
+                        }, runtime.config('deploy.environment')),
                         ' deployment environment does not support token import'
+                    ])
+                ])
+            });
+        }
+
+        function renderUnsupportedExportEnv(env) {
+            container.innerHTML = BS.buildPanel({
+                type: 'danger',
+                title: 'Unsupported Deploy Environment',
+                body: div([
+                    p([
+                        'The ',
+                        span({
+                            style: {
+                                fontWeight: 'bold'
+                            }
+                        }, runtime.config('deploy.environment')),
+                        ' deployment environment does not support token import to ',
+                        span({
+                            style: {
+                                fontWeight: 'bold'
+                            }
+                        }, env),
                     ])
                 ])
             });
@@ -312,13 +360,17 @@ define([
             // TODO: make this a deploy config, but no time now.
             var currentEnv = runtime.config('deploy.environment')
             var envConfig = envs[currentEnv];
-            if (!envConfig) {
+            if (!envConfig || !envConfig.importFrom) {
                 renderUnsupported();
                 return;
             }
             if (params.msg) {
                 // works by base64 ascii string -> raw bytes (string) -> non-ascii escaped -> utf8 string -> object
                 var msg = JSON.parse(decodeURIComponent(escape(window.atob(params.msg))));
+                if (!envConfig.importFrom[msg.source]) {
+                    renderUnsupportedExportEnv(msg.source);
+                    return;
+                }
                 var auth2Session = runtime.service('session').getClient();
                 auth2Session.getClient().getTokenInfo(msg.token)
                     .then(function (tokenInfo) {
