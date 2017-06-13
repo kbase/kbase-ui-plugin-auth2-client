@@ -63,6 +63,34 @@ define([
                     host: 'narrative.kbase.us'
                 }
             }
+        },
+        next: {
+            exportTo: {
+                nextalt: {
+                    label: 'Alt Next',
+                    host: 'nextalt.kbase.us'
+                },
+            },
+            importFrom: {
+                nextalt: {
+                    label: 'Alt Next',
+                    host: 'nextalt.kbase.us'
+                },
+            }
+        },
+        nextalt: {
+            exportTo: {
+                next: {
+                    label: 'Next',
+                    host: 'next.kbase.us'
+                },
+            },
+            importFrom: {
+                next: {
+                    label: 'Next',
+                    host: 'next.kbase.us'
+                },
+            }
         }
     };
 
