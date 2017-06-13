@@ -83,8 +83,7 @@ define([
                             nextrequest: nextRequest,
                             origin: origin
                         },
-                        provider: provider.id,
-                        stayLoggedIn: false
+                        provider: provider.id
                     });
                 });
         }

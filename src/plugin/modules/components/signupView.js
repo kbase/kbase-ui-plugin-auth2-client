@@ -638,8 +638,7 @@ define([
                         // entered with a valid token, redirect to the nextrequest,
                         // and if that is empty, the dashboard.
                         state: state,
-                        provider: providerId,
-                        stayLoggedIn: false
+                        provider: providerId
                     });
                 });
         }

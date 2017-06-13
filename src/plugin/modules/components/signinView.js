@@ -591,8 +591,7 @@ define([
                             nextrequest: nextRequest,
                             origin: 'signup'
                         },
-                        provider: provider.id,
-                        stayLoggedIn: false
+                        provider: provider.id
                     });
                 }
 
