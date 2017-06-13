@@ -1,11 +1,13 @@
 define([
     'knockout-plus',
     'kb_common/html',
-    'kb_common/bootstrapUtils'
+    'kb_common/bootstrapUtils',
+    'kb_common_ts/Auth2Error'
 ], function (
     ko,
     html,
-    BS
+    BS,
+    Auth2Error
 ) {
     'use strict';
 
@@ -342,6 +344,18 @@ define([
             ko.applyBindings(params, container);
         }
 
+        function renderError(message) {
+            container.innerHTML = BS.buildPanel({
+                type: 'danger',
+                title: 'Error',
+                body: div([
+                    p([
+                        'An error occured: ' + message
+                    ])
+                ])
+            });
+        }
+
         function renderUnsupported() {
             container.innerHTML = BS.buildPanel({
                 type: 'danger',
@@ -415,6 +429,20 @@ define([
                             runtime: runtime
                         };
                         render(vm);
+                    })
+                    .catch(Auth2Error.AuthError, function (err) {
+                        console.log('AUTH2 ERROR', err);
+                        switch (err.code) {
+                        case '10020':
+                            renderError('Invalid token - the token you are importing has probably been revoked by logging out of the original web app');
+                            break;
+                        default:
+                            renderError(err.message);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log('ERROR', err);
+                        renderError(err.message);
                     });
             } else {
                 var vm = {
