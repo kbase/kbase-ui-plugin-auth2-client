@@ -356,6 +356,8 @@ define([
         }
 
         function start(params) {
+            runtime.send('ui', 'setTitle', 'Receive a Token');
+
             // Is token import supported in this environment.
             // TODO: make this a deploy config, but no time now.
             var currentEnv = runtime.config('deploy.environment')

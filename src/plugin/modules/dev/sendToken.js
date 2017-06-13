@@ -109,6 +109,7 @@ define([
         }
 
         function start(params) {
+            runtime.send('ui', 'setTitle', 'Send a Token');
 
             var envConfig = envs[currentEnv];
             if (!envConfig || !envConfig.exportTo) {
