@@ -71,9 +71,9 @@ define([
                     // TODO: show error.
                     console.error('Skipping error', err);
                 })
-                .finally(function () {
+                .then(function () {
                     //  don 't care whether it succeeded or failed.
-                    return runtime.service('session').loginStart({
+                    runtime.service('session').loginStart({
                         // TODO: this should be either the redirect url passed in 
                         // or the dashboard.
                         // We just let the login page do this. When the login page is 
@@ -85,6 +85,9 @@ define([
                         },
                         provider: provider.id
                     });
+                })
+                .finally(function () {
+                    loading(false);
                 });
         }
 
