@@ -33,33 +33,14 @@ define([
         p = t('p'),
         b = t('b'),
         button = t('button'),
-        a = t('a'),
-        h1 = t('h1');
+        a = t('a');
 
     function widget(config) {
         var hostNode, container, runtime = config.runtime,
-            events, ui,
-            // passed in the params to invoke this endpoint
-            inProcessToken,
-            // obtained via the login/choice call
-            redirectUrl;
+            ui;
 
-        var vm = Utils.ViewModel({
-            model: {
-                error: {
-                    id: html.genId(),
-                    title: {
-                        id: html.genId()
-                    },
-                    message: {
-                        id: html.genId()
-                    },
-                    detail: {
-                        id: html.genId()
-                    }
-                }
-            }
-        });
+        // When we have a valid linking session, the linkId will be populated.
+        var linkId;
 
         // API
 
@@ -67,48 +48,10 @@ define([
             return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
-                events = DomEvent.make(container);
                 ui = UI.make({
                     node: container
                 });
             });
-        }
-
-        // function getElement(node, name) {
-        //     return node.querySelector('[data-element="' + name + '"]');
-        // }
-
-        // function hideError() {
-        //     var node = container.querySelector('[data-element="error"]');
-        //     node.classList.add('hidden');
-        // }
-
-        function setContent(id, selector, content) {
-            document.getElementById(id).querySelector(selector).innerHTML = content;
-        }
-
-        // function renderError() {
-        //     var node = ui.getElement('error');
-        // }
-
-        // function showError(error) {
-        //     var node = ui.getElement('error');
-        //     node.classList.remove('hidden');
-        //     setContent(vm.error.id, '[data-element="title"]', error.code);
-        //     setContent(vm.error.message.id, '[data-element="body"]', error.message);
-        //     setContent(vm.error.detail.id, '[data-element="body"]', error.detail);
-        // }
-
-        function hideResponse(response) {
-            var node = container.querySelector('[data-element="response"]');
-            node.classList.add('hidden');
-            node.innerHTML = BS.buildPresentableJson(response);
-        }
-
-        function showResponse(response) {
-            var node = container.querySelector('[data-element="response"]');
-            node.classList.remove('hidden');
-            node.innerHTML = BS.buildPresentableJson(response);
         }
 
         function showMessage(message) {
@@ -219,6 +162,7 @@ define([
                     if (clock) {
                         clock.stop();
                     }
+                    linkId = null;
                     runtime.send('app', 'navigate', {
                         path: 'auth2/account',
                         params: {
@@ -227,6 +171,7 @@ define([
                     });
                 })
                 .catch(function (err) {
+                    // TODO: display error
                     console.error('error', err);
                 });
         }
@@ -302,14 +247,12 @@ define([
 
 
             return Promise.try(function () {
-                // var events = DomEvent.make({
-                //     node: container
-                // });
                 runtime.send('ui', 'setTitle', 'Link to Sign-In Account');
                 renderLayout();
                 runtime.service('session').getClient().getLinkChoice()
                     .then(function (result) {
                         createTimer(ui.getElement('timer'), result);
+                        linkId = result.id;
                         var currentUsername = runtime.service('session').getUsername();
                         if (result.canlink) {
                             renderLinkChoice(result);
@@ -356,10 +299,6 @@ define([
                                                     }
                                                 }),
                                             }, 'return to the linking tab'),
-
-                                            // a({
-                                            //     href: '#auth2/account?tab=links'
-                                            // }, 'return to the linking tab'),
                                             ' and start again, this time choosing a different sign-in account to link to.'
                                         ])
                                     ])
@@ -442,6 +381,20 @@ define([
         }
 
         function stop() {
+            if (clock) {
+                clock.stop();
+            }
+            if (linkId) {
+                return runtime.service('session').getClient().linkCancel(linkId)
+                    .catch(Auth2Error.AuthError, function (err) {
+                        // just continue...
+                        if (err.code === '10010') {
+                            // simply continue
+                        } else {
+                            console.log('Error canceling link session', err);
+                        }
+                    });
+            }
             return null;
         }
 
