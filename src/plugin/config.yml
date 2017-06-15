@@ -14,10 +14,6 @@ source:
 install:
     widgets:
         -
-            module: info
-            id: auth2Info
-            type: factory
-        -
             module: login
             id: auth2_login
             css: true
@@ -50,14 +46,6 @@ install:
         -
             module: signup
             id: auth2_signup
-            type: factory
-        -
-            module: admin/panel
-            id: auth2_admin
-            type: factory
-        -
-            module: admin/user/panel
-            id: auth2_adminUser
             type: factory
         -
             module: signedout
@@ -161,14 +149,6 @@ install:
             widget: auth2_signup
             queryParams: 
                 nextrequest: {}
-        -
-            path: ['auth2', 'admin']
-            widget: auth2_admin
-            authorization: true
-        -
-            path: ['auth2', 'admin', 'user', {type: param, name: username}]
-            widget: auth2_adminUser
-            authorization: true
         -
             path: ['auth2', 'dev', 'sendToken']
             widget: auth2_dev_sendToken

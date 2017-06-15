@@ -122,16 +122,6 @@ define([
                     BS.buildPanel({
                         title: 'Receive Token',
                         body: div([
-                            // p(['Current token: ', span({
-                            //     dataBind: {
-                            //         text: 'token'
-                            //     }
-                            // })]),
-                            // p(['New token:', span({
-                            //     dataBind: {
-                            //         text: 'newToken.token'
-                            //     }
-                            // })]),
                             p({
                                 dataBind: {
                                     html: 'message'
@@ -158,29 +148,6 @@ define([
                             '<!-- /ko -->'
                         ])
                     })
-                    // '<!-- ko if: token() -->',
-                    // BS.buildPanel({
-                    //     title: 'Logout',
-                    //     body: div([
-                    //         p([
-                    //             'Logging out from the login widget does not work in the ',
-                    //             span({
-                    //                 dataBind: {
-                    //                     text: 'deployEnvironment'
-                    //                 }
-                    //             }),
-                    //             ' environment. You will need to use a special logout feature below.'
-                    //         ]),
-                    //         p(['Please use ', button({
-                    //             type: 'button',
-                    //             class: 'btn btn-danger',
-                    //             dataBind: {
-                    //                 click: 'doLogout'
-                    //             }
-                    //         }, 'This Logout Button')])
-                    //     ])
-                    // }),
-                    // '<!-- /ko -->'
                 ])
             ])
         ]);
@@ -287,10 +254,6 @@ define([
             useToken(newToken);
         }
 
-        // function doLogout() {
-        //     runtime.service('session').logout();
-        // }
-
         runtime.recv('session', 'loggedin', function () {
             token(runtime.service('session').getAuthToken());
         });
@@ -306,7 +269,6 @@ define([
 
             doSwitchToken: doSwitchToken,
             doUseToken: doUseToken
-                // doLogout: doLogout
         };
     }
 

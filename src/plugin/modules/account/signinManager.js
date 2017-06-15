@@ -308,9 +308,9 @@ define([
                 });
         }
 
-        function doLogoutToken(tokenId) {
+        function doLogout() {
             // Revoke
-            return runtime.service('session').getClient().logout(tokenId)
+            return runtime.service('session').getClient().logout()
                 .then(function () {
                     // runtime.send('session', 'loggedout');
                     runtime.send('app', 'navigate', {
@@ -321,6 +321,21 @@ define([
                     console.error('ERROR', err);
                 });
         }
+
+        // function doLogoutToken(tokenId) {
+        //     // Revoke
+        //     return runtime.service('session').getClient().logout(tokenId)
+        //         .then(function () {
+        //             // runtime.send('session', 'loggedout');
+        //             runtime.send('app', 'navigate', {
+        //                 path: 'auth2/signedout'
+        //             });
+        //         })
+        //         .catch(function (err) {
+        //             console.error('ERROR', err);
+        //         });
+        // }
+
 
         function renderTokens() {
             var events = DomEvent.make({
@@ -584,7 +599,8 @@ define([
                             id: events.addEvent({
                                 type: 'click',
                                 handler: function () {
-                                    doLogoutToken(token.id);
+                                    // doLogoutToken(token.id);
+                                    doLogout();
                                 }
                             }),
                             dataToggle: 'tooltip',
@@ -595,14 +611,6 @@ define([
                 ]);
             })));
             events.attachEvents();
-        }
-
-        function doRevokeAllAndLogout() {
-            return doRevokeAll()
-                .then(function () {
-                    // sloppy, but conserves code.
-                    return doLogoutToken(null);
-                });
         }
 
         function doRevokeAll2() {
