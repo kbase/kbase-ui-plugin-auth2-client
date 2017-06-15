@@ -98,7 +98,7 @@ define([
                         div({
                             id: vm.toolbar.id
                         }),
-                      
+
                         BS.buildPanel({
                             title: 'Developer and Server Tokens',
                             body: div([
@@ -112,7 +112,7 @@ define([
                                     id: vm.allTokens.id
                                 })
                             ])
-                        }),                        
+                        }),
                         div({
                             id: vm.serverTokens.id
                         }),
@@ -142,17 +142,6 @@ define([
                 });
         }
 
-        function doLogoutToken(tokenId) {
-            // Revoke
-            return runtime.service('session').getClient().logout(tokenId)
-                .then(function () {
-                    runtime.send('session', 'loggedout');
-                })
-                .catch(function (err) {
-                    console.error('ERROR', err);
-                });
-        }
-
         function renderNewToken() {
             var newToken = vm.newToken.value;
             var clockId = html.genId();
@@ -167,7 +156,7 @@ define([
             }, [
                 p('New ' + b(newToken.type) + ' token successfully created'),
                 p('Please copy it to a secure location and remove this message'),
-                p('This message will self-destruct in ' + span({id: clockId}) + '.'),
+                p('This message will self-destruct in ' + span({ id: clockId }) + '.'),
                 p('New Token: ' + newToken.token),
                 div(button({
                     type: 'button',
@@ -189,11 +178,13 @@ define([
                 if (!node) {
                     return;
                 }
+
                 function render() {
                     node.innerHTML = String(countdown);
                 }
+
                 function loop() {
-                    timer = window.setTimeout(function () {                       
+                    timer = window.setTimeout(function () {
                         countdown -= 1;
                         render();
                         if (countdown > 0) {
@@ -203,6 +194,7 @@ define([
                         }
                     }, 1000);
                 }
+
                 function stop() {
                     countdown = 0;
                     if (timer) {
@@ -223,18 +215,18 @@ define([
             var type = vm.addTokenForm.node.querySelector('[name="type"]');
 
             runtime.service('session').getClient().createToken({
-                name: name.value,
-                type: type.value
-            })
-            .then(function (result) {
-                renderAllTokens();
-                vm.newToken.value = result;
-                renderNewToken();
-                return null;
-            })
-            .catch(function (err) {
-                console.error('ERROR',err);
-            });
+                    name: name.value,
+                    type: type.value
+                })
+                .then(function (result) {
+                    renderAllTokens();
+                    vm.newToken.value = result;
+                    renderNewToken();
+                    return null;
+                })
+                .catch(function (err) {
+                    console.error('ERROR', err);
+                });
 
         }
 
@@ -273,7 +265,7 @@ define([
                         class: 'btn btn-primary',
                         type: 'button',
                         id: events.addEvent({
-                            type: 'click', 
+                            type: 'click',
                             handler: function (e) {
                                 handleSubmitAddToken();
                             }
@@ -364,18 +356,18 @@ define([
             events.attachEvents();
         }
 
-        
+
         function doRevokeAll() {
             return Promise.all(vm.allTokens.value.map(function (token) {
-                return runtime.service('session').getClient().revokeToken(token.id);
-            }))
-            .then(function () {
-                render();
-                return null;
-            })
-            .catch(function (err) {
-                console.error('ERROR', err);
-            });
+                    return runtime.service('session').getClient().revokeToken(token.id);
+                }))
+                .then(function () {
+                    render();
+                    return null;
+                })
+                .catch(function (err) {
+                    console.error('ERROR', err);
+                });
         }
 
         function renderToolbar() {
