@@ -371,28 +371,33 @@ define([
 
     function buildSaver() {
         return div([
-            div([
-                div({
+            span({
+                style: {
+                    marginRight: '10px',
+                    display: 'inline-block'
+                }
+            }, [
+                span({
                     dataBind: {
-                        visible: 'someDirty'
+                        visible: 'someDirty() && !someInvalid()'
                     }
                 }, [
-                    div({
-                        class: 'alert alert-warning'
-                    }, 'You have made changes to your profile.')
+                    span({
+                        class: 'text-info'
+                    }, 'You may save the edits made to your profile')
                 ]),
-                div({
+                span({
                     dataBind: {
                         visible: 'someInvalid'
                     }
                 }, [
-                    div({
-                        class: 'alert alert-danger'
-                    }, 'You have empty required or invalid fields -- you must fix them before you can save any changes.')
+                    span({
+                        class: 'text-danger'
+                    }, 'You may save after completing required or erroneous fields')
                 ])
             ]),
             buildMessageDisplay(),
-            div({
+            span({
                 style: {
                     textAlign: 'center'
                 }
@@ -420,7 +425,7 @@ define([
             }, [
                 div({
                     style: {
-                        flex: '2',
+                        flex: '1',
                         // color: 'rgba(0,121,98,1)', // 0, 121, 98
                         fontSize: '130%',
                         fontWeight: 'bold',
@@ -430,29 +435,26 @@ define([
                         justifyContent: 'center'
                     }
                 }, 'Edit Your Profile'),
-                div({
-                    style: {
-                        flex: '1',
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center'
-                    },
-                    dataBind: {
-                        text: 'message'
-                    }
-                }),
+                // div({
+                //     style: {
+                //         flex: '1',
+                //         textAlign: 'center',
+                //         display: 'flex',
+                //         flexDirection: 'column',
+                //         justifyContent: 'center'
+                //     },
+                //     dataBind: {
+                //         text: 'message'
+                //     }
+                // }),
                 div({
                     style: {
                         flex: '1',
                         textAlign: 'right'
                     }
                 }, [
-                    a({
-                        class: 'btn btn-link',
-                        href: '#people'
-                    }, 'Open Your Profile Page'),
-                    buildSaveButton()
+                    buildSaver()
+                    // buildSaveButton()
                 ])
             ]),
             div({
@@ -509,7 +511,14 @@ define([
                                 fontWeight: 'bold',
                                 fontSize: '120%'
                             }
-                        }, 'Preview')
+                        }, 'Preview'),
+                        a({
+                            class: 'btn btn-link',
+                            href: '#people',
+                            style: {
+                                marginLeft: '10px'
+                            }
+                        }, 'Open Your Profile Page'),
                     ]),
                     div({
                         id: 'profilePreview',
