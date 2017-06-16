@@ -369,7 +369,8 @@ define([
                         default:
                             return ErrorWidget.make({
                                     runtime: runtime
-                                }).attach(ui.getElement('error'))
+                                })
+                                .attach(ui.getElement('error'))
                                 .then(function (w) {
                                     return w.start({
                                         error: err
