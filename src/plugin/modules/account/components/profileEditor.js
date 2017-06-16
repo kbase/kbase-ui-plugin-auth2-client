@@ -393,7 +393,16 @@ define([
                 }, [
                     span({
                         class: 'text-danger'
-                    }, 'You may save after completing required or erroneous fields')
+                    }, [
+                        'You may save after completing required ',
+                        span({
+                            class: 'glyphicon-asterisk text-danger',
+                            style: {
+                                fontWeight: 'bold'
+                            }
+                        }),
+                        ' or erroneous fields'
+                    ])
                 ])
             ]),
             buildMessageDisplay(),
