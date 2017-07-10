@@ -1,9 +1,10 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils'
 ], function (
+    Promise,
     html,
     DomEvent,
     BS
@@ -47,7 +48,7 @@ define([
             });
             var content;
             if (vm.roles.value.length === 0) {
-                content =vm.roles.node.innerHTML = 'No roles assigned';
+                content = vm.roles.node.innerHTML = 'No roles assigned';
             } else {
                 content = table({
                     class: 'table table-striped'
@@ -89,7 +90,7 @@ define([
                 div({
                     class: 'row'
                 }, [
-                    div({ 
+                    div({
                         class: 'col-md-12',
                         id: vm.roles.id
                     })

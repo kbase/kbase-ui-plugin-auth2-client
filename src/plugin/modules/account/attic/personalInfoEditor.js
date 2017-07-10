@@ -1,7 +1,8 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
 ], function (
+    Promise,
     html
 ) {
     var // t = html.tagMaker(),
@@ -9,11 +10,8 @@ define([
         div = t('div'),
         button = t('button'),
         span = t('span'),
-        form = t('form'),
         input = t('input'),
         label = t('label'),
-        select = t('select'),
-        option = t('option'),
         p = t('p');
 
     function more(content) {
@@ -112,8 +110,8 @@ define([
                     class: 'row'
                 }, [
                     div({
-                        class: 'col-md-6'
-                    },
+                            class: 'col-md-6'
+                        },
                         input({
                             type: vm.type | 'text',
                             class: 'form-control',
@@ -124,12 +122,10 @@ define([
                     ),
                     div({
                         class: 'col-md-6'
-                    },
-                        [
-                            vm.description,
-                            more(vm.more)
-                        ]
-                    )
+                    }, [
+                        vm.description,
+                        more(vm.more)
+                    ])
                 ])
             ]);
         }
@@ -175,7 +171,7 @@ define([
             var moreControl = vm.node.querySelector('[data-element="more"]');
             var moreLabel = moreControl.querySelector('[data-element="label"]');
             var moreButton = moreControl.querySelector('[data-element="button"]');
-            var moreContent= moreControl.querySelector('[data-element="content"]');
+            var moreContent = moreControl.querySelector('[data-element="content"]');
             moreButton.addEventListener('click', function () {
                 if (moreContent.classList.contains('hidden')) {
                     moreContent.classList.remove('hidden');

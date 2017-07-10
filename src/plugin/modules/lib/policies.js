@@ -1,9 +1,10 @@
-/*global Promise*/
 define([
+    'bluebird',
     'marked',
     'kb_common_ts/HttpClient',
     'kb_plugin_auth2-client'
 ], function (
+    Promise,
     marked,
     M_HttpClient,
     Plugin

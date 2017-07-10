@@ -1,8 +1,9 @@
-/* global Promise */
 define([
+    'bluebird',
     'knockout',
     'kb_common/html'
 ], function (
+    Promise,
     ko,
     html
 ) {

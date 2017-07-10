@@ -1,10 +1,11 @@
-/* global Promise */
 define([
+    'bluebird',
     'knockout',
     'kb_common/html',
     // for effect
     'bootstrap'
 ], function (
+    Promise,
     ko,
     html
 ) {

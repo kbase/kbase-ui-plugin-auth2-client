@@ -1,10 +1,11 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_service/client/userProfile',
     'knockout'
 ], function (
+    Promise,
     html,
     BS,
     UserProfileService,

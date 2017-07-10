@@ -1,5 +1,5 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
@@ -7,6 +7,7 @@ define([
     '../lib/format',
     '../lib/utils'
 ], function (
+    Promise,
     html,
     DomEvent,
     BS,

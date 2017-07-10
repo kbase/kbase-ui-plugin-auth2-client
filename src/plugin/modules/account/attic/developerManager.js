@@ -1,28 +1,17 @@
-/*global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
 ], function (
+    Promise,
     html
 ) {
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
-        h2 = t('h2'),
-        ul = t('ul'),
-        li = t('li'),
-        a = t('a'),
         table = t('table'),
         tr = t('tr'),
         th = t('th'),
-        td = t('td'),
-        button = t('button'),
-        form = t('form'),
-        input = t('input'),
-        label = t('label'),
-        select = t('select'),
-        option = t('option'),
-        p = t('p'),
-        iframe = t('iframe');
+        td = t('td');
 
     function factory(config) {
         var hostNode, container;
@@ -119,11 +108,13 @@ define([
                     });
             }
         }
+
         function renderServerTokens() {
             if (vm.serverTokens.enabled) {
                 vm.serverTokens.node.innerHTML = 'enabled';
             }
         }
+
         function renderDeveloperTokens() {
             if (vm.developerTokens.enabled) {
                 vm.developerTokens.node.innerHTML = 'enabled';
@@ -169,7 +160,7 @@ define([
                     hostNode.innerHTML = '';
                 }
             });
-        } 
+        }
 
         return {
             attach: attach,

@@ -1,10 +1,11 @@
-/* global Promise*/
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client'
 ], function (
+    Promise,
     html,
     DomEvents,
     BS,
