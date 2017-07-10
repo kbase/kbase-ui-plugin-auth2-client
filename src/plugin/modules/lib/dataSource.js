@@ -1,9 +1,10 @@
-/* global Promise */
 define([
+    'bluebird',
     'js-yaml',
     'kb_common_ts/HttpClient',
     'kb_plugin_auth2-client',
 ], function (
+    Promise,
     yaml,
     HttpClient,
     Plugin

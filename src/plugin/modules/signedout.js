@@ -1,7 +1,8 @@
-/* global Promise */
 define([
+    'bluebird',
     'kb_common/html'
 ], function (
+    Promise,
     html
 ) {
     'use strict';

@@ -1,5 +1,5 @@
-/*global Promise*/
 define([
+    'bluebird',
     'jquery',
     'kb_common_ts/Html',
     'kb_common/html',
@@ -13,6 +13,7 @@ define([
     './profileManager',
     '../widgets/tabsWidget'
 ], function (
+    Promise,
     $,
     Html,
     html,

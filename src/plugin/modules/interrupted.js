@@ -1,8 +1,9 @@
-/* global Promise */
 define([
+    'bluebird',
     'knockout',
     'kb_common/html'
-], function(
+], function (
+    Promise,
     ko,
     html
 ) {
@@ -121,14 +122,14 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
             });
         }
 
         function start(params) {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 // if (runtime.service('session').isLoggedIn()) {
                 //     runtime.send('app', 'navigate', {
                 //         path: 'dashboard'
@@ -140,13 +141,13 @@ define([
         }
 
         function stop() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 return null;
             });
         }
 
         function detach() {
-            return Promise.try(function() {
+            return Promise.try(function () {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -162,7 +163,7 @@ define([
     }
 
     return {
-        make: function(config) {
+        make: function (config) {
             return factory(config);
         }
     };

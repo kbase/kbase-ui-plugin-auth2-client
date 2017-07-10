@@ -1,9 +1,10 @@
-/* global Promise */
 define([
+    'bluebird',
     'kb_common/html',
     'kb_common/bootstrapUtils',
     '../lib/utils'
 ], function (
+    Promise,
     html,
     BS,
     Utils
