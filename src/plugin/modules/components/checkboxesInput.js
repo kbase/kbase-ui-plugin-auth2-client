@@ -101,5 +101,5 @@ define([
             viewModel: viewModel
         };
     }
-    ko.components.register('checkboxes-input', component());
+    return component;
 });

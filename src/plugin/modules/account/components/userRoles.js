@@ -47,5 +47,5 @@ define([
             ])
         };
     }
-    ko.components.register('user-roles', component());
+    return component;
 });

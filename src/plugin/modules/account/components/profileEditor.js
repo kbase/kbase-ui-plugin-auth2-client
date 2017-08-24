@@ -1649,5 +1649,5 @@ define([
             template: buildTemplate()
         };
     }
-    ko.components.register('profile-editor', component());
+    return component;
 });

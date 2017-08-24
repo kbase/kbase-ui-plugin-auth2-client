@@ -621,6 +621,6 @@ define([
             template: template()
         };
     }
-    ko.components.register('signin-view', component());
+    return component;
 
 });

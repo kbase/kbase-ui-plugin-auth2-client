@@ -468,6 +468,5 @@ define([
             template: template()
         };
     }
-    ko.components.register('signin-form', component());
-
+    return component;
 });

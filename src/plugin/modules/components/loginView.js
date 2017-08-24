@@ -564,5 +564,5 @@ define([
             viewModel: viewModel
         };
     }
-    ko.components.register('login-view', component());
+    return component;
 });

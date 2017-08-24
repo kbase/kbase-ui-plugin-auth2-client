@@ -314,5 +314,5 @@ define([
             template: buildForm()
         };
     }
-    ko.components.register('user-info-editor', component());
+    return component;
 });
