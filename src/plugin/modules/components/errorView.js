@@ -86,5 +86,5 @@ define([
             template: template()
         };
     }
-    ko.components.register('error-view', component());
+    return component;
 });

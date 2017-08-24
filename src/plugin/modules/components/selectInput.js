@@ -76,5 +76,5 @@ define([
             viewModel: viewModel
         };
     }
-    ko.components.register('select-input', component());
+    return component;
 });

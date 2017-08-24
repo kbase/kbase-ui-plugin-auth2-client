@@ -3,7 +3,7 @@ define([
     'kb_common/html',
     'kb_common_ts/HttpClient',
     'kb_plugin_auth2-client'
-], function(
+], function (
     ko,
     html,
     HttpClient,
@@ -29,7 +29,7 @@ define([
                 method: 'GET',
                 url: url
             })
-            .then(function(result) {
+            .then(function (result) {
                 if (result.status === 200) {
                     try {
                         return JSON.parse(result.response);
@@ -168,19 +168,19 @@ define([
         var loading = ko.observable(true);
         var globusProviders = ko.observableArray();
         var providerSearch = ko.observable();
-        var isSearching = ko.pureComputed(function() {
+        var isSearching = ko.pureComputed(function () {
             if (!providerSearch() || providerSearch().length <= 1) {
                 return false;
             }
             return true;
         });
-        var providerSearchRegexp = ko.pureComputed(function() {
+        var providerSearchRegexp = ko.pureComputed(function () {
             if (!providerSearch() || providerSearch().length < 2) {
                 return null;
             }
             return new RegExp(providerSearch(), 'i');
         });
-        var globusProvidersSearch = globusProviders.filter(function(item) {
+        var globusProvidersSearch = globusProviders.filter(function (item) {
             if (providerSearchRegexp()) {
                 return providerSearchRegexp().test(item.label);
             } else {
@@ -190,8 +190,8 @@ define([
 
         // populate the globus providers asynchronously.
         getGlobusProviders()
-            .then(function(providers) {
-                providers.forEach(function(provider) {
+            .then(function (providers) {
+                providers.forEach(function (provider) {
                     globusProviders.push(provider);
                 });
                 loading(false);
@@ -212,5 +212,5 @@ define([
             template: template()
         };
     }
-    ko.components.register('globus-providers', component());
+    return component;
 });

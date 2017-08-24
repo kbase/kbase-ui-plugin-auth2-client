@@ -686,5 +686,5 @@ define([
             template: template()
         };
     }
-    ko.components.register('signup-view', component());
+    return component;
 });

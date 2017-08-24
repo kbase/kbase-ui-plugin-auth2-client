@@ -160,5 +160,5 @@ define([
             template: template()
         };
     }
-    ko.components.register('signin-button', component());
+    return component;
 });

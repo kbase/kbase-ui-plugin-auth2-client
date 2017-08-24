@@ -113,7 +113,12 @@ install:
         -
             name: signin-button
             module: components/signinButton
-
+        -
+            name: token-receiver
+            module: dev/tokenReceiver
+        -
+            name: interrupted-view
+            module: components/interruptedView
     routes:
         -
             path: ['login']

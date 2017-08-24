@@ -368,5 +368,5 @@ define([
             template: template()
         };
     }
-    ko.components.register('typeahead-input', component());
+    return component;
 });

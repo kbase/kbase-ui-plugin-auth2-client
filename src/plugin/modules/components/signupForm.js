@@ -1031,5 +1031,5 @@ define([
             template: template()
         };
     }
-    ko.components.register('signup-form', component());
+    return component;
 });
