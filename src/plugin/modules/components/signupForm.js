@@ -473,49 +473,6 @@ define([
         ]);
     }
 
-    // function buildClock() {
-    //     return div({
-    //         dataBind: {
-    //             if: 'signupState() === "incomplete" || signupState() === "complete"'
-    //         }
-    //     }, div({
-    //         dataBind: {
-    //             if: 'expiresIn() > 0'
-    //         },
-    //         style: {
-    //             marginBottom: '12px',
-    //             textAlign: 'right'
-    //         }
-
-    //     }, p({
-    //         style: {
-    //             display: 'inline-block',
-    //             padding: '6px',
-    //             backgroundColor: '#999',
-    //             color: '#FFF'
-    //         }
-    //     }, [
-    //         'This sign-up session will expire in ',
-    //         span({
-    //             style: {
-    //                 fontFamily: 'monospace'
-    //             },
-    //             dataBind: {
-    //                 text: 'expiresMessage()'
-    //             }
-    //         })
-    //         // button({
-    //         //     class: 'btn btn-danger btn-sm',
-    //         //     style: {
-    //         //         marginLeft: '10px'
-    //         //     },
-    //         //     dataBind: {
-    //         //         click: 'doCancelChoiceSession'
-    //         //     }
-    //         // }, '&times;')
-    //     ])));
-    // }
-
     function template() {
         return div({
             dataBind: {
@@ -690,6 +647,27 @@ define([
             data: ko.observable()
         };
 
+        var policiesToResolve = {
+            missing: params.policiesToResolve.missing.map(function (item) {
+                return {
+                    id: item.id,
+                    version: item.version,
+                    policy: item.policy,
+                    viewPolicy: ko.observable(false),
+                    agreed: ko.observable(false)
+                };
+            }),
+            outdated: params.policiesToResolve.outdated.map(function (item) {
+                return {
+                    id: item.id,
+                    version: item.version,
+                    policy: item.policy,
+                    agreement: item.agreement,
+                    viewPolicy: ko.observable(false),
+                    agreed: ko.observable(false)
+                };
+            })
+        };
 
         var canSubmit = ko.pureComputed(function () {
             if (!allValid()) {
@@ -724,13 +702,6 @@ define([
                     var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
                         token: response.token.token
                     });
-                    // first just recreate the stub profile experience.
-                    // var newProfile = profile.makeProfile({
-                    //     username: accountInfo.user,
-                    //     realname: accountInfo.fullname,
-                    //     account: {},
-                    //     createdBy: 'userprofile_ui_service'
-                    // });
                     var newProfile = {
                         user: {
                             username: accountInfo.user,
@@ -860,52 +831,6 @@ define([
             }
         }
 
-        // var validationStatus = ko.computed(function(fieldName) {
-        //     var fields = {
-        //         username: username,
-        //         realname: realname,
-        //         role: role
-        //     };
-        //     var field = fields[fieldName];
-        //     if (!field) {
-        //         return;
-        //     }
-        //     if (field.isValid()) {
-        //         return 'fa-check';
-        //     } else {
-        //         return 'fa-asterisk';
-        //     }
-        // }, { writable: true });
-
-        // POLICY AGREMENTS
-        // The interface to the policy agreement component is ...
-        // Well, let's see.
-
-        // make policy resolution structure.
-
-        var policiesToResolve = {
-            missing: params.policiesToResolve.missing.map(function (item) {
-                return {
-                    id: item.id,
-                    version: item.version,
-                    policy: item.policy,
-                    viewPolicy: ko.observable(false),
-                    agreed: ko.observable(false)
-                };
-            }),
-            outdated: params.policiesToResolve.outdated.map(function (item) {
-                return {
-                    id: item.id,
-                    version: item.version,
-                    policy: item.policy,
-                    agreement: item.agreement,
-                    viewPolicy: ko.observable(false),
-                    agreed: ko.observable(false)
-                };
-            })
-        };
-
-
         // EXPIRATION
 
         var timeOffset = runtime.service('session').getClient().serverTimeOffset();
@@ -932,11 +857,6 @@ define([
                 signupState('expired');
             }
         });
-
-        // start clock... improve
-        // var timer = window.setInterval(function () {
-        //     now(new Date().getTime());
-        // }, 500);
 
         function doCancelChoiceSession() {
             runtime.service('session').getClient().loginCancel()
@@ -973,29 +893,6 @@ define([
                 });
         }
 
-        // var roles = [{
-        //     id: 'mr',
-        //     label: 'Mr'
-        // }, {
-        //     id: 'ms',
-        //     label: 'Ms'
-        // }, {
-        //     id: 'miss',
-        //     label: 'Miss'
-        // }, {
-        //     id: 'mrs',
-        //     label: 'Mrs'
-        // }, {
-        //     id: 'dr',
-        //     label: 'Dr'
-        // }, {
-        //     id: 'sr',
-        //     label: 'Sr'
-        // }, {
-        //     id: 'director',
-        //     label: 'Director'
-        // }];
-
         return {
             choice: choice,
             create: create,
@@ -1017,7 +914,6 @@ define([
             doSubmitSignup: doSubmitSignup,
             doSignupSuccess: doSignupSuccess,
             doCancelChoiceSession: doCancelChoiceSession,
-            // validationStatus: validationStatus
             //expiration, clock, etc.
             expired: expired,
             expiresIn: expiresIn,
