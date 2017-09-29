@@ -17,13 +17,6 @@ define([
             runtime = config.runtime,
             nextRequest, source;
 
-        function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
-            });
-        }
-
         function showErrorMessage(message) {
             container.innerHTML = div({
                 class: 'alert alert-danger'
@@ -33,7 +26,7 @@ define([
         function render() {
             try {
                 container.innerHTML = div({
-                    class: 'plugin-auth2-client widget-auth2_login',
+                    class: 'navbar-right',
                     dataPlugin: 'auth2-client',
                     dataWidget: 'auth2_signin',
                     dataBind: {
@@ -74,38 +67,34 @@ define([
             }
         }
 
-        function start(params) {
-            return Promise.try(function () {
-                // if is logged in, just redirect to the nextrequest,
-                // or the nexturl, or dashboard.
-                if (params.nextrequest) {
-                    nextRequest = JSON.parse(params.nextrequest);
-                } else {
-                    nextRequest = null;
-                }
-                source = params.source;
-
-                if (runtime.service('session').isLoggedIn()) {
-                    doRedirect(params);
-                    return null;
-                }
-                runtime.send('ui', 'setTitle', 'KBase Sign In');
-                return render(params);
-            });
+        function attach(node) {
+            hostNode = node;
+            container = hostNode.appendChild(document.createElement('div'));
+            container.classList.add('plugin-auth2-client', 'widget-auth2_login');
         }
 
-        function stop() {
-            return Promise.try(function () {
+        function start(params) {
+            // if is logged in, just redirect to the nextrequest,
+            // or the nexturl, or dashboard.
+            if (params.nextrequest) {
+                nextRequest = JSON.parse(params.nextrequest);
+            } else {
+                nextRequest = null;
+            }
+            source = params.source;
 
-            });
+            if (runtime.service('session').isLoggedIn()) {
+                doRedirect(params);
+                return null;
+            }
+            runtime.send('ui', 'setTitle', 'KBase Sign In');
+            return render(params);
         }
 
         function detach() {
-            return Promise.try(function () {
-                if (hostNode && container) {
-                    hostNode.removeChild(container);
-                }
-            });
+            if (hostNode && container) {
+                hostNode.removeChild(container);
+            }
         }
 
         return {
