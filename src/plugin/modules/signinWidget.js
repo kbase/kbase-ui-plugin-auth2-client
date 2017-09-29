@@ -98,6 +98,10 @@ define([
                             var realname = profile.user.realname;
                             var username = profile.user.username;
                             return div({
+                                class: 'navbar container-fluid'
+                            }, div({
+                                class: 'navbar-right'
+                            }, div({
                                 class: 'dropdown',
                                 style: 'display:inline-block'
                             }, [
@@ -119,9 +123,12 @@ define([
                                                 textAlign: 'center'
                                             }
                                         }, [
-                                            realname,
-                                            br(),
-                                            i({}, username)
+                                            div(realname),
+                                            div({
+                                                style: {
+                                                    fontStyle: 'italic'
+                                                }
+                                            }, username)
                                         ])
                                     ]),
                                     li({ class: 'divider' }),
@@ -150,7 +157,7 @@ define([
                                         ])
                                     ])
                                 ])
-                            ]);
+                            ])));
                         });
                 }
                 return a({
@@ -173,10 +180,7 @@ define([
             });
             return renderLogin(events)
                 .then(function (loginContent) {
-                    container.innerHTML = div({
-                        dataWidget: 'auth2_signin',
-                        class: 'widget-auth2_signin'
-                    }, loginContent);
+                    container.innerHTML = loginContent;
                     events.attachEvents();
                 });
         }
@@ -186,32 +190,24 @@ define([
         var hostNode, container;
 
         function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
-            });
+            hostNode = node;
+            container = hostNode.appendChild(document.createElement('div'));
+            container.classList.add('widget-auth2_signin');
+            container.setAttribute('data-widget', 'auth2_signin');
         }
 
-        function start(params) {
-            return Promise.try(function () {
-                runtime.service('userprofile').onChange(function () {
-                    render();
-                }.bind(this));
+        function start() {
+            runtime.service('userprofile').onChange(function () {
+                render();
+            }.bind(this));
 
-                return render();
-            });
-        }
-
-        function stop() {
-            return Promise.try(function () {});
+            return render();
         }
 
         function detach() {
-            return Promise.try(function () {
-                if (hostNode && container) {
-                    hostNode.removeChild(container);
-                }
-            });
+            if (hostNode && container) {
+                hostNode.removeChild(container);
+            }
         }
 
         return {
