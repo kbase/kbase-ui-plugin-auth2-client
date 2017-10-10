@@ -35,7 +35,7 @@ install:
             id: auth2Account
             type: factory  
         -
-            module: signinWidget
+            module: widgets/signinWidget
             id: auth2_signin
             css: true
             type: factory
