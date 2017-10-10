@@ -100,7 +100,6 @@ define([
         return {
             attach: attach,
             start: start,
-            stop: stop,
             detach: detach
         };
     }
