@@ -168,7 +168,7 @@ define([
                     }),
                     a({
                         href: '#login'
-                    }, 'Signin to KBase again')
+                    }, 'Sign in to KBase again')
                 ])
             ])
         });
@@ -235,7 +235,7 @@ define([
                     }),
                     a({
                         href: '#login'
-                    }, 'Signin to KBase again')
+                    }, 'Sign in to KBase again')
                 ])
             ])
         });
