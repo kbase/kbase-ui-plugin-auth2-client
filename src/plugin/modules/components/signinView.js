@@ -293,7 +293,7 @@ define([
                     }),
                     a({
                         href: '#login'
-                    }, 'Signin to KBase again')
+                    }, 'Sign in to KBase again')
                 ])
             ])
         });
