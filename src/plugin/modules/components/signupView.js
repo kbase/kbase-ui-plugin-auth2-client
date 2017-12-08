@@ -44,8 +44,7 @@ define([
                 label: 'Globus',
                 description: div([
                     p([
-                        'In addition to Globus ID, required for the Globus Transfer service, ',
-                        'Globus supports many organizational sign-in providers -- your organization may be supported.'
+                        'Use your existing Globus ID or create a new one <a target="new" href="https://www.globusid.org/create">here</a>.'
                     ]),
                     // p([
                     //     'Search here for sign-in providers offered by Globus: ',
@@ -212,7 +211,7 @@ define([
                     style: {
                         verticalAlign: 'middle'
                     }
-                }, 'Sign in with one of our supported sign-In providers')
+                }, 'Sign in with one of our supported sign-in providers')
             ]),
             div({
                 dataBind: {
@@ -220,7 +219,7 @@ define([
                 }
             }, [
                 p({}, [
-                    ' Great, you have signed in with your ',
+                    ' You have signed in with your ',
                     span({
                         dataBind: {
                             text: 'choice.provider'
@@ -260,7 +259,7 @@ define([
                 }
             }, [
                 p({}, [
-                    ' Great, you have signed in with your ',
+                    ' You have signed in with your ',
                     span({
                         dataBind: {
                             text: 'choice.provider'
@@ -302,14 +301,14 @@ define([
                     style: {
                         verticalAlign: 'middle'
                     }
-                }, 'Sign in with one of our supported sign-In providers')
+                }, 'Sign in with one of our supported sign-in providers')
             ]),
             p({
                 style: {
                     maxWidth: '60em'
                 }
             }, [
-                'When you sign up for KBase, you will use your existing Google or Globus account, ',
+                'When you sign up for KBase, you can use your existing Google or Globus account (or create a new one), ',
                 'and it will be linked to your new KBase account during the sign-up process. ',
             ]),
             div({
@@ -394,7 +393,7 @@ define([
                     }, 'You are Already Signed Up'))
                 ]),
                 p([
-                    'Interestingly, even though you apparently intended to sign up with this ',
+                    'Although you apparently intended to sign up with this ',
                     span({
                         dataBind: {
                             text: 'choice.provider'
@@ -493,7 +492,7 @@ define([
                             }
                         }, span({
                             dataElement: 'title'
-                        }, 'KBase Account Successfully Created'))
+                        }, 'KBase account successfully created'))
                     ]))
                 ]),
                 '<!-- ko if: signupState() === "incomplete" -->',
