@@ -70,8 +70,7 @@ define([
             info: div({}, [
                 div([
                     p([
-                        'This field contains your name as you wish it to be displayed to other KBase users ',
-                        ' as well as KBase staff.'
+                        'This field contains your name as you wish it to be displayed to other KBase users '
                     ])
                 ]),
                 div({
@@ -86,7 +85,7 @@ define([
                         'After you create your profile, that name information will be used for display to ',
                         'other users (when they are logged in), and in Narratives and related data you may publish. ',
                         'When you have a profile, the name shown here ',
-                        'on your account will the only be available to KBase staff.'
+                        'on your account will only be visible to KBase staff.'
                     ])
                 ])
             ])
@@ -122,7 +121,7 @@ define([
                 [
                     div({}, [
                         p([
-                            'Your KBase username is the primary identifier carried with all of your work and assets within ',
+                            'Your KBase username is the primary identifier associated with all of your work and assets within ',
                             ' KBase.'
                         ]),
                         p({
@@ -174,7 +173,7 @@ define([
                 [
                     div({}, [
                         p([
-                            'KBase may use this email address to communicate important information about KBase or your account.'
+                            'KBase may occasionally use this email address to communicate important information about KBase or your account.'
                         ]),
                         p([
                             'KBase will not share your email address with anyone, and other KBase users will not be able to see it.'
@@ -468,7 +467,7 @@ define([
                 a({
                     href: '#login'
                 }, 'sign-in page'),
-                ' make another attempt to sign-in or sign-up.'
+                ' make another attempt to sign in or sign up.'
             ])
         ]);
     }
@@ -742,7 +741,7 @@ define([
             // missing policies
             policiesToResolve.missing.forEach(function (policy) {
                 if (!policy.agreed()) {
-                    throw new Error('Cannot submit with missing policies not agreed to');
+                    throw new Error('Cannot submit with some policies not agreed to');
                 }
                 agreementsToSubmit.push({
                     id: policy.id,
@@ -752,7 +751,7 @@ define([
             // outdated policies.
             policiesToResolve.outdated.forEach(function (policy) {
                 if (!policy.agreed()) {
-                    throw new Error('Cannot submit with missing policies not agreed to');
+                    throw new Error('Cannot submit with some policies not agreed to');
                 }
                 // agreementsToSubmit.push([policy.id, policy.version].join('.'));
                 agreementsToSubmit.push({
