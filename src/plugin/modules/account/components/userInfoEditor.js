@@ -29,7 +29,7 @@ define([
                 p([
                     'The username associates your account with the Narratives, data, ',
                     'and applications you create within KBase. It is also recorded with internal log files ',
-                    'and other records to assist in providing services, metrics and suppport.'
+                    'and other records to assist in providing services, metrics and support.'
                 ])
             ])
         },
