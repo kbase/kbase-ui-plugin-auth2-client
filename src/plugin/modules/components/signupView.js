@@ -26,7 +26,8 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
-        p = html.tag('p');
+        p = html.tag('p'),
+        a = html.tag('a');
 
     function getProviders() {
         return {
@@ -44,7 +45,12 @@ define([
                 label: 'Globus',
                 description: div([
                     p([
-                        'Use your existing Globus ID or create a new one <a target="new" href="https://www.globusid.org/create">here</a>.'
+                        'Use your existing Globus ID or  ',
+                        a({
+                            href: 'https://www.globusid.org/create',
+                            target: 'globus_create'
+                        }, 'create a new one'), 
+                        '.'
                     ]),
                     // p([
                     //     'Search here for sign-in providers offered by Globus: ',
