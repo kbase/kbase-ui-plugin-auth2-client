@@ -15,6 +15,53 @@ define([
         div = t('div'),
         span = t('span'),
         p = t('p');
+        
+    var envs = {
+        ci: {
+            exportTo: {
+                cialt: {
+                    label: 'Alt CI',
+                    host: 'cialt.kbase.us'
+                },
+            },
+            importFrom: {
+                cialt: {
+                    label: 'Alt CI',
+                    host: 'cialt.kbase.us'
+                },
+            }
+        },
+        cialt: {
+            exportTo: {
+                ci: {
+                    label: 'CI',
+                    host: 'ci.kbase.us'
+                }
+            },
+            importFrom: {
+                ci: {
+                    label: 'CI',
+                    host: 'ci.kbase.us'
+                }
+            }
+        },
+        prod: {
+            exportTo: {
+                appdev: {
+                    label: 'App Dev',
+                    host: 'appdev.kbase.us'
+                }
+            }
+        },
+        appdev: {
+            importFrom: {
+                prod: {
+                    label: 'Prod',
+                    host: 'narrative.kbase.us'
+                }
+            }
+        }
+    };
 
     function factory(config) {
         var runtime = config.runtime,
