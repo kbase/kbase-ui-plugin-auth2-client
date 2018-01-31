@@ -31,8 +31,6 @@ define([
             span = t('span'),
             ul = t('ul'),
             li = t('li'),
-            br = t('br', { close: false }),
-            i = t('i'),
             img = t('img');
 
         function handleSignout(e) {
@@ -208,6 +206,10 @@ define([
             if (hostNode && container) {
                 hostNode.removeChild(container);
             }
+        }
+
+        function stop () {
+            return null;
         }
 
         return {
