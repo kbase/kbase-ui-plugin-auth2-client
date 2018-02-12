@@ -121,55 +121,60 @@ install:
             module: components/interruptedView
     routes:
         -
-            path: ['login']
+            path: [login]
             widget: auth2_login
             queryParams:
                 nextrequest: {}
                 source: {}
         -
-            path: ['logout']
+            path: [logout]
             widget: auth2Logout
             queryParams:
                 nextrequest: {}
         -
-            path: ['auth2', 'login', 'continue']
+            path: [auth2, login, continue]
             widget: auth2LoginContinue
             queryParams:
                 nextrequest: {}
                 in-process-login-token: {}
                 test: {}
         -
-            path: ['auth2', 'account']
+            path: [auth2, account]
             widget: auth2Account
             authorization: true
             queryParams:
                 tab: {}
         - 
-            path: ['auth2', 'link', 'continue']
+            path: [auth2, link, continue]
             widget: auth2_linkContinue
             queryParams:
                 in-process-link-token: {}
         -
-            path: ['signup', {type: param, name: step}]
+            path: [signup, {type: param, name: step}]
             widget: auth2_signup
             queryParams: 
                 nextrequest: {}
         -
-            path: ['auth2', 'dev', 'sendToken']
+            path: [auth2, dev, sendToken]
             widget: auth2_dev_sendToken
             authorization: true
         -
-            path: ['auth2', 'dev', 'receiveToken']
+            path: [auth2, dev, receiveToken]
             widget: auth2_dev_receiveToken
             authorization: false
             queryParams: 
                 msg: {}
         -
-            path: ['auth2', 'signedout']
+            path: [auth2, signedout]
             widget: auth2_signedout
             authorization: false
         -
-            path: ['auth2', 'interrupted']
+            path: [auth2, interrupted]
             widget: auth2_interrupted
             authorization: false
     menu:
+        -
+            name: account
+            path: [auth2, account]
+            label: Account
+            icon: user-circle-o
