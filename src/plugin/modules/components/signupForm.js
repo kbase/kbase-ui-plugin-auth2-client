@@ -573,7 +573,7 @@ define([
                 }
                 return true;
             },
-            message: 'A username may only contain the characters a-z, 0-0, and _.'
+            message: 'A username may only contain the characters a-z (lowercase), 0-0, and _.'
         };
         ko.validation.rules['usernameMustBeUnique'] = {
             async: true,
