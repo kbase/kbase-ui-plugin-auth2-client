@@ -400,6 +400,9 @@ define([
     function template() {
         return div({
             class: 'container-fluid component-login-view',
+            style: {
+                width: '1000px'
+            },
             dataPlugin: 'auth2-client',
             dataComponent: 'login-view',
             dataWidget: 'login'
