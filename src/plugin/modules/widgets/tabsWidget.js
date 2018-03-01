@@ -127,7 +127,7 @@ define([
                 })
                 .catch(function (err) {
                     console.error('ERROR', err);
-                })
+                });
 
         }
 
@@ -141,7 +141,7 @@ define([
             });
         }
 
-        function start(params) {
+        function start() {
             return Promise.try(function () {
                 var tabs = Array.prototype.slice.call(tabSet.querySelectorAll('[data-tab]'));
                 // var tabPanels = Array.prototype.slice.call(tabSet.querySelectorAll('[data-tab-panel]'));

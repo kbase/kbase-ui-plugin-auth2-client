@@ -1,7 +1,7 @@
 define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    'knockout'
+    'knockout-plus'
 ], function (
     html,
     BS,
@@ -47,5 +47,5 @@ define([
             ])
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });

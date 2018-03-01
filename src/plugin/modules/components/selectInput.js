@@ -76,5 +76,5 @@ define([
             viewModel: viewModel
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });

@@ -10,7 +10,8 @@ define([
     '../../lib/fieldBuilders',
     'kb_plugin_auth2-client',
     '../../lib/geoNames',
-    '../../lib/dataSource'
+    '../../lib/dataSource',
+    '../../components/typeaheadInput'
 ], function (
     Promise,
     ko,
@@ -23,7 +24,8 @@ define([
     FieldBuilders,
     Plugin,
     GeoNames,
-    DataSource
+    DataSource,
+    TypeaheadInputComponent
 ) {
     'use strict';
 
@@ -90,11 +92,10 @@ define([
                 }, div({
                     dataBind: {
                         component: {
-                            name: '"typeahead-input"',
+                            name: TypeaheadInputComponent.quotedName(),
                             params: {
                                 inputValue: 'field',
                                 dataSource: 'dataSource'
-                                    // availableValues: field.name + 'Values'
                             }
                         }
                     }
@@ -188,41 +189,41 @@ define([
         ]);
     }
 
-    function buildUseMyLocation() {
-        if (!('geolocation' in navigator)) {
-            return;
-        }
-        return div({
-            style: {
-                textAlign: 'center'
-            }
-        }, [
-            button({
-                type: 'button',
-                class: 'btn btn-default',
-                dataBind: {
-                    click: 'doUseMyLocation',
-                    disable: 'findingLocation'
-                }
-            }, [
-                span({
-                    dataBind: {
-                        visible: '!findingLocation()'
-                    }
-                }, 'Use My Location'),
-                span({
-                    dataBind: {
-                        visible: 'findingLocation()'
-                    }
-                }, [
-                    'Finding Location ...',
-                    span({
-                        class: 'fa fa-spinner fa-pulse'
-                    })
-                ])
-            ])
-        ]);
-    }
+    // function buildUseMyLocation() {
+    //     if (!('geolocation' in navigator)) {
+    //         return;
+    //     }
+    //     return div({
+    //         style: {
+    //             textAlign: 'center'
+    //         }
+    //     }, [
+    //         button({
+    //             type: 'button',
+    //             class: 'btn btn-default',
+    //             dataBind: {
+    //                 click: 'doUseMyLocation',
+    //                 disable: 'findingLocation'
+    //             }
+    //         }, [
+    //             span({
+    //                 dataBind: {
+    //                     visible: '!findingLocation()'
+    //                 }
+    //             }, 'Use My Location'),
+    //             span({
+    //                 dataBind: {
+    //                     visible: 'findingLocation()'
+    //                 }
+    //             }, [
+    //                 'Finding Location ...',
+    //                 span({
+    //                     class: 'fa fa-spinner fa-pulse'
+    //                 })
+    //             ])
+    //         ])
+    //     ]);
+    // }
 
     function buildForm() {
         var content = div({
@@ -565,24 +566,6 @@ define([
         };
         return target;
     };
-
-
-    function buildAvatarUrl(profile) {
-        switch (profile.profile.userdata.avatarOption || 'silhouette') {
-        case 'gravatar':
-            var gravatarDefault = profile.profile.userdata.gravatarDefault || 'identicon';
-            var gravatarHash = profile.profile.synced.gravatarHash;
-            if (gravatarHash) {
-                return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault;
-            } else {
-                return Plugin.plugin.fullPath + '/images/nouserpic.png';
-            }
-        case 'silhouette':
-        case 'mysteryman':
-        default:
-            return Plugin.plugin.fullPath + '/images/nouserpic.png';
-        }
-    }
 
     function viewModel(params) {
         var runtime = params.runtime;
@@ -1188,7 +1171,7 @@ define([
                 field: ko.observable(affil && affil.organization).extend({
                     constraint: {
                         required: false,
-                        validate: function (value) {
+                        validate: function () {
                             // todo ensure in list
                         }
                     },
@@ -1234,8 +1217,8 @@ define([
 
         var affiliations = {
             field: ko.observableArray(affils.map(function (affil) {
-                    return affiliationVm(affil);
-                }))
+                return affiliationVm(affil);
+            }))
                 // .sort(function (a, b) {
                 //     if (a.started.field() < b.started.field()) {
                 //         return -1;
@@ -1324,7 +1307,7 @@ define([
 
         var someDirty = ko.pureComputed(function () {
             // some are dirty
-            return vmFields.some(function (field, index) {
+            return vmFields.some(function (field) {
                 return field.isDirty();
             });
         });
@@ -1579,10 +1562,10 @@ define([
             findingLocation(true);
             navigator.geolocation.getCurrentPosition(function (position) {
                 GeoNames.getCountryCode({
-                        username: 'eapearson',
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    })
+                    username: 'eapearson',
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                })
                     .then(function (response) {
                         country.field(response.countryName);
                     })
@@ -1649,5 +1632,6 @@ define([
             template: buildTemplate()
         };
     }
-    return component;
+
+    return ko.kb.registerComponent(component);
 });

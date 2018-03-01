@@ -5,6 +5,9 @@ define([
     'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'yaml!../config.yml',
+    './signinButton',
+
+    // for effect
     'bootstrap'
 ], function (
     ko,
@@ -12,7 +15,8 @@ define([
     BS,
     Auth2Error,
     Plugin,
-    config
+    config,
+    SigninButtonComponent
 ) {
     var t = html.tag,
         div = t('div'),
@@ -91,7 +95,7 @@ define([
         ]);
     }
 
-    function buildLoginControl(runtime) {
+    function buildLoginControl() {
         return div({
             dataBind: {
                 ifnot: 'authorized'
@@ -147,74 +151,74 @@ define([
 
                 ])),
                 div({
-                        dataBind: {
-                            visible: 'mode() === "signin"'
-                        }
-                    },
+                    dataBind: {
+                        visible: 'mode() === "signin"'
+                    }
+                },
+                div({
+                    style: {
+                        marginBottom: '20px',
+                        padding: '4px',
+                        // borderBottom: '1px silver solid',
+                        backgroundColor: '#DDD',
+                        textAlign: 'left'
+                    }
+                }, [
                     div({
                         style: {
-                            marginBottom: '20px',
-                            padding: '4px',
-                            // borderBottom: '1px silver solid',
-                            backgroundColor: '#DDD',
-                            textAlign: 'left'
+                            margin: '6px 0 0 0',
+                            fontStyle: 'italic',
+                            textAlign: 'center'
                         }
                     }, [
-                        div({
-                            style: {
-                                margin: '6px 0 0 0',
-                                fontStyle: 'italic',
-                                textAlign: 'center'
-                            }
-                        }, [
-                            'Choose Globus if you signed up',
-                            br(),
-                            'before ',
-                            span({
-                                dataBind: {
-                                    text: '$component.config.launchDate'
-                                }
-                            })
-                        ]),
-                        div({
-                            // class: 'btn-group-vertical',
-                            style: {
-                                width: '100%',
-                                display: 'inline-block',
-                            },
+                        'Choose Globus if you signed up',
+                        br(),
+                        'before ',
+                        span({
                             dataBind: {
-                                foreach: 'providers'
+                                text: '$component.config.launchDate'
                             }
-                        }, div({
-                            dataBind: {
-                                component: {
-                                    name: '"signin-button"',
-                                    params: {
-                                        provider: '$data',
-                                        runtime: '$component.runtime',
-                                        nextRequest: '$component.nextRequest',
-                                        assetsPath: '$component.assetsPath',
-                                        origin: '"login"'
-                                    }
+                        })
+                    ]),
+                    div({
+                        // class: 'btn-group-vertical',
+                        style: {
+                            width: '100%',
+                            display: 'inline-block',
+                        },
+                        dataBind: {
+                            foreach: 'providers'
+                        }
+                    }, div({
+                        dataBind: {
+                            component: {
+                                name: SigninButtonComponent.quotedName(),
+                                params: {
+                                    provider: '$data',
+                                    runtime: '$component.runtime',
+                                    nextRequest: '$component.nextRequest',
+                                    assetsPath: '$component.assetsPath',
+                                    origin: '"login"'
                                 }
                             }
-                        }))
-                        // div({
-                        //     style: {
-                        //         marginTop: '0.5em',
-                        //         textAlign: 'center'
-                        //     }
-                        // }, [
-                        //     input({
-                        //         type: 'checkbox',
-                        //         dataBind: {
-                        //             checked: 'isSessionPersistent',
+                        }
+                    }))
+                    // div({
+                    //     style: {
+                    //         marginTop: '0.5em',
+                    //         textAlign: 'center'
+                    //     }
+                    // }, [
+                    //     input({
+                    //         type: 'checkbox',
+                    //         dataBind: {
+                    //             checked: 'isSessionPersistent',
 
-                        //         },
-                        //     }),
-                        //     ' Stay signed in'
-                        // ]),
-                    ])),
+                    //         },
+                    //     }),
+                    //     ' Stay signed in'
+                    // ]),
+                ])),
                 button({
                     class: 'btn btn-default',
                     style: {
@@ -564,5 +568,5 @@ define([
             viewModel: viewModel
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });

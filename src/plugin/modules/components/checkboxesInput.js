@@ -41,6 +41,7 @@ define([
     }
 
     function viewModel(params) {
+        var subscriptions = ko.kb.SubscriptionManager.make();
         // incoming is an observable array of strings ...
         var upstreamValue = params.value;
         // ... and a data source definition for the set of values.
@@ -69,9 +70,9 @@ define([
                         isChecked = true;
                     }
                     var checked = ko.observable(isChecked);
-                    checked.subscribe(function () {
+                    subscriptions.add(checked.subscribe(function () {
                         updateUpstream();
-                    });
+                    }));
                     return {
                         value: item.value,
                         label: item.label,
@@ -88,10 +89,14 @@ define([
                 ready(true);
             });
 
+        function dispose() {
+            subscriptions.dispose();
+        }
 
         return {
             ready: ready,
-            checkboxesData: checkboxesData
+            checkboxesData: checkboxesData,
+            dispose: dispose
         };
     }
 
@@ -101,5 +106,6 @@ define([
             viewModel: viewModel
         };
     }
-    return component;
+
+    return ko.kb.registerComponent(component);
 });

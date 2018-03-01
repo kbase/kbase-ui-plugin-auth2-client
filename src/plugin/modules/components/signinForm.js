@@ -1,12 +1,13 @@
 define([
-    'knockout',
+    'knockout-plus',
     'bluebird',
     'kb_common/html',
     'kb_common/domEvent2',
     'kb_common/ui',
     'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
-    'kb_common/bootstrapUtils'
+    'kb_common/bootstrapUtils',
+    './policyResolver'
 ], function (
     ko,
     Promise,
@@ -15,7 +16,8 @@ define([
     UI,
     Auth2Error,
     Plugin,
-    BS
+    BS,
+    PolicyResolverComponent
 ) {
     'use strict';
 
@@ -32,11 +34,10 @@ define([
             title: 'Sign In to KBase',
             type: 'default',
             body: div({}, [
-                // div({}, p('You may log into the following KBase account:')),
                 div({
                     dataBind: {
                         component: {
-                            name: '"policy-resolver"',
+                            name: PolicyResolverComponent.quotedName(),
                             params: {
                                 policiesToResolve: 'policiesToResolve'
                             }
@@ -358,8 +359,8 @@ define([
 
         var canSignin = ko.pureComputed(function () {
             if (policiesToResolve.missing.some(function (item) {
-                    return !item.agreed();
-                }) || policiesToResolve.outdated.some(function (item) {
+                return !item.agreed();
+            }) || policiesToResolve.outdated.some(function (item) {
                     return !item.agreed();
                 })) {
                 return false;
@@ -372,10 +373,10 @@ define([
             var agreements = getAgreements(policiesToResolve);
 
             runtime.service('session').getClient().loginPick({
-                    identityId: login.id,
-                    linkAll: false,
-                    agreements: agreements
-                })
+                identityId: login.id,
+                linkAll: false,
+                agreements: agreements
+            })
                 .then(function () {
                     doSigninSuccess();
                 })
@@ -468,5 +469,5 @@ define([
             template: template()
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });

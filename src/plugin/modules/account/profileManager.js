@@ -3,13 +3,15 @@ define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_service/client/userProfile',
-    'knockout'
+    'knockout-plus',
+    './components/profileEditor'
 ], function (
     Promise,
     html,
     BS,
     UserProfileService,
-    ko
+    ko,
+    ProfileEditorComponent
 ) {
     var t = html.tag,
         div = t('div');
@@ -32,7 +34,7 @@ define([
                 },
                 dataBind: {
                     component: {
-                        name: '"profile-editor"',
+                        name: ProfileEditorComponent.quotedName(),
                         params: (function () {
                             var params = {};
                             Object.keys(vm).forEach(function (k) {
@@ -67,9 +69,9 @@ define([
 
         function start() {
             return Promise.all([
-                    runtime.service('session').getClient().getMe(),
-                    getProfile()
-                ])
+                runtime.service('session').getClient().getMe(),
+                getProfile()
+            ])
                 .spread(function (account, profile) {
                     var id = html.genId();
                     vm = {

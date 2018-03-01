@@ -1,6 +1,6 @@
 define([
     'bluebird',
-    'knockout',
+    'knockout-plus',
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
@@ -9,6 +9,11 @@ define([
     'kb_common_ts/Auth2',
     'kb_common_ts/Auth2Error',
     'yaml!../config.yml',
+    './errorView',
+    './signinForm',
+    './signupForm',
+    './signinButton',
+
     // loaded for effect
     'bootstrap'
 ], function (
@@ -21,7 +26,11 @@ define([
     HttpClient,
     Auth2,
     Auth2Error,
-    config
+    config,
+    ErrorViewComponent,
+    SigninFormComponent,
+    SignupFormComponent,
+    SigninButtonComponent
 ) {
     var t = html.tag,
         div = t('div'),
@@ -94,7 +103,7 @@ define([
                 }, div({
                     dataBind: {
                         component: {
-                            name: '"signin-button"',
+                            name: SigninButtonComponent.quotedName(),
                             params: {
                                 provider: '$data',
                                 runtime: '$component.runtime',
@@ -136,7 +145,7 @@ define([
                     }, div({
                         dataBind: {
                             component: {
-                                name: '"signin-button"',
+                                name: SigninButtonComponent.quotedName(),
                                 params: {
                                     provider: '$data',
                                     runtime: '$component.runtime',
@@ -413,7 +422,7 @@ define([
                 div({
                     dataBind: {
                         component: {
-                            name: '"signin-form"',
+                            name: SigninFormComponent.quotedName(),
                             params: {
                                 choice: 'choice',
                                 runtime: 'runtime',
@@ -519,7 +528,7 @@ define([
                 div({
                     dataBind: {
                         component: {
-                            name: '"signup-form"',
+                            name: SignupFormComponent.quotedName(),
                             params: {
                                 choice: 'choice',
                                 runtime: 'runtime',
@@ -565,7 +574,7 @@ define([
         }, div({
             dataBind: {
                 component: {
-                    name: '"error-view"',
+                    name: ErrorViewComponent.quotedName(),
                     params: {
                         code: 'error.code',
                         message: 'error.message',
@@ -691,5 +700,5 @@ define([
             template: template()
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });

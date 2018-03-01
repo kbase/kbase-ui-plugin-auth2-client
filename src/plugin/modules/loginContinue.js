@@ -1,6 +1,6 @@
 define([
     'bluebird',
-    'knockout',
+    'knockout-plus',
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
@@ -13,6 +13,8 @@ define([
     './lib/policies',
     './lib/format',
     './lib/countdownClock',
+    './components/errorView',
+    './components/signinView',
 
     // loaded for effect
     'bootstrap'
@@ -30,7 +32,9 @@ define([
     ErrorWidget,
     Policies,
     Format,
-    CountDownClock
+    CountDownClock,
+    ErrorViewComponent,
+    SigninViewComponent
 ) {
     var t = html.tag,
         div = t('div'),
@@ -55,7 +59,7 @@ define([
         }
         var scheme, host, path, search, hash, query;
         // get scheme
-        var fullUrl = /^(?:(http[s]*):\/\/)([^\/\?\#]*)(?:(.*))?/.exec(url);
+        var fullUrl = /^(?:(http[s]*):\/\/)([^/?#]*)(?:(.*))?/.exec(url);
         var schemaLess;
         if (fullUrl) {
             // Either host + path or just host.
@@ -69,7 +73,7 @@ define([
             schemaLess = url;
         }
 
-        var theRest = /^(?:\/([^\?\#]*))?(?:\?([^\#]*))?(?:\#(.*))?/.exec(schemaLess);
+        var theRest = /^(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?/.exec(schemaLess);
 
         path = theRest[1];
         search = theRest[2];
@@ -115,6 +119,7 @@ define([
             },
             runtime = config.runtime;
         var clock;
+        var koSubscriptions = ko.kb.SubscriptionManager.make();
 
         function createClock(clockNode, expires) {
             var timeOffset = runtime.service('session').getClient().serverTimeOffset();
@@ -207,10 +212,10 @@ define([
 
         function doSignIn(choice, nextRequest) {
             return runtime.service('session').getClient().loginPick({
-                    identityId: choice.login[0].id,
-                    linkAll: false,
-                    agreements: []
-                })
+                identityId: choice.login[0].id,
+                linkAll: false,
+                agreements: []
+            })
                 .then(function () {
                     if (nextRequest !== null) {
                         try {
@@ -229,7 +234,7 @@ define([
                 });
         }
 
-        function start(params) {
+        function start() {
             // if we landed here and are already logged in, simply redirect to the dashboard.
             // TODO: honor nextrequest
             if (runtime.service('session').isLoggedIn()) {
@@ -313,19 +318,19 @@ define([
 
                             var done = ko.observable(false);
 
-                            done.subscribe(function (newDone) {
+                            koSubscriptions.add(done.subscribe(function (newDone) {
                                 if (newDone) {
                                     if (clock) {
                                         clock.stop();
                                         mounts.clock.innerHTML = '';
                                     }
                                 }
-                            });
+                            }));
 
                             mounts.main.innerHTML = div({
                                 dataBind: {
                                     component: {
-                                        name: '"signin-view"',
+                                        name: SigninViewComponent.quotedName(),
                                         params: {
                                             runtime: 'runtime',
                                             requestedStep: 'step',
@@ -391,7 +396,7 @@ define([
                     mounts.error.innerHTML = div({
                         dataBind: {
                             component: {
-                                name: '"error-view"',
+                                name: ErrorViewComponent.quotedName(),
                                 params: {
                                     code: 'code',
                                     message: 'message',
@@ -414,7 +419,7 @@ define([
                     mounts.error.innerHTML = div({
                         dataBind: {
                             component: {
-                                name: '"error-view"',
+                                name: ErrorViewComponent.quotedName(),
                                 params: {
                                     code: 'code',
                                     message: 'message',
@@ -430,6 +435,7 @@ define([
 
         function stop() {
             return Promise.try(function () {
+                koSubscriptions.dispose();
                 if (clock) {
                     clock.stop();
                 }

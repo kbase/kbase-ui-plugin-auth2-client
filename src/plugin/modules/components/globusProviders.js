@@ -26,9 +26,9 @@ define([
         var url = window.location.origin + '/' + path;
 
         return http.request({
-                method: 'GET',
-                url: url
-            })
+            method: 'GET',
+            url: url
+        })
             .then(function (result) {
                 if (result.status === 200) {
                     try {
@@ -41,72 +41,6 @@ define([
                 }
             });
     }
-
-    // function renderGlobusProviders() {
-    //     getGlobusProviders()
-    //         .then(function(globusProviders) {
-    //             var filtered
-    //             var searchInputId = html.genId();
-    //             var searchOutputId = html.genId();
-    //             var content = div({
-
-    //             }, [
-    //                 div({}, [
-    //                     input({
-    //                         type: 'text',
-    //                         id: searchInputId
-    //                     })
-    //                 ]),
-    //                 div({
-    //                     style: {
-    //                         border: '1px silver solid',
-    //                         maxHeight: '300px',
-    //                         overflow: 'auto',
-    //                         padding: '4px'
-    //                     }
-    //                 }, div({
-    //                     id: searchOutputId,
-    //                 }, 'search for org above'))
-
-    //             ]);
-    //             vm.get('step2.globusProviders').node.innerHTML = content;
-
-    //             var searchNode = document.getElementById(searchInputId);
-    //             var outputNode = document.getElementById(searchOutputId);
-    //             searchNode.addEventListener('keyup', function(e) {
-    //                 updateSearch(searchNode.value);
-    //             });
-
-    //             function updateSearch(search) {
-    //                 if (search.length === 0) {
-    //                     outputNode.innerHTML = 'Please enter a search term above or "." to show all (case insensitive regular expression)';
-    //                     return;
-    //                 }
-
-    //                 var term;
-    //                 try {
-    //                     term = new RegExp(search, 'i');
-    //                 } catch (ex) {
-    //                     outputNode.innerHTML = 'Error: ' + ex.message;
-    //                     return;
-    //                 }
-    //                 var content = globusProviders
-    //                     .filter(function(item) {
-    //                         if (item.label.match(term)) {
-    //                             return true;
-    //                         }
-    //                         return false;
-    //                     })
-    //                     .map(function(item) {
-    //                         return div(
-    //                             item.label
-    //                         );
-    //                     }).join('\n');
-    //                 outputNode.innerHTML = content;
-    //             }
-    //             updateSearch('');
-    //         });
-    // }
 
     function template() {
         return div({
@@ -212,5 +146,5 @@ define([
             template: template()
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });

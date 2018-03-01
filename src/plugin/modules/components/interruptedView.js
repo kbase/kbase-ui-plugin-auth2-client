@@ -1,6 +1,6 @@
 define([
     'bluebird',
-    'knockout',
+    'knockout-plus',
     'kb_common/html'
 ], function (
     Promise,
@@ -12,10 +12,7 @@ define([
         p = t('p'),
         div = t('div'),
         span = t('span'),
-        button = t('button'),
-        ul = t('ul'),
-        li = t('li'),
-        a = t('a');
+        button = t('button');
 
     function template() {
         return div({
@@ -94,5 +91,5 @@ define([
             viewModel: viewModel
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });
