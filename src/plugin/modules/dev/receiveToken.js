@@ -2,12 +2,14 @@ define([
     'knockout-plus',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    'kb_common_ts/Auth2Error'
+    'kb_common_ts/Auth2Error',
+    '../components/tokenReceiver'
 ], function (
     ko,
     html,
     BS,
-    Auth2Error
+    Auth2Error,
+    TokenReceiverComponent
 ) {
     'use strict';
 
@@ -76,7 +78,7 @@ define([
                 div({
                     dataBind: {
                         component: {
-                            name: '"token-receiver"',
+                            name: TokenReceiverComponent.quotedName(),
                             params: {
                                 token: 'token',
                                 newToken: 'newToken',

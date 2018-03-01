@@ -1,17 +1,19 @@
 define([
     'bluebird',
-    'knockout',
+    'knockout-plus',
     'md5',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    'kb_service/client/userProfile'
+    'kb_service/client/userProfile',
+    './components/userInfoEditor'
 ], function (
     Promise,
     ko,
     md5,
     html,
     BS,
-    UserProfileService
+    UserProfileService,
+    UserInfoEditorComponent
 ) {
     var t = html.tag,
         div = t('div'),
@@ -22,7 +24,7 @@ define([
         var hostNode, container;
         var vm;
 
-        function render(id) {
+        function render() {
             var tabs = BS.buildTabs({
                 initialTab: 0,
                 tabs: [{
@@ -34,7 +36,7 @@ define([
                         },
                         dataBind: {
                             component: {
-                                name: '"user-info-editor"',
+                                name: UserInfoEditorComponent.quotedName(),
                                 params: (function () {
                                     var params = {};
                                     Object.keys(vm).forEach(function (k) {
@@ -59,17 +61,15 @@ define([
                     ])
                 }]
             });
-            return container.innerHTML = div({
-                style: {
-                    marginTop: '10px'
-                }
-            }, tabs.content);
+            return tabs.content;
         }
 
         function attach(node) {
             return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
+                container.flex = '1 1 0px';
+                container.style['margin-top'] = '10px';
             });
         }
 
@@ -93,11 +93,11 @@ define([
                                     var hashedEmail = md5.hash(data.email.trim().toLowerCase());
                                     profile.profile.synced.gravatarHash = hashedEmail;
                                     return Promise.all([
-                                            runtime.service('session').getClient().putMe(data),
-                                            client.set_user_profile({
-                                                profile: profile
-                                            })
-                                        ])
+                                        runtime.service('session').getClient().putMe(data),
+                                        client.set_user_profile({
+                                            profile: profile
+                                        })
+                                    ])
                                         .then(function () {
                                             runtime.send('profile', 'reload');
                                         });

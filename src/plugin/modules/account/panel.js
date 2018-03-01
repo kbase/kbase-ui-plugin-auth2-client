@@ -4,7 +4,7 @@ define([
     'kb_common_ts/Html',
     'kb_common/html',
     'kb_common/bootstrapUtils',
-    './personalInfoEditorKO',
+    './personalInfoEditor',
     './linksManager',
     './developerTokenManager',
     './serviceTokenManager',
@@ -27,14 +27,6 @@ define([
     ProfileManager,
     TabsWidget
 ) {
-    // var html = new Html.Html();
-    var // t = html.tagMaker(),
-        t = html.tag,
-        div = t('div'),
-        ul = t('ul'),
-        li = t('li'),
-        p = t('p');
-
     function factory(config) {
         var hostNode, container,
             runtime = config.runtime,
@@ -53,57 +45,6 @@ define([
 
         // RENDERING
 
-        function buildError(err) {
-            return div({
-                class: 'container-fluid'
-            }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({
-                        class: 'col-md-12'
-                    }, [
-                        div({
-                            class: 'alert alert-danger'
-                        }, err.message || (err.error && err.error.message))
-                    ])
-                ])
-            ]);
-        }
-
-        function buildMessage(message) {
-            return div({
-                class: 'container-fluid'
-            }, [
-                div({
-                    class: 'row'
-                }, [
-                    div({
-                        class: 'col-md-12'
-                    }, [
-                        div({
-                            class: 'alert alert-warning'
-                        }, message)
-                    ])
-                ])
-            ]);
-        }
-
-        function buildAbout() {
-            return buildMessage(div([
-                p('This is the account manager'),
-                p('It is designed to allow a user to manage all apsects of their account.'),
-                p('What can they do here?'),
-                ul([
-                    li('Edit their real name or email address'),
-                    li('View their account creation date'),
-                    li('View their last login time'),
-                    li('Manage their linked accounts'),
-                    li('Manage their developer tokens')
-                ])
-            ]));
-        }
-
         function renderLayout(node, params) {
             var tabDef = {
                 runtime: runtime,
@@ -112,26 +53,24 @@ define([
                 },
                 initialTab: params.tab || 'profile',
                 tabs: [{
-                        name: 'profile',
-                        label: 'Your Profile',
-                        panel: {
-                            factory: ProfileManager
-                        }
-                    },
-                    {
-                        name: 'account',
-                        label: 'Account',
-                        panel: {
-                            factory: PersonalInfoEditor
-                        }
-                    },
-                    {
-                        name: 'links',
-                        label: 'Linked Sign-In Accounts',
-                        panel: {
-                            factory: LinksManager
-                        }
-                    }, (function () {
+                    name: 'profile',
+                    label: 'Your Profile',
+                    panel: {
+                        factory: ProfileManager
+                    }
+                }, {
+                    name: 'account',
+                    label: 'Account',
+                    panel: {
+                        factory: PersonalInfoEditor
+                    }
+                }, {
+                    name: 'links',
+                    label: 'Linked Sign-In Accounts',
+                    panel: {
+                        factory: LinksManager
+                    }
+                }, (function () {
                         if (vm.developerTokens.enabled) {
                             return {
                                 name: 'developer-tokens',
@@ -163,12 +102,7 @@ define([
                         panel: {
                             factory: AgreementsManager
                         }
-                    }
-                    // {
-                    //     name: 'about',
-                    //     label: 'About',
-                    //     content: buildAbout()
-                    // }
+                    }                    
                 ].filter(function (tab) {
                     return tab ? true : false;
                 })
@@ -187,7 +121,6 @@ define([
             return Promise.try(function () {
                 hostNode = node;
                 container = hostNode;
-                //hostNode.appendChild(document.createElement('div'));
             });
         }
 
@@ -225,10 +158,6 @@ define([
 
         function detach() {
             return Promise.try(function () {
-                // if (hostNode && container) {
-                //     hostNode.removeChild(container);
-                // }
-
                 return tabs.detach()
                     .then(function () {
                         if (hostNode) {
@@ -250,5 +179,5 @@ define([
         make: function (config) {
             return factory(config);
         }
-    }
+    };
 });

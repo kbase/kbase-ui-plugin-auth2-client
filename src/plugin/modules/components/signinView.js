@@ -1,6 +1,6 @@
 define([
     'bluebird',
-    'knockout',
+    'knockout-plus',
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
@@ -8,6 +8,10 @@ define([
     'kb_common_ts/HttpClient',
     'kb_common_ts/Auth2',
     'yaml!../config.yml',
+    './globusProviders',
+    './signinForm',
+    './signupForm',
+
     // loaded for effect
     'bootstrap'
 ], function (
@@ -19,7 +23,10 @@ define([
     Plugin,
     HttpClient,
     Auth2,
-    config
+    config,
+    GlobusProvidersComponent,
+    SigninFormComponent,
+    SignupFormComponent
 ) {
     var t = html.tag,
         div = t('div'),
@@ -30,6 +37,80 @@ define([
         a = t('a'),
         b = t('b'),
         p = html.tag('p');
+
+    function viewModel (data) {
+        var runtime = data.runtime;
+        var done = data.done;
+        var choice = data.choice;
+
+        var policiesToResolve = data.policiesToResolve;
+
+        var nextRequest = data.nextRequest;
+
+        var staySignedIn = ko.observable(true);
+
+        var login = null;
+        var create = null;
+
+        var providers = getProviders();
+        var providersList = [
+            providers.Google,
+            providers.Globus
+        ];
+
+        // UI state
+
+        // Grok it from what we know so far
+        var uiState = {
+            auth: ko.observable(false),
+            signin: ko.observable(false),
+            signup: ko.observable(false),
+            error: ko.observable(false)
+        };
+        if (choice) {
+            uiState.auth(true);
+            if (choice.login.length === 1) {
+                login = choice.login[0];
+                uiState.signin(true);
+            } else {
+                create = choice.create[0];
+                uiState.signup(true);
+            }
+        }
+
+        function doProviderSignin(provider) {
+            runtime.service('session').loginStart({
+                state: {
+                    nextrequest: nextRequest,
+                    origin: 'signup'
+                },
+                provider: provider.id
+            });
+        }
+
+        // no assumptions ... this is set by the signup component, if any.
+        var signupState = ko.observable();
+
+        var source = ko.observable('signin');
+
+        return {
+            runtime: runtime,
+            uiState: uiState,
+            providers: providers,
+            providersList: providersList,
+            nextRequest: nextRequest,
+            staySignedIn: staySignedIn,
+            choice: choice,
+            login: login,
+            create: create,
+            policiesToResolve: policiesToResolve,
+            doProviderSignin: doProviderSignin,
+            signupState: signupState,
+            config: config,
+            source: source,
+            done: done
+        };
+    }        
 
     function buildStep2Inactive() {
         return div({
@@ -74,16 +155,16 @@ define([
                 div({
                     dataBind: {
                         component: {
-                            name: '"signin-form"',
+                            name: SigninFormComponent.quotedName(),
                             params: {
                                 choice: 'choice',
                                 runtime: 'runtime',
                                 source: '"signin"',
                                 nextRequest: 'nextRequest',
                                 policiesToResolve: 'policiesToResolve'
-                                    // to communicate completion of the signup process
-                                    // to tweak the ui.
-                                    //  signupState: 'signupState'
+                                // to communicate completion of the signup process
+                                // to tweak the ui.
+                                //  signupState: 'signupState'
                             }
                         }
                     }
@@ -401,10 +482,10 @@ define([
 
                         buildOopsLegacyUser(),
                         div({
-                                dataBind: {
-                                    if: 'choice.provider === "Globus"'
-                                }
-                            }, buildGlobusOops()
+                            dataBind: {
+                                if: 'choice.provider === "Globus"'
+                            }
+                        }, buildGlobusOops()
                             // buildOopsWrongGlobusAccount()
                         ),
                         div({
@@ -443,7 +524,7 @@ define([
                 div({
                     dataBind: {
                         component: {
-                            name: '"signup-form"',
+                            name: SignupFormComponent.quotedName(),
                             params: {
                                 choice: 'choice',
                                 runtime: 'runtime',
@@ -512,7 +593,7 @@ define([
                         span({
                             dataBind: {
                                 component: {
-                                    name: '"globus-providers"'
+                                    name: GlobusProvidersComponent.quotedName()
                                 }
                             }
                         })
@@ -545,82 +626,10 @@ define([
 
     function component() {
         return {
-            viewModel: function (data) {
-                var runtime = data.runtime;
-                var done = data.done;
-                var choice = data.choice;
-
-                var policiesToResolve = data.policiesToResolve;
-
-                var nextRequest = data.nextRequest;
-
-                var staySignedIn = ko.observable(true);
-
-                var login = null;
-                var create = null;
-
-                var providers = getProviders();
-                var providersList = [
-                    providers.Google,
-                    providers.Globus
-                ];
-
-                // UI state
-
-                // Grok it from what we know so far
-                var uiState = {
-                    auth: ko.observable(false),
-                    signin: ko.observable(false),
-                    signup: ko.observable(false),
-                    error: ko.observable(false)
-                };
-                if (choice) {
-                    uiState.auth(true);
-                    if (choice.login.length === 1) {
-                        login = choice.login[0];
-                        uiState.signin(true);
-                    } else {
-                        create = choice.create[0];
-                        uiState.signup(true);
-                    }
-                }
-
-                function doProviderSignin(provider) {
-                    runtime.service('session').loginStart({
-                        state: {
-                            nextrequest: nextRequest,
-                            origin: 'signup'
-                        },
-                        provider: provider.id
-                    });
-                }
-
-                // no assumptions ... this is set by the signup component, if any.
-                var signupState = ko.observable();
-
-                var source = ko.observable('signin');
-
-                return {
-                    runtime: runtime,
-                    uiState: uiState,
-                    providers: providers,
-                    providersList: providersList,
-                    nextRequest: nextRequest,
-                    staySignedIn: staySignedIn,
-                    choice: choice,
-                    login: login,
-                    create: create,
-                    policiesToResolve: policiesToResolve,
-                    doProviderSignin: doProviderSignin,
-                    signupState: signupState,
-                    config: config,
-                    source: source,
-                    done: done
-                };
-            },
+            viewModel: viewModel,
             template: template()
         };
     }
-    return component;
 
+    return ko.kb.registerComponent(component);
 });

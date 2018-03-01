@@ -1,6 +1,6 @@
 define([
     'bluebird',
-    'knockout',
+    'knockout-plus',
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
@@ -13,6 +13,8 @@ define([
     './lib/policies',
     './lib/countdownClock',
     './lib/format',
+    './components/errorView',
+    './components/signupView',
 
     // loaded for effect
     'bootstrap'
@@ -30,11 +32,12 @@ define([
     ErrorWidget,
     Policies,
     CountDownClock,
-    Format
+    Format,
+    ErrorViewComponent,
+    SignupViewComponent
 ) {
     var t = html.tag,
         div = t('div'),
-        p = t('p'),
         span = t('span');
 
     function factory(config) {
@@ -53,9 +56,9 @@ define([
                     id: html.genId(),
                     node: null
                 }
-            },
-            viewModel;
+            };
 
+        var koSubscriptions = ko.SubscriptionManager.make();
 
         function renderLayout() {
             container.innerHTML = div({
@@ -97,7 +100,7 @@ define([
             hostNode.innerHTML = div({
                 dataBind: {
                     component: {
-                        name: '"error-view"',
+                        name: ErrorViewComponent.quotedName(),
                         params: {
                             code: 'code',
                             message: 'message',
@@ -111,7 +114,7 @@ define([
         }
 
 
-        function cancelLogin(id) {
+        function cancelLogin() {
             return runtime.service('session').getClient().loginCancel()
                 .catch(Auth2Error.AuthError, function (err) {
                     // just continue...
@@ -246,7 +249,7 @@ define([
                         dataPlugin: 'auth2-client',
                         dataBind: {
                             component: {
-                                name: '"signup-view"',
+                                name: SignupViewComponent.quotedName(),
                                 params: {
                                     runtime: 'runtime',
                                     requestedStep: 'step',
@@ -264,7 +267,7 @@ define([
                     // signals that someone things the choice session is done...
                     var done = ko.observable(false);
 
-                    done.subscribe(function (newDone) {
+                    koSubscriptions.add(done.subscribe(function (newDone) {
                         if (newDone) {
                             if (clock) {
                                 clock.stop();
@@ -273,7 +276,7 @@ define([
                                 vm.clock.node.innerHTML = '';
                             }
                         }
-                    });
+                    }));
 
                     var viewModel = {
                         runtime: config.runtime,
@@ -289,35 +292,35 @@ define([
                     showError(vm.error.node, err);
                 })
 
-            .catch(function (err) {
-                // This is most likely due to an expired token.
-                // When token expiration detection is implemented, we should rarely see this.
-                var viewModel = {
-                    code: ko.observable(err.name),
-                    message: ko.observable(err.message),
-                    detail: '',
-                    data: ''
-                };
-                container.innerHTML = div({
-                    dataBind: {
-                        component: {
-                            name: '"error-view"',
-                            params: {
-                                code: 'code',
-                                message: 'message',
-                                detail: 'detail',
-                                data: 'data'
+                .catch(function (err) {
+                    // This is most likely due to an expired token.
+                    // When token expiration detection is implemented, we should rarely see this.
+                    var viewModel = {
+                        code: ko.observable(err.name),
+                        message: ko.observable(err.message),
+                        detail: '',
+                        data: ''
+                    };
+                    container.innerHTML = div({
+                        dataBind: {
+                            component: {
+                                name: ErrorViewComponent.quotedName(),
+                                params: {
+                                    code: 'code',
+                                    message: 'message',
+                                    detail: 'detail',
+                                    data: 'data'
+                                }
                             }
                         }
-                    }
+                    });
+                    ko.applyBindings(viewModel, container);
                 });
-                ko.applyBindings(viewModel, container);
-            });
         }
 
         function stop() {
             return Promise.try(function () {
-
+                koSubscriptions.dispose();
             });
         }
 

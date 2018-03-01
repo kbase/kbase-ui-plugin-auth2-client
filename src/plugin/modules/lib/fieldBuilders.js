@@ -1,25 +1,22 @@
 define([
     'knockout-plus',
     'kb_common/html',
-    'kb_common/bootstrapUtils',
-    'kb_common/format',
-    'kb_service/userProfile',
-    'kb_service/client/userProfile'
+    '../components/selectInput',
+    '../components/checkboxesInput',
+    '../components/typeaheadInput'
 ], function (
     ko,
     html,
-    BS,
-    Format,
-    UserProfile,
-    UserProfileService
+    SelectInputComponent,
+    CheckboxesInputComponent,
+    TypeaheadInputComponent
 ) {
     var t = html.tag,
         div = t('div'),
         span = t('span'),
         label = t('label'),
         input = t('input'),
-        textarea = t('textarea'),
-        select = t('select');
+        textarea = t('textarea');
 
     function requiredIcon(field) {
         if (!field.required) {
@@ -365,16 +362,15 @@ define([
         }, buildFieldGroup(id, control)));
     }
 
-    function buildTypeahead(vmPath, options) {
+    function buildTypeahead(vmPath) {
         var id = html.genId();
         var control = div({
             dataBind: {
                 component: {
-                    name: '"typeahead-input"',
+                    name: TypeaheadInputComponent.quotedName(),
                     params: {
                         inputValue: 'field',
                         dataSource: 'dataSource'
-                            // availableValues: field.name + 'Values'
                     }
                 }
             }
@@ -391,12 +387,12 @@ define([
         }, buildFieldGroup(id, control)));
     }
 
-    function buildSelect(vmPath, options) {
+    function buildSelect(vmPath) {
         var id = html.genId();
         var control = div({
             dataBind: {
                 component: {
-                    name: '"select-input"',
+                    name: SelectInputComponent.quotedName(),
                     params: {
                         field: 'field',
                         dataSource: 'dataSource',
@@ -417,12 +413,12 @@ define([
         }, buildFieldGroup(id, control)));
     }
 
-    function buildCheckboxes(vmPath, options) {
+    function buildCheckboxes(vmPath) {
         var id = html.genId();
         var control = div({
             dataBind: {
                 component: {
-                    name: '"checkboxes-input"',
+                    name: CheckboxesInputComponent.quotedName(),
                     params: {
                         value: 'field',
                         dataSource: 'dataSource'

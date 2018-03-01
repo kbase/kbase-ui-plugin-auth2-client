@@ -1,11 +1,13 @@
 define([
     'bluebird',
-    'knockout',
-    'kb_common/html'
+    'knockout-plus',
+    'kb_common/html',
+    './components/interruptedView'
 ], function (
     Promise,
     ko,
-    html
+    html,
+    InterruptedViewComponent
 ) {
     'use strict';
     var t = html.tag,
@@ -20,11 +22,11 @@ define([
 
         // VIEW
 
-        function render(params) {
+        function render() {
             container.innerHTML = div({
                 dataBind: {
                     component: {
-                        name: '"interrupted-view"',
+                        name: InterruptedViewComponent.quotedName(),
                         params: {
 
                         }
@@ -43,7 +45,7 @@ define([
             });
         }
 
-        function start(params) {
+        function start() {
             return Promise.try(function () {
                 runtime.send('ui', 'setTitle', 'Session Interrupted');
                 render();

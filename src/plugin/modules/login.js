@@ -1,13 +1,16 @@
 define([
     'bluebird',
-    'knockout',
+    'knockout-plus',
     'kb_common/html',
+    './components/loginView',
+
     // for effect
     'bootstrap'
 ], function (
     Promise,
     ko,
-    html
+    html,
+    LoginViewComponent
 ) {
     var t = html.tag,
         div = t('div');
@@ -31,7 +34,7 @@ define([
                     dataWidget: 'auth2_signin',
                     dataBind: {
                         component: {
-                            name: '"login-view"',
+                            name: LoginViewComponent.quotedName(),
                             params: {
                                 runtime: 'runtime',
                                 source: 'source',

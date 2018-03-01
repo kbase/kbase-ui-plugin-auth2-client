@@ -1,5 +1,5 @@
 define([
-    'knockout',
+    'knockout-plus',
     'kb_common/html',
     'kb_common/bootstrapUtils'
 ], function (
@@ -363,5 +363,5 @@ define([
             viewModel: viewModel
         };
     }
-    return component;
+    return ko.kb.registerComponent(component);
 });
