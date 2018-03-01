@@ -3,7 +3,7 @@ define([
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_common_ts/Auth2Error',
-    '../components/tokenReceiver'
+    './tokenReceiver'
 ], function (
     ko,
     html,

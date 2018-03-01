@@ -136,7 +136,7 @@ define([
             container = node;
         }
 
-        function start(params) {
+        function start() {
             runtime.send('ui', 'setTitle', 'Send a Token');
 
             var envConfig = envs[currentEnv];
