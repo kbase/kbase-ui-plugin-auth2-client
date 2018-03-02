@@ -118,12 +118,17 @@ define([
                     class: 'col-md-9',
                     style: {
                         textAlign: 'left',
-                        marginTop: '6px'
+                        paddingTop: '4px'
+                    }
+                }, div({
+                    style: {
+                        margin: '4px',
+                        padding: '4px'
                     },
                     dataBind: {
                         html: 'description'
                     }
-                })
+                }))
             ]),
 
             BS.buildCollapsiblePanel({
@@ -159,13 +164,17 @@ define([
                     div({
                         class: 'col-md-9',
                         style: {
-                            textAlign: 'left',
-                            marginTop: '6px'
+                            textAlign: 'left'
+                        }
+                    }, div({
+                        style: {
+                            margin: '4px',
+                            padding: '4px'
                         },
                         dataBind: {
                             html: 'description'
                         }
-                    })
+                    }))
                 ]),
             })
         ]);
@@ -588,7 +597,7 @@ define([
 
     function template() {
         return div({
-            dataComponent: 'signup-view'
+            dataKbaseComponent: 'signup-view'
         }, [
             buildError(),
             buildStep1(),

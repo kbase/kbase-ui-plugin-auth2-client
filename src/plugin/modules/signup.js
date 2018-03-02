@@ -63,7 +63,7 @@ define([
         function renderLayout() {
             container.innerHTML = div({
                 class: 'container-fluid',
-                dataComponent: 'signup-view'
+                dataKbaseWidget: 'signup'
             }, [
 
                 div({ class: 'row' }, [
@@ -193,6 +193,7 @@ define([
             return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
+                container.setAttribute('data-kbase-plugin', 'auth2-client');
                 renderLayout();
             });
         }
