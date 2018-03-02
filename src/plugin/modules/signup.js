@@ -58,7 +58,7 @@ define([
                 }
             };
 
-        var koSubscriptions = ko.SubscriptionManager.make();
+        var koSubscriptions = ko.kb.SubscriptionManager.make();
 
         function renderLayout() {
             container.innerHTML = div({
