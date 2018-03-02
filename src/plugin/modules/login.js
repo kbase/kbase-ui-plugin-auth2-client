@@ -30,7 +30,7 @@ define([
             try {
                 container.innerHTML = div({
                     class: 'navbar-right',
-                    dataPlugin: 'auth2-client',
+                    dataKbasePlugin: 'auth2-client',
                     dataWidget: 'auth2_signin',
                     dataBind: {
                         component: {

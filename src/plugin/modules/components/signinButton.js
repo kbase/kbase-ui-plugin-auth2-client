@@ -107,11 +107,17 @@ define([
 
     function template() {
         return div({
+            dataKbaseComponent: 'signin-button',
             style: {
                 textAlign: 'center',
                 margin: '4px',
                 padding: '4px',
                 position: 'relative'
+            },
+            dataBind: {
+                attr: {
+                    'data-kbase-name': 'provider.id.toLowerCase()'
+                }
             }
         }, [
             img({

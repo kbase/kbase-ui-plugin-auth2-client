@@ -114,6 +114,7 @@ define([
                 minWidth: '200px'
             }, [
                 button({
+                    dataKbaseButton: 'signin',
                     class: 'btn btn-default',
                     style: {
                         textAlign: 'center'
@@ -146,7 +147,8 @@ define([
                     span({
                         style: {
                             verticalAlign: 'middle'
-                        }
+                        },
+                        dataKbaseLabel: 'signin'
                     }, 'Sign In')
 
                 ])),
@@ -220,6 +222,7 @@ define([
                     // ]),
                 ])),
                 button({
+                    dataKbaseButton: 'signup',
                     class: 'btn btn-default',
                     style: {
                         textAlign: 'center',
@@ -404,8 +407,8 @@ define([
                 width: '1000px'
             },
             dataPlugin: 'auth2-client',
-            dataComponent: 'login-view',
-            dataWidget: 'login'
+            dataKbaseComponent: 'login-view',
+            dataWidget: 'login',
         }, [
             div({ class: 'row' }, [
                 div({ class: 'col-sm-8 ' },
