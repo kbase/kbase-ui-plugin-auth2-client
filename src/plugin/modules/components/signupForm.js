@@ -298,7 +298,6 @@ define([
                         replacement: '',
                         reason: 'initialunderscore',
                         message: 'the initial character must be a a lower case letter, not _.'
-                        // message: 'The ' + ordinalEnglish(index) +  ' character must be a letter a-z, it is: ' + char + ', and has been removed'
                     };
                 }
                 // character is uppper case, convert to lower case
@@ -310,7 +309,6 @@ define([
                         replacement: char.toLowerCase(),
                         reason: 'uppercase',
                         message: 'letters must be lower case'
-                        // message: 'Letters must be lower case, it is upper case and has been converted to lower case'
                     };
                 }
                 // character is space, convert to underscore
@@ -322,7 +320,6 @@ define([
                         replacement: '_',
                         reason: 'space',
                         message: 'spaces are not allowed'
-                        // message: 'Spaces are not allowed, this space has been converted to _'
                     };
                 }
                 // catch-all for invalid characters
@@ -333,8 +330,7 @@ define([
                         original: char,
                         replacement: '_',
                         reason: 'noncompliant',
-                        message: 'allowed characters are the lower case letters a-z, digits 0-9, and _ (underscore)'
-                        // message: 'This character is not within the allowed characters, the letters a-z (lowercase), digits 0-9, and _ (underscore)'
+                        message: 'bad character; allowed characters are the letters a-z (lower case), digits 0-9, and _ (underscore)'
                     };
                 }
                 return {
@@ -817,8 +813,8 @@ define([
                                 },
                                 title: [
                                     'This is a "corrected" version of your username. ',
-                                    'You may use it as is by clicking the button on the right, ',
-                                    'or correct the username above yourself'
+                                    'You may use it by clicking the button to the right, ',
+                                    'or correct the username input above yourself'
                                 ].join('')
                             }, span({
                                 dataBind: {
@@ -842,6 +838,9 @@ define([
                         ])
                     ]),
                     ul({
+                        style: {
+                            listStyleType: '"@ "'
+                        },
                         dataBind: {
                             foreach: 'fixedUsername().fixed'
                         }
