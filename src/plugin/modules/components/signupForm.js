@@ -126,7 +126,7 @@ define([
                 return true;
             },
             // message: ''
-            message: 'A username may only contain the characters a-z (lower case), the digits 0-9, and _ (underscore).'
+            message: 'A username may only contain the letters a-z (lower case), the digits 0-9, and _ (underscore).'
         };
         // ko.validation.rules['usernameStartsWithLetter'] = {
         //     validator: function (val) {
@@ -275,6 +275,7 @@ define([
             var initialSkipped = 0;
 
             var fixed = un.split('').map(function (char, index) {
+                // initial character is a number, remove it
                 if ( (index - initialSkipped) === 0 && digitRe.test(char)) {
                     isCorrected = true;
                     initialSkipped += 1;
@@ -283,9 +284,11 @@ define([
                         original: char,
                         replacement: '',
                         reason: 'initialdigit',
-                        message: 'The ' + ordinalEnglish(index) +  ' character must be a letter a-z, it is: ' + char + ', and has been removed'
+                        message: 'the initial character must be a lower case letter, not a number'
+                        // message: 'The ' + ordinalEnglish(index) +  ' character must be a letter a-z, it is: ' + char + ', and has been removed'
                     };
                 }
+                // initial character is an underscore, remove it
                 if ( (index - initialSkipped) === 0 && underscoreRe.test(char)) {
                     isCorrected = true;
                     initialSkipped += 1;
@@ -294,9 +297,11 @@ define([
                         original: char,
                         replacement: '',
                         reason: 'initialunderscore',
-                        message: 'The ' + ordinalEnglish(index) +  ' character must be a letter a-z, it is: ' + char + ', and has been removed'
+                        message: 'the initial character must be a a lower case letter, not _.'
+                        // message: 'The ' + ordinalEnglish(index) +  ' character must be a letter a-z, it is: ' + char + ', and has been removed'
                     };
                 }
+                // character is uppper case, convert to lower case
                 if (upperRe.test(char)) {
                     isCorrected = true;
                     return {
@@ -304,9 +309,11 @@ define([
                         original: char,
                         replacement: char.toLowerCase(),
                         reason: 'uppercase',
-                        message: 'Letters must be lower case, it is upper case and has been converted to lower case'
+                        message: 'letters must be lower case'
+                        // message: 'Letters must be lower case, it is upper case and has been converted to lower case'
                     };
                 }
+                // character is space, convert to underscore
                 if (spaceRe.test(char)) {
                     isCorrected = true;
                     return {
@@ -314,9 +321,11 @@ define([
                         original: char,
                         replacement: '_',
                         reason: 'space',
-                        message: 'Spaces are not allowed, this space has been converted to _'
+                        message: 'spaces are not allowed'
+                        // message: 'Spaces are not allowed, this space has been converted to _'
                     };
                 }
+                // catch-all for invalid characters
                 if (!validCharsRe.test(char)) {
                     isCorrected = true;
                     return {
@@ -324,7 +333,8 @@ define([
                         original: char,
                         replacement: '_',
                         reason: 'noncompliant',
-                        message: 'This character is not within the allowed characters, the letters a-z (lowercase), digits 0-9, and _ (underscore)'
+                        message: 'allowed characters are the lower case letters a-z, digits 0-9, and _ (underscore)'
+                        // message: 'This character is not within the allowed characters, the letters a-z (lowercase), digits 0-9, and _ (underscore)'
                     };
                 }
                 return {
@@ -783,9 +793,10 @@ define([
                     }                
                 }, [
                     div([
-                        'Your username needs correction, as shown below. ',
-                        'You may use the corrected form, ',
-                        'or correct it yourself above.'
+                        'Sorry, KBase isn\'t able to use that as a username. '
+                    ]),
+                    div([
+                        'A correction has been suggested below. '
                     ]),
                     div({
                         class: 'form'
@@ -803,7 +814,12 @@ define([
                                 readonly: true,
                                 dataBind: {
                                     foreach: 'fixedUsername().fixed'
-                                }
+                                },
+                                title: [
+                                    'This is a "corrected" version of your username. ',
+                                    'You may use it as is by clicking the button on the right, ',
+                                    'or correct the username above yourself'
+                                ].join('')
                             }, span({
                                 dataBind: {
                                     text: 'replacement'
@@ -818,7 +834,8 @@ define([
                                 class: 'btn btn-success btn-xs btn-kb-flat',
                                 dataBind: {
                                     click: '$component.doUseFixedUsername'
-                                }
+                                },
+                                title: 'Click me to use the "corrected" username'
                             }, span({
                                 class: 'fa fa-check'
                             })))
@@ -831,7 +848,7 @@ define([
                     }, [
                         '<!-- ko if: message -->',
                         li([
-                            'at char ',
+                            'character ',
                             span({
                                 dataBind: {
                                     text: 'position'
