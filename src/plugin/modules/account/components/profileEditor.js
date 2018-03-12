@@ -1284,19 +1284,19 @@ define([
         var username = profile.user.username;
 
         var gravatarHash = profile.profile.synced.gravatarHash;
-        var gravatarUrl = ko.pureComputed(function () {
-            try {
-                switch (avatarOption.field() || 'silhoutte') {
-                case 'gravatar':
-                    return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&amp;r=pg&d=' + gravatarDefault.field() || 'identicon';
-                case 'silhouette':
-                case 'mysteryman':
-                    return Plugin.plugin.fullPath + '/images/nouserpic.png';
-                }
-            } catch (ex) {
-                console.error('ERROR computing gravatar url', ex);
-            }
-        });
+        // var gravatarUrl = ko.pureComputed(function () {
+        //     try {
+        //         switch (avatarOption.field() || 'silhoutte') {
+        //         case 'gravatar':
+        //             return 'https://www.gravatar.com/avatar/' + gravatarHash + '?s=200&r=pg&d=' + gravatarDefault.field() || 'identicon';
+        //         case 'silhouette':
+        //         case 'mysteryman':
+        //             return Plugin.plugin.fullPath + '/images/nouserpic.png';
+        //         }
+        //     } catch (ex) {
+        //         console.error('ERROR computing gravatar url', ex);
+        //     }
+        // });
 
         var vmFields = [
             realname.field, city.field, state.field, postalCode.field, country.field, organization.field,
@@ -1602,7 +1602,7 @@ define([
                 fundingSource: fundingSource,
 
                 // computed
-                gravatarUrl: gravatarUrl
+                // gravatarUrl: gravatarUrl
             },
 
             // UI

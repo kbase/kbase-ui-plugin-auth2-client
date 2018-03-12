@@ -383,6 +383,7 @@ define([
                     style: {
                         fontWeight: 'bold'
                     },
+                    dataKbaseField: 'requested-path',
                     dataBind: {
                         text: '$component.nextRequest.original'
                     }
