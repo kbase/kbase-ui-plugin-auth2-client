@@ -20,6 +20,8 @@ define([
             runtime = config.runtime,
             nextRequest, source;
 
+        var listeners = [];
+
         function showErrorMessage(message) {
             container.innerHTML = div({
                 class: 'alert alert-danger'
@@ -30,7 +32,7 @@ define([
             try {
                 container.innerHTML = div({
                     class: 'navbar-right',
-                    dataKbasePlugin: 'auth2-client',
+                    dataKBTesthookPlugin: 'auth2-client',
                     dataWidget: 'auth2_signin',
                     dataBind: {
                         component: {
@@ -90,8 +92,17 @@ define([
                 doRedirect(params);
                 return null;
             }
+            listeners.push(runtime.recv('session', 'loggedin', function () {
+                doRedirect(params);
+            }));
             runtime.send('ui', 'setTitle', 'KBase Sign In');
             return render(params);
+        }
+
+        function stop() {
+            listeners.forEach(function (listener) {
+                runtime.drop(listener);
+            });
         }
 
         function detach() {
@@ -103,6 +114,7 @@ define([
         return {
             attach: attach,
             start: start,
+            stop: stop,
             detach: detach
         };
     }

@@ -114,7 +114,7 @@ define([
                 minWidth: '200px'
             }, [
                 button({
-                    dataKbaseButton: 'signin',
+                    dataKBTesthookButton: 'signin',
                     class: 'btn btn-default',
                     style: {
                         textAlign: 'center'
@@ -148,7 +148,7 @@ define([
                         style: {
                             verticalAlign: 'middle'
                         },
-                        dataKbaseLabel: 'signin'
+                        dataKBTesthookLabel: 'signin'
                     }, 'Sign In')
 
                 ])),
@@ -222,7 +222,7 @@ define([
                     // ]),
                 ])),
                 button({
-                    dataKbaseButton: 'signup',
+                    dataKBTesthookButton: 'signup',
                     class: 'btn btn-default',
                     style: {
                         textAlign: 'center',
@@ -383,7 +383,7 @@ define([
                     style: {
                         fontWeight: 'bold'
                     },
-                    dataKbaseField: 'requested-path',
+                    dataKBTesthookField: 'requested-path',
                     dataBind: {
                         text: '$component.nextRequest.original'
                     }
@@ -408,7 +408,7 @@ define([
                 width: '1000px'
             },
             dataPlugin: 'auth2-client',
-            dataKbaseComponent: 'login-view',
+            dataKBTesthookComponent: 'login-view',
             dataWidget: 'login',
         }, [
             div({ class: 'row' }, [

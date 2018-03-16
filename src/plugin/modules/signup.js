@@ -63,7 +63,7 @@ define([
         function renderLayout() {
             container.innerHTML = div({
                 class: 'container-fluid',
-                dataKbaseWidget: 'signup'
+                dataKBTesthookWidget: 'signup'
             }, [
 
                 div({ class: 'row' }, [
@@ -193,7 +193,7 @@ define([
             return Promise.try(function () {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
-                container.setAttribute('data-kbase-plugin', 'auth2-client');
+                container.setAttribute('data-k-b-testhook-plugin', 'auth2-client');
                 renderLayout();
             });
         }
