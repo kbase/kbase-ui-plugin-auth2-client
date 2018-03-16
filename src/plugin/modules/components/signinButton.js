@@ -107,7 +107,7 @@ define([
 
     function template() {
         return div({
-            dataKbaseComponent: 'signin-button',
+            dataKBTesthookComponent: 'signin-button',
             style: {
                 textAlign: 'center',
                 margin: '4px',
@@ -116,7 +116,7 @@ define([
             },
             dataBind: {
                 attr: {
-                    'data-kbase-name': 'provider.id.toLowerCase()'
+                    'data-k-b-testhook-name': 'provider.id.toLowerCase()'
                 }
             }
         }, [

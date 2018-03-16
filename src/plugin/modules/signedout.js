@@ -6,6 +6,7 @@ define([
     html
 ) {
     'use strict';
+
     var t = html.tag,
         p = t('p'),
         div = t('div'),
@@ -22,7 +23,7 @@ define([
 
         // VIEW
 
-        function render(params) {
+        function render() {
             container.innerHTML = div({
                 class: 'container-fluid'
             }, div({
@@ -87,36 +88,38 @@ define([
         // API
 
         function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
-            });
+            hostNode = node;
+            container = hostNode.appendChild(document.createElement('div'));
         }
 
-        function start(params) {
-            return Promise.try(function () {
-                if (runtime.service('session').isLoggedIn()) {
-                    runtime.send('app', 'navigate', {
-                        path: 'dashboard'
-                    });
-                }
-                runtime.send('ui', 'setTitle', 'Signed Out');
-                render();
-            });
+        var listeners = [];
+
+        function start() {
+            if (runtime.service('session').isLoggedIn()) {
+                runtime.send('app', 'navigate', {
+                    path: 'dashboard'
+                });
+            }
+            listeners.push(runtime.recv('session', 'loggedin', function () {
+                runtime.send('app', 'navigate', {
+                    path: 'dashboard'
+                });
+            }));
+            runtime.send('ui', 'setTitle', 'Signed Out');
+            render();
         }
 
         function stop() {
-            return Promise.try(function () {
-                return null;
+            listeners.forEach(function (listener) {
+                runtime.drop(listener);
             });
+            return null;
         }
 
         function detach() {
-            return Promise.try(function () {
-                if (hostNode && container) {
-                    hostNode.removeChild(container);
-                }
-            });
+            if (hostNode && container) {
+                hostNode.removeChild(container);
+            }
         }
 
         return {

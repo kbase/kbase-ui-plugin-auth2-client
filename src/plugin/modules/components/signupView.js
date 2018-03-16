@@ -597,7 +597,7 @@ define([
 
     function template() {
         return div({
-            dataKbaseComponent: 'signup-view'
+            dataKBTesthookComponent: 'signup-view'
         }, [
             buildError(),
             buildStep1(),

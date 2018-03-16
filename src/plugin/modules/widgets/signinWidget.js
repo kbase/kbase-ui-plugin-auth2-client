@@ -101,13 +101,15 @@ define([
                                 class: 'navbar-right'
                             }, div({
                                 class: 'dropdown',
-                                style: 'display:inline-block'
+                                style: 'display:inline-block',
+                                dataKBTesthookMenu: 'signed-in'
                             }, [
                                 button({
                                     type: 'button',
                                     class: 'btn btn-default dropdown-toggle',
                                     dataToggle: 'dropdown',
-                                    ariaExpanded: 'false'
+                                    ariaExpanded: 'false',
+                                    dataKBTesthookButton: 'avatar'
                                 }, [
                                     buildAvatar(profile),
                                     span({ class: 'caret', style: 'margin-left: 5px;' })
@@ -121,11 +123,14 @@ define([
                                                 textAlign: 'center'
                                             }
                                         }, [
-                                            div(realname),
+                                            div({
+                                                dataKBTesthookLabel: 'realname'
+                                            }, realname),
                                             div({
                                                 style: {
                                                     fontStyle: 'italic'
-                                                }
+                                                },
+                                                dataKBTesthookLabel: 'username'
                                             }, username)
                                         ])
                                     ]),
@@ -133,7 +138,8 @@ define([
                                     li({}, [
                                         a({
                                             href: '#',
-                                            'data-menu-item': 'logout',
+                                            dataMenuItem: 'logout',
+                                            dataKBTesthookButton: 'logout',
                                             id: events.addEvent({
                                                 type: 'click',
                                                 handler: handleSignout
@@ -161,6 +167,7 @@ define([
                 return a({
                     class: 'btn btn-primary navbar-btn kb-nav-btn',
                     dataButton: 'signin',
+                    dataKBTesthookButton: 'signin',
                     href: '#login'
                 }, [
                     div({
@@ -191,7 +198,7 @@ define([
             hostNode = node;
             container = hostNode.appendChild(document.createElement('div'));
             container.classList.add('widget-auth2_signin');
-            container.setAttribute('data-widget', 'auth2_signin');
+            container.setAttribute('data-k-b-testhook-widget', 'auth2_signin');
         }
 
         function start() {
