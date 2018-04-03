@@ -18,13 +18,13 @@ define([
 
         var sources = config.sources;
 
-        function load(file, type) {
+        function load(file) {
             var client = new HttpClient.HttpClient();
             var url = window.location.origin + Plugin.plugin.fullPath + '/dataSources/' + file;
             return client.request({
-                    method: 'GET',
-                    url: url
-                })
+                method: 'GET',
+                url: url
+            })
                 .then(function (result) {
                     if (result.status !== 200) {
                         throw new Error('Cannot load data file: ' + result.status);
@@ -73,16 +73,16 @@ define([
                     return loadData(source);
                 } else if (source.sources) {
                     return Promise.all(Object.keys(source.sources).map(function (sourceId) {
-                            var translation = source.sources[sourceId].translate;
-                            return getData(sourceId)
-                                .then(function (data) {
-                                    if (translation) {
-                                        return data.map(translation);
-                                    } else {
-                                        return data;
-                                    }
-                                });
-                        }))
+                        var translation = source.sources[sourceId].translate;
+                        return getData(sourceId)
+                            .then(function (data) {
+                                if (translation) {
+                                    return data.map(translation);
+                                } else {
+                                    return data;
+                                }
+                            });
+                    }))
                         .then(function (sources) {
                             return sources.reduce(function (acc, value) {
                                 return acc.concat(value);

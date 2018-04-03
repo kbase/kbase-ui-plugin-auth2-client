@@ -7,6 +7,8 @@ define([
     BS,
     ko
 ) {
+    'use strict';
+
     var t = html.tag,
         table = t('table'),
         thead = t('thead'),

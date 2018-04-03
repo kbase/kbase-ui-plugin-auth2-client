@@ -884,7 +884,7 @@ define([
                 constraint: {
                     description: 'Your research interests',
                     required: true,
-                    validate: function (value) {
+                    validate: function () {
                         // ensure in the list...
                     }
                 },
@@ -940,7 +940,7 @@ define([
             field: ko.observable(profile.profile.userdata.fundingSource).extend({
                 constraint: {
                     required: false,
-                    validate: function (value) {
+                    validate: function () {
                         // TODO
                         // ensure in the data source
                     }
@@ -985,7 +985,7 @@ define([
             field: ko.observable(profile.profile.userdata.country).extend({
                 constraint: {
                     required: true,
-                    validate: function (value) {
+                    validate: function () {
                         // todo: ensure in list of countries.
                     }
                 },
@@ -1008,7 +1008,7 @@ define([
                     messages: {
                         requiredButEmpty: 'The state is required if the country is "United States"'
                     },
-                    validate: function (value) {
+                    validate: function () {
                         // todo: ensure in list of countries.
                     }
                 },
@@ -1072,7 +1072,7 @@ define([
             field: ko.observable(profile.profile.userdata.avatarOption).extend({
                 constraint: {
                     required: false,
-                    validate: function (value) {
+                    validate: function () {
                         // todo ensure in list
                     }
                 },
@@ -1096,7 +1096,7 @@ define([
             field: ko.observable(profile.profile.userdata.gravatarDefault).extend({
                 constraint: {
                     required: false,
-                    validate: function (value) {
+                    validate: function () {
                         // todo ensure in linst
                     }
                 },

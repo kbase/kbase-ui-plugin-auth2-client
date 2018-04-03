@@ -225,7 +225,7 @@ define([
             events.attachEvents();
         }
 
-        function start(params) {
+        function start() {
             // inProcessToken = params['in-process-login-token'];
             // var cookieManager = new M_Cookie.CookieManager();
             // inProcessToken = cookieManager.getItem('in-process-login-token');
@@ -368,8 +368,8 @@ define([
                             break;
                         default:
                             return ErrorWidget.make({
-                                    runtime: runtime
-                                })
+                                runtime: runtime
+                            })
                                 .attach(ui.getElement('error'))
                                 .then(function (w) {
                                     return w.start({
@@ -392,7 +392,7 @@ define([
                         if (err.code === '10010') {
                             // simply continue
                         } else {
-                            console.log('Error canceling link session', err);
+                            console.error('Error canceling link session', err);
                         }
                     });
             }

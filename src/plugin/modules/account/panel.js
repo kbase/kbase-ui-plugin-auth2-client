@@ -27,6 +27,7 @@ define([
     ProfileManager,
     TabsWidget
 ) {
+    'use strict';
     function factory(config) {
         var hostNode, container,
             runtime = config.runtime,

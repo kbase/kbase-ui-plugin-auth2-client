@@ -12,6 +12,8 @@ define([
     html,
     LoginViewComponent
 ) {
+    'use strict';
+
     var t = html.tag,
         div = t('div');
 

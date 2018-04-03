@@ -15,6 +15,8 @@ define([
     fmt,
     Utils
 ) {
+    'use strict';
+    
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
@@ -148,10 +150,10 @@ define([
             return Format.niceTime(date);
         }
 
-        function niceElapsed(epoch) {
-            var date = new Date(epoch);
-            return Format.niceElapsedTime(date);
-        }
+        // function niceElapsed(epoch) {
+        //     var date = new Date(epoch);
+        //     return Format.niceElapsedTime(date);
+        // }
 
         function doRevokeToken(tokenId, button) {
             button.disabled = true;
@@ -255,9 +257,9 @@ define([
             }
 
             runtime.service('session').getClient().createToken({
-                    name: name.value,
-                    type: 'service'
-                })
+                name: name.value,
+                type: 'service'
+            })
                 .then(function (result) {
                     vm.newToken.value = result;
                     renderNewToken();
@@ -384,8 +386,8 @@ define([
         function doRevokeAll(e) {
             e.target.disabled = true;
             return Promise.all(vm.serviceTokens.value.map(function (token) {
-                    return runtime.service('session').getClient().revokeToken(token.id);
-                }))
+                return runtime.service('session').getClient().revokeToken(token.id);
+            }))
                 .then(function () {
                     return render();
                 })
@@ -417,7 +419,7 @@ define([
             });
         }
 
-        function start(params) {
+        function start() {
             return utils.getTimeBias()
                 .then(function (bias) {
                     serverBias = bias;

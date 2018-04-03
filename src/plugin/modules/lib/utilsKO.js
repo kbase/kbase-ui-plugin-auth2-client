@@ -1,17 +1,14 @@
 define([
     'bluebird',
     'kb_common/html',
-    'kb_common/domEvent',
-    'kb_common/bootstrapUtils',
-    'kb_plugin_auth2-client',
+    
     'bootstrap'
 ], function (
     Promise,
-    html,
-    DomEvents,
-    BS,
-    Plugin
+    html
 ) {
+    'use strict';
+
     var t = html.tag,
         div = t('div'),
         img = t('img'),

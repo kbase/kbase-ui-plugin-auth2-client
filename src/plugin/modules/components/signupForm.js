@@ -23,6 +23,8 @@ define([
     TypeaheadInputComponent,
     ErrorViewComponent
 ) {
+    'use strict';
+
     var t = html.tag,
         h1 = t('h1'),
         div = t('div'),
@@ -245,27 +247,27 @@ define([
             validationFieldBorder: true
         });
 
-        function ordinalEnglish(n) {
-            var ordinals = [
-                'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth',
-                'ninth', 'tenth'
-            ];
-            var word = ordinals[n];
-            if (word) {
-                return word;
-            }
-            return n + 'th';
-        }
+        // function ordinalEnglish(n) {
+        //     var ordinals = [
+        //         'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth',
+        //         'ninth', 'tenth'
+        //     ];
+        //     var word = ordinals[n];
+        //     if (word) {
+        //         return word;
+        //     }
+        //     return n + 'th';
+        // }
 
         var fixedUsername = ko.pureComputed(function () {
             var un = username();
-            
+
             if (!un) {
                 return null;
             }
 
             var upperRe = /[A-Z]/;
-            var spaceRe = /\s/;
+            var spaceRe = /[ ]/;
             var digitRe = /\d/;
             var validCharsRe = /[a-z0-9_]/;
             var underscoreRe = /_/;
@@ -276,15 +278,19 @@ define([
 
             var fixed = un.split('').map(function (char, index) {
                 // initial character is a number, remove it
-                if ( (index - initialSkipped) === 0 && digitRe.test(char)) {
+                let position = index + 1;
+                if ((index - initialSkipped) === 0 && digitRe.test(char)) {
                     isCorrected = true;
                     initialSkipped += 1;
                     return {
-                        position: index,
+                        position: position,
                         original: char,
+                        // there really is not valid replacement, this has the effect of removing the character
+                        // this is weird in the case of just two character input, because accepting the correction
+                        // will produce an invalid (too-short) username!
                         replacement: '',
                         reason: 'initialdigit',
-                        message: 'the initial character must be a lower case letter, not a number'
+                        message: 'a number is not allowed as the initial character'
                         // message: 'The ' + ordinalEnglish(index) +  ' character must be a letter a-z, it is: ' + char + ', and has been removed'
                     };
                 }
@@ -293,18 +299,19 @@ define([
                     isCorrected = true;
                     initialSkipped += 1;
                     return {
-                        position: index,
+                        position: position,
                         original: char,
+                        // no useful replacement for an initial underscore, so just remove it for the correction.
                         replacement: '',
                         reason: 'initialunderscore',
-                        message: 'the initial character must be a a lower case letter, not _.'
+                        message: 'the underscore is not allowed as the initial character'
                     };
                 }
                 // character is uppper case, convert to lower case
                 if (upperRe.test(char)) {
                     isCorrected = true;
                     return {
-                        position: index,
+                        position: position,
                         original: char,
                         replacement: char.toLowerCase(),
                         reason: 'uppercase',
@@ -315,32 +322,56 @@ define([
                 if (spaceRe.test(char)) {
                     isCorrected = true;
                     return {
-                        position: index,
+                        position: position,
                         original: char,
                         replacement: '_',
                         reason: 'space',
                         message: 'spaces are not allowed'
                     };
                 }
+
                 // catch-all for invalid characters
                 if (!validCharsRe.test(char)) {
-                    isCorrected = true;
-                    return {
-                        position: index,
-                        original: char,
-                        replacement: '_',
-                        reason: 'noncompliant',
-                        message: 'bad character; allowed characters are the letters a-z (lower case), digits 0-9, and _ (underscore)'
-                    };
+                    let charCode = char.charCodeAt(0);
+                    if (charCode < 32) {
+                        isCorrected = true;
+                        return {
+                            position: position,
+                            original: char,
+                            replacement: '_',
+                            reason: 'control',
+                            message: 'control characters are not allowed'
+                        };
+                    } else if (char.charCodeAt(0) > 127) {
+                        isCorrected = true;
+                        return {
+                            position: position,
+                            original: char,
+                            replacement: '_',
+                            reason: 'noncompliant',
+                            message: 'non-ascii characters are not allowed'
+                        };
+                    } else {
+                        isCorrected = true;
+                        return {
+                            position: position,
+                            original: char,
+                            replacement: '_',
+                            reason: 'symbol',
+                            message: 'symbols other than hyphen and underscore are not allowed'
+                        };
+                    }
                 }
                 return {
-                    position: index,
+                    position: position,
                     original: char,
                     replacement: char,
                     reason: false,
                     message: false
                 };
             });
+
+            console.log('fixed?', isCorrected, fixed, fixed);
 
             if (isCorrected) {
                 return {
@@ -789,11 +820,10 @@ define([
                     }                
                 }, [
                     div([
-                        'Sorry, KBase isn\'t able to use that as a username. '
+                        'Sorry, KBase isn\'t able to use that string as a username, as detailed below. ',
+                        'You may use the suggestion below or type something else that you prefer.'
                     ]),
-                    div([
-                        'A correction has been suggested below. '
-                    ]),
+                   
                     div({
                         class: 'form'
                     }, [

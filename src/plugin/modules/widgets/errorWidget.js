@@ -14,9 +14,8 @@ define([
     var t = html.tag,
         div = t('div');
 
-    function factory(config) {
-        var hostNode, container,
-            runtime = config.runtime;
+    function factory() {
+        var hostNode, container;
 
         var vm = Utils.ViewModel({
             model: {

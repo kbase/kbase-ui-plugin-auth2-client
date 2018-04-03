@@ -32,6 +32,8 @@ define([
     SignupFormComponent,
     SigninButtonComponent
 ) {
+    'use strict';
+    
     var t = html.tag,
         div = t('div'),
         span = t('span'),

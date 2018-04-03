@@ -36,6 +36,8 @@ define([
     ErrorViewComponent,
     SigninViewComponent
 ) {
+    'use strict';
+
     var t = html.tag,
         div = t('div'),
         span = t('span'),

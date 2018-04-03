@@ -11,6 +11,8 @@ define([
     BS,
     Format
 ) {
+    'use strict';
+    
     var
         t = html.tag,
         div = t('div'),
@@ -622,8 +624,8 @@ define([
 
         function doRevokeAll() {
             return Promise.all(vm.allTokens.value.map(function (token) {
-                    return runtime.service('session').getClient().revokeToken(token.id);
-                }))
+                return runtime.service('session').getClient().revokeToken(token.id);
+            }))
                 .then(function () {
                     return render();
                 })

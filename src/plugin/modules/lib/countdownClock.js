@@ -1,4 +1,6 @@
 define([], function () {
+    'use strict';
+    
     function CountDownClock(config) {
         var targetTime;
         // Either countdown until a specific time ...

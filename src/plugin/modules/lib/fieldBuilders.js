@@ -11,6 +11,8 @@ define([
     CheckboxesInputComponent,
     TypeaheadInputComponent
 ) {
+    'use strict';
+    
     var t = html.tag,
         div = t('div'),
         span = t('span'),
@@ -112,12 +114,9 @@ define([
         }, [
             div([
                 span({
-                    // type: 'button',
-                    // class: 'btn btn-link',
                     style: {
                         padding: '2px',
                         cursor: 'pointer'
-                            // lineHeight: '1'
                     },
                     dataElement: 'button',
                     dataBind: {
@@ -317,7 +316,7 @@ define([
         ]);
     }
 
-    function buildInput(vmPath, options) {
+    function buildInput(vmPath) {
         var id = html.genId();
         var control = input({
             type: 'text',

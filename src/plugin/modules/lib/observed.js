@@ -1,4 +1,6 @@
 define([], function () {
+    'use strict';
+
     function Observed(arg) {
         function changed() {
             try {
