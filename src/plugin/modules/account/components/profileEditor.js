@@ -1314,7 +1314,6 @@ define([
         var someInvalid = ko.pureComputed(function () {
             var oldStyle = vmFields.some(function (field) {
                 if (field.isValid) {
-                    // console.log('is valid?', field.label, field.isValid());
                     return !field.isValid();
                 } else {
                     return false;
@@ -1332,7 +1331,6 @@ define([
         var formCanSave = ko.pureComputed(function () {
             var d = someDirty();
             var iv = someInvalid();
-            // console.log(d, iv);
             return d && !iv;
         });
 
