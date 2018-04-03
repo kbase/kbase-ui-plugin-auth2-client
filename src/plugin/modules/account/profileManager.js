@@ -13,6 +13,8 @@ define([
     ko,
     ProfileEditorComponent
 ) {
+    'use strict';
+    
     var t = html.tag,
         div = t('div');
 

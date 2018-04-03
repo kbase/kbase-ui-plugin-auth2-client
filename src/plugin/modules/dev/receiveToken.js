@@ -149,7 +149,7 @@ define([
 
             // Is token import supported in this environment.
             // TODO: make this a deploy config, but no time now.
-            var currentEnv = runtime.config('deploy.environment')
+            var currentEnv = runtime.config('deploy.environment');
             var envConfig = envs[currentEnv];
             if (!envConfig || !envConfig.importFrom) {
                 renderUnsupported();

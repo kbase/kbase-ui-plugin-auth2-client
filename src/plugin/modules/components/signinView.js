@@ -28,6 +28,8 @@ define([
     SigninFormComponent,
     SignupFormComponent
 ) {
+    'use strict';
+    
     var t = html.tag,
         div = t('div'),
         span = t('span'),
@@ -380,54 +382,54 @@ define([
         });
     }
 
-    function buildOopsWrongGlobusAccount() {
-        return BS.buildCollapsiblePanel({
-            title: 'Not the account you were expecting??',
-            type: 'warning',
-            collapsed: true,
-            classes: ['kb-panel-help'],
-            body: div([
-                p([
-                    'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
-                    'to Globus and back again without any warning.'
-                ]),
-                p([
-                    'If this is not the account you were expecting, you may need to sign out of the identity provider ',
-                    'and start the sign-in process again.'
-                ]),
-                p([
-                    'KBase cannot sign you out of an identity provider, but the links below will allow you ',
-                    'to do so.'
-                ]),
-                ul({
-                    dataBind: {
-                        with: 'providers.Globus'
-                    }
-                }, li(a({
-                    dataBind: {
-                        attr: {
-                            href: 'logoutUrl'
-                        }
-                    },
-                    target: '_blank'
-                }, [
-                    'Log out from ',
-                    span({
-                        dataBind: {
-                            text: 'label'
-                        }
-                    })
-                ]))),
-                p([
-                    'After signing out you will need to start the ',
-                    a({
-                        href: '#login'
-                    }, 'signin'),
-                    ' process again.'
-                ]),
-            ])
-        });
-    }
+    // function buildOopsWrongGlobusAccount() {
+    //     return BS.buildCollapsiblePanel({
+    //         title: 'Not the account you were expecting??',
+    //         type: 'warning',
+    //         collapsed: true,
+    //         classes: ['kb-panel-help'],
+    //         body: div([
+    //             p([
+    //                 'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+    //                 'to Globus and back again without any warning.'
+    //             ]),
+    //             p([
+    //                 'If this is not the account you were expecting, you may need to sign out of the identity provider ',
+    //                 'and start the sign-in process again.'
+    //             ]),
+    //             p([
+    //                 'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+    //                 'to do so.'
+    //             ]),
+    //             ul({
+    //                 dataBind: {
+    //                     with: 'providers.Globus'
+    //                 }
+    //             }, li(a({
+    //                 dataBind: {
+    //                     attr: {
+    //                         href: 'logoutUrl'
+    //                     }
+    //                 },
+    //                 target: '_blank'
+    //             }, [
+    //                 'Log out from ',
+    //                 span({
+    //                     dataBind: {
+    //                         text: 'label'
+    //                     }
+    //                 })
+    //             ]))),
+    //             p([
+    //                 'After signing out you will need to start the ',
+    //                 a({
+    //                     href: '#login'
+    //                 }, 'signin'),
+    //                 ' process again.'
+    //             ]),
+    //         ])
+    //     });
+    // }
 
     function buildSignupStep() {
         return div({

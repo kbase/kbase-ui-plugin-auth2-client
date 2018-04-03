@@ -15,6 +15,8 @@ define([
     UserProfileService,
     UserInfoEditorComponent
 ) {
+    'use strict';
+    
     var t = html.tag,
         div = t('div'),
         p = t('p');

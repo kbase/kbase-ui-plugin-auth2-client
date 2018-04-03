@@ -88,45 +88,45 @@ define([
         }
         var minimized = [];
         var units = [{
-                unit: 'millisecond',
-                short: 'ms',
-                single: 'm',
-                size: 1000
-            },
-            {
-                unit: 'second',
-                short: 'sec',
-                single: 's',
-                size: 60
-            }, {
-                unit: 'minute',
-                short: 'min',
-                single: 'm',
-                size: 60
-            }, {
-                unit: 'hour',
-                short: 'hr',
-                single: 'h',
-                size: 24
-            }, {
-                unit: 'day',
-                short: 'day',
-                single: 'd',
-                max: 90,
-                size: 365
-            },
+            unit: 'millisecond',
+            short: 'ms',
+            single: 'm',
+            size: 1000
+        },
+        {
+            unit: 'second',
+            short: 'sec',
+            single: 's',
+            size: 60
+        }, {
+            unit: 'minute',
+            short: 'min',
+            single: 'm',
+            size: 60
+        }, {
+            unit: 'hour',
+            short: 'hr',
+            single: 'h',
+            size: 24
+        }, {
+            unit: 'day',
+            short: 'day',
+            single: 'd',
+            max: 90,
+            size: 365
+        },
             // {
             //     unit: 'week',
             //     short: 'week',
             //     single: 'w',
             //     size: 52
             // }, 
-            {
-                unit: 'year',
-                short: 'year',
-                single: 'y',
-                size: null
-            }
+        {
+            unit: 'year',
+            short: 'year',
+            single: 'y',
+            size: null
+        }
         ];
         // always start by rounding up to seconds.
         var temp = Math.round(value / 1000) * 1000;
@@ -190,8 +190,8 @@ define([
                 minimized.pop();
             }
             return minimized.map(function (item) {
-                    return String(item.value) + item.name;
-                })
+                return String(item.value) + item.name;
+            })
                 .join(' ');
         }
     }

@@ -11,6 +11,8 @@ define([
     Plugin,
     Utils
 ) {
+    'use strict';
+
     function factory(config) {
         var runtime = config.runtime;
         var policies = null;
@@ -18,12 +20,6 @@ define([
         var utils = Utils.make({
             runtime: runtime
         });
-
-        function niceDate(epoch) {
-            var date = new Date(epoch);
-            return [date.getMonth() + 1, date.getDate(), date.getFullYear()].join('/');
-            // return date.toUTCString();
-        }
 
         function getPolicyFile(arg) {
             var http = new M_HttpClient.HttpClient();
@@ -36,9 +32,9 @@ define([
             ].join('/');
             var url = window.location.origin + '/' + agreementPath;
             return http.request({
-                    method: 'GET',
-                    url: url
-                })
+                method: 'GET',
+                url: url
+            })
                 .then(function (result) {
                     if (result.status === 200) {
                         try {
@@ -62,9 +58,9 @@ define([
             ].join('/');
             var http = new M_HttpClient.HttpClient();
             return http.request({
-                    method: 'GET',
-                    url: url
-                })
+                method: 'GET',
+                url: url
+            })
                 .then(function (result) {
                     if (result.status === 200) {
                         return JSON.parse(result.response);
@@ -116,7 +112,7 @@ define([
             return userAgreements;
         }
 
-        function start(params) {
+        function start() {
             return loadPolicies()
                 .then(function (result) {
                     policies = result;

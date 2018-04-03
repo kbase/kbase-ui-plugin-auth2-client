@@ -14,6 +14,8 @@ define([
     Auth2Error,
     Plugin
 ) {
+    'use strict';
+
     var t = html.tag,
         div = t('div'),
         img = t('img'),
@@ -58,19 +60,19 @@ define([
                 }
             }, [
                 div({
-                        style: {
-                            display: 'inline-block',
-                            width: '44px',
-                            height: '24px',
-                            marginRight: '4px'
-                        }
-                    },
-                    img({
-                        src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
-                        style: {
-                            height: '24px'
-                        }
-                    })),
+                    style: {
+                        display: 'inline-block',
+                        width: '44px',
+                        height: '24px',
+                        marginRight: '4px'
+                    }
+                },
+                img({
+                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
+                    style: {
+                        height: '24px'
+                    }
+                })),
                 provider.label
             ]);
         }

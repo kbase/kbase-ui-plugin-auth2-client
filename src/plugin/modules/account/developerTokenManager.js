@@ -15,6 +15,7 @@ define([
     fmt,
     Utils
 ) {
+    'use strict';
     var // t = html.tagMaker(),
         t = html.tag,
         div = t('div'),
@@ -256,9 +257,9 @@ define([
             }
 
             runtime.service('session').getClient().createToken({
-                    name: name.value,
-                    type: 'developer'
-                })
+                name: name.value,
+                type: 'developer'
+            })
                 .then(function (result) {
                     vm.newToken.value = result;
                     renderNewToken();
@@ -383,8 +384,8 @@ define([
 
         function doRevokeAll() {
             return Promise.all(vm.allTokens.value.map(function (token) {
-                    return runtime.service('session').getClient().revokeToken(token.id);
-                }))
+                return runtime.service('session').getClient().revokeToken(token.id);
+            }))
                 .then(function () {
                     return render();
                 })
@@ -417,7 +418,7 @@ define([
             });
         }
 
-        function start(params) {
+        function start() {
             return utils.getTimeBias()
                 .then(function (bias) {
                     serverBias = bias;

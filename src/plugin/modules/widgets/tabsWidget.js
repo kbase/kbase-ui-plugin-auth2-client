@@ -11,13 +11,12 @@ define([
         div = t('div');
 
     function factory(config) {
-        var hostNode, container,
+        var hostNode,
             runtime = config.runtime;
 
         // var tabsControl = document.querySelector(selector);
 
         var tabSet;
-        var panelSet;
         var currentTab;
 
         // var tabsOrder = arg.order;
@@ -71,7 +70,6 @@ define([
                 }))
             ]);
             tabSet = hostNode.querySelector('.-tabs');
-            panelSet = hostNode.querySelector('.-panels');
         }
 
         function deactivateCurrentTab() {
@@ -94,7 +92,7 @@ define([
                     return null;
                 }
                 return currentTabWidget.stop()
-                    .then(function (value) {
+                    .then(function () {
                         return currentTabWidget.detach();
                     });
             });
@@ -150,7 +148,7 @@ define([
                     var tabPanel = hostNode.querySelector('[data-tab-panel="' + tabName + '"]');
                     tab.classList.add(tabName === currentTab ? '-active' : '-inactive');
                     tabPanel.classList.add(tabName === currentTab ? '-active' : '-inactive');
-                    tab.addEventListener('click', function (ev) {
+                    tab.addEventListener('click', function () {
                         deactivateCurrentTab();
                         activateTab(tabName);
                     });

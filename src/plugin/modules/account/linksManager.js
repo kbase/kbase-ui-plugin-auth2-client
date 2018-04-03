@@ -11,6 +11,7 @@ define([
     BS,
     Plugin
 ) {
+    'use strict';
     var // t = html.tagMaker(),
         t = html.tag,
         p = t('p'),
@@ -115,9 +116,9 @@ define([
 
         function doUnlink(identityId) {
             runtime.service('session').getClient().removeLink({
-                    identityId: identityId
-                })
-                .then(function (result) {
+                identityId: identityId
+            })
+                .then(function () {
                     reload();
                     return null;
                 })
@@ -211,7 +212,7 @@ define([
                             }, div({
                                 id: events.addEvent('click', function () {
                                     // var controlNode = document.getElementById(providerControlId);
-                                    var providerInput = document.querySelector('[data-element="link-form"] [name="provider"]')
+                                    var providerInput = document.querySelector('[data-element="link-form"] [name="provider"]');
                                     providerInput.value = provider.id;
                                     var menuLabelNode = document.getElementById(providerMenuLabelId);
                                     menuLabelNode.innerHTML = buildProviderLabel(provider);
@@ -390,10 +391,10 @@ define([
             });
         }
 
-        function start(params) {
+        function start() {
             return Promise.try(function () {
-                    return reload();
-                })
+                return reload();
+            })
                 .then(function () {
                     BS.activateTooltips(container);
                     return null;

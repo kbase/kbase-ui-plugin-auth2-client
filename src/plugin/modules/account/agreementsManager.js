@@ -11,6 +11,7 @@ define([
     BS,
     UserAgreements
 ) {
+    'use strict';
     var t = html.tag,
         div = t('div'),
         p = t('p');
@@ -113,9 +114,9 @@ define([
         function doSelectAgreement(agreement) {
             vm.agreement.node.innerHTML = html.loading('Loading agreement');
             userAgreements.getPolicyFile({
-                    id: agreement.id,
-                    version: agreement.version
-                })
+                id: agreement.id,
+                version: agreement.version
+            })
                 .then(function (result) {
                     vm.agreement.node.innerHTML = result;
                 })
@@ -149,12 +150,12 @@ define([
                 return;
             }
             vm.agreements.node.innerHTML = div({
-                    class: 'agreements',
-                    style: {
-                        xborder: '1px silver solid',
-                        padding: '4px'
-                    }
-                }, vm.agreements.value
+                class: 'agreements',
+                style: {
+                    xborder: '1px silver solid',
+                    padding: '4px'
+                }
+            }, vm.agreements.value
                 .map(function (agreement) {
                     var policy = userAgreements.getPolicy(agreement.id);
                     if (!policy) {
@@ -241,12 +242,12 @@ define([
             });
         }
 
-        function start(params) {
+        function start() {
             return Promise.try(function () {
-                    renderLayout();
-                    return userAgreements.start();
-                })
-                .then(function (result) {
+                renderLayout();
+                return userAgreements.start();
+            })
+                .then(function () {
                     vm.latestPolicies.value = userAgreements.getLatestPolicies();
                     vm.agreements.value = userAgreements.getUserAgreements();
                     return (render());
