@@ -102,7 +102,6 @@ define([
         var targets;
 
         function doSendEvent() {
-            // console.log('target', container);
             var targetId = container.querySelector('[name="target"]').value;
             var target = targets[targetId];
             var token = runtime.service('session').getAuthToken();

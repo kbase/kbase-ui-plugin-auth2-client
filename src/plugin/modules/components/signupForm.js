@@ -371,8 +371,6 @@ define([
                 };
             });
 
-            console.log('fixed?', isCorrected, fixed, fixed);
-
             if (isCorrected) {
                 return {
                     fixed: fixed,
