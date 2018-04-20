@@ -62,7 +62,7 @@
                             ]
                         ],
                         "waitForText": 10000,
-                        "text": "eapearson"
+                        "text": "$username"
                     },
                     {
                         "title": "And the real name too",
@@ -75,7 +75,7 @@
                             ]
                         ],
                         "exists": true,
-                        "text": "Erik A. Pearson"
+                        "text": "$realname"
                     }
                 ]
             }
