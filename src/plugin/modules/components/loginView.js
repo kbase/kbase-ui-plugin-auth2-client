@@ -1,10 +1,10 @@
 define([
     'knockout-plus',
     'kb_common/html',
-    'kb_common/bootstrapUtils',
     'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'yaml!../config.yml',
+    'json!../../resources/data/providers.json',
     './signinButton',
 
     // for effect
@@ -12,10 +12,10 @@ define([
 ], function (
     ko,
     html,
-    BS,
     Auth2Error,
     Plugin,
     config,
+    providersData,
     SigninButtonComponent
 ) {
     'use strict';
@@ -454,18 +454,14 @@ define([
         // TODO; populate from session, as above.
         var username = runtime.service('session').getUsername();
 
-        var providers = runtime.service('session').getProviders().sort(function (a, b) {
-            if (a.id === 'Google') {
-                return -1;
-            } else if (b.id === 'Google') {
-                return 1;
+        var providers = providersData.sort(function (a, b) {
+            let priorityOrder = a.priority - b.priority;
+            if (priorityOrder !== 0) {
+                return priorityOrder;
             }
-            if (a.id < b.id) {
-                return -1;
-            } else if (a.id > b.id) {
-                return 1;
-            }
-            return 0;
+
+            let labelOrder = a.label < b.label ? -1 : (a.label > b.label ? 0 : 1);
+            return labelOrder;
         });
 
         function doSignup() {

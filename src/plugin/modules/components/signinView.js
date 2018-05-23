@@ -11,6 +11,7 @@ define([
     './globusProviders',
     './signinForm',
     './signupForm',
+    'json!../../resources/data/providers.json',
 
     // loaded for effect
     'bootstrap'
@@ -26,7 +27,8 @@ define([
     config,
     GlobusProvidersComponent,
     SigninFormComponent,
-    SignupFormComponent
+    SignupFormComponent, 
+    providers
 ) {
     'use strict';
     
@@ -39,7 +41,7 @@ define([
         a = t('a'),
         b = t('b'),
         p = html.tag('p');
-
+    
     function viewModel (data) {
         var runtime = data.runtime;
         var done = data.done;
@@ -48,17 +50,16 @@ define([
         var policiesToResolve = data.policiesToResolve;
 
         var nextRequest = data.nextRequest;
-
+       
         var staySignedIn = ko.observable(true);
 
         var login = null;
         var create = null;
 
-        var providers = getProviders();
-        var providersList = [
-            providers.Google,
-            providers.Globus
-        ];
+        var providersMap = providers.reduce((providersMap, provider) => {
+            providersMap[provider.id] = provider;
+            return providersMap;
+        }, {});
 
         // UI state
 
@@ -98,8 +99,7 @@ define([
         return {
             runtime: runtime,
             uiState: uiState,
-            providers: providers,
-            providersList: providersList,
+            providers: providersMap,
             nextRequest: nextRequest,
             staySignedIn: staySignedIn,
             choice: choice,
@@ -147,11 +147,6 @@ define([
     function buildSigninStep() {
         return div({
             class: 'col-sm-12',
-            // style: {
-            //     backgroundColor: 'white',
-            //     border: '1px silver solid',
-            //     paddingBottom: '10px'
-            // }
         }, [
             div({}, [
                 div({
@@ -382,54 +377,6 @@ define([
         });
     }
 
-    // function buildOopsWrongGlobusAccount() {
-    //     return BS.buildCollapsiblePanel({
-    //         title: 'Not the account you were expecting??',
-    //         type: 'warning',
-    //         collapsed: true,
-    //         classes: ['kb-panel-help'],
-    //         body: div([
-    //             p([
-    //                 'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
-    //                 'to Globus and back again without any warning.'
-    //             ]),
-    //             p([
-    //                 'If this is not the account you were expecting, you may need to sign out of the identity provider ',
-    //                 'and start the sign-in process again.'
-    //             ]),
-    //             p([
-    //                 'KBase cannot sign you out of an identity provider, but the links below will allow you ',
-    //                 'to do so.'
-    //             ]),
-    //             ul({
-    //                 dataBind: {
-    //                     with: 'providers.Globus'
-    //                 }
-    //             }, li(a({
-    //                 dataBind: {
-    //                     attr: {
-    //                         href: 'logoutUrl'
-    //                     }
-    //                 },
-    //                 target: '_blank'
-    //             }, [
-    //                 'Log out from ',
-    //                 span({
-    //                     dataBind: {
-    //                         text: 'label'
-    //                     }
-    //                 })
-    //             ]))),
-    //             p([
-    //                 'After signing out you will need to start the ',
-    //                 a({
-    //                     href: '#login'
-    //                 }, 'signin'),
-    //                 ' process again.'
-    //             ]),
-    //         ])
-    //     });
-    // }
 
     function buildSignupStep() {
         return div({
@@ -562,57 +509,6 @@ define([
                 }
             }, buildSignupStep()),
         ]);
-    }
-
-    // TODO: load the canonical providers list, and augment with the additional info
-    // logoImage and description.
-    function getProviders() {
-        return {
-            Google: {
-                id: 'Google',
-                label: 'Google',
-                logoutUrl: 'https://accounts.google.com/Logout',
-                logoImage: Plugin.plugin.fullPath + '/providers/google_logo.png',
-                description: div([
-                    p([
-                        'Any Google account may be used to access KBase, including gmail ',
-                        'and organizational services built on the Google Apps platform.'
-                    ])
-                ])
-            },
-            Globus: {
-                id: 'Globus',
-                label: 'Globus',
-                logoutUrl: 'https://www.globus.org/app/logout',
-                logoImage: Plugin.plugin.fullPath + '/providers/globus_logo.png',
-                description: div([
-                    p([
-                        'In addition to Globus ID, required for the Globus Transfer service, ',
-                        'Globus supports many organizational sign-in providers -- your organization may be supported.'
-                    ]),
-                    p([
-                        'Sign-in providers offered by Globus: ',
-                        span({
-                            dataBind: {
-                                component: {
-                                    name: GlobusProvidersComponent.quotedName()
-                                }
-                            }
-                        })
-                    ]),
-                    p([
-                        'KBase accounts created before ',
-                        span({
-                            dataBind: {
-                                text: '$component.config.launchDate'
-                            }
-                        }),
-                        ' utilized Globus ID exclusively.'
-                    ])
-                ])
-            }
-
-        };
     }
 
     function template() {

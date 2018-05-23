@@ -1,14 +1,11 @@
 define([
-    'bluebird',
     'knockout-plus',
     'kb_common/html',
-    'kb_common/domEvent',
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client',
-    'kb_common_ts/HttpClient',
-    'kb_common_ts/Auth2',
     'kb_common_ts/Auth2Error',
     'yaml!../config.yml',
+    'json!../../resources/data/providers.json',
     './errorView',
     './signinForm',
     './signupForm',
@@ -17,16 +14,13 @@ define([
     // loaded for effect
     'bootstrap'
 ], function (
-    Promise,
     ko,
     html,
-    DomEvents,
     BS,
     Plugin,
-    HttpClient,
-    Auth2,
     Auth2Error,
     config,
+    providers,
     ErrorViewComponent,
     SigninFormComponent,
     SignupFormComponent,
@@ -37,50 +31,96 @@ define([
     var t = html.tag,
         div = t('div'),
         span = t('span'),
-        p = html.tag('p'),
-        a = html.tag('a');
+        p = html.tag('p');
 
-    function getProviders() {
-        return {
-            google: {
-                id: 'Google',
-                label: 'Google',
-                description: div([
-                    p([
-                        'Any Google account may be used to access KBase.'
-                    ])
-                ])
-            },
-            globus: {
-                id: 'Globus',
-                label: 'Globus',
-                description: div([
-                    p([
-                        'Use your existing Globus ID or  ',
-                        a({
-                            href: 'https://www.globusid.org/create',
-                            target: 'globus_create'
-                        }, 'create a new one'), 
-                        '.'
-                    ]),
-                    // p([
-                    //     'Search here for sign-in providers offered by Globus: ',
-                    //     span({
-                    //         dataBind: {
-                    //             component: {
-                    //                 name: '"globus-providers"'
-                    //             }
-                    //         }
-                    //     })
-                    // ]),
-                    p([
-                        'KBase accounts created before ',
-                        config.launchDate,
-                        ' utilized Globus ID exclusively.'
-                    ])
-                ])
+    function viewModel(params) {
+        var runtime = params.runtime;
+        var done = params.done;
+
+        var choice = params.choice;
+
+        var policiesToResolve = params.policiesToResolve;
+
+        var nextRequest = params.nextRequest;
+
+        // UI state
+        var uiState = {
+            auth: ko.observable(false),
+            signin: ko.observable(false),
+            signup: ko.observable(false),
+            error: ko.observable(false),
+            signedup: ko.observable(false)
+        };
+        if (choice) {
+            uiState.auth(true);
+            if (choice.login.length === 1) {
+                uiState.signin(true);
+            } else {
+                uiState.signup(true);
             }
+        }
 
+        function loginStart(runtime, providerId, state) {
+            runtime.service('session').getClient().loginCancel()
+                .catch(Auth2Error.AuthError, function (err) {
+                    // ignore this specific error...
+                    if (err.code !== '10010') {
+                        throw err;
+                    }
+                })
+                .catch(function (err) {
+                    // TODO: show error.
+                    console.error('Skipping error', err);
+                })
+                .finally(function () {
+                    //  don 't care whether it succeeded or failed.
+                    return runtime.service('session').loginStart({
+                        // TODO: this should be either the redirect url passed in 
+                        // or the dashboard.
+                        // We just let the login page do this. When the login page is 
+                        // entered with a valid token, redirect to the nextrequest,
+                        // and if that is empty, the dashboard.
+                        state: state,
+                        provider: providerId
+                    });
+                });
+        }
+
+        function doSignin(data) {
+            data.loading(true);
+            data.disabled(true);
+            loginStart(runtime, data.id, {
+                nextrequest: nextRequest,
+                origin: 'signup'
+            });
+        }
+
+        var error = ko.observable();
+        var isError = ko.pureComputed(function () {
+            if (error()) {
+                return true;
+            }
+            return false;
+        });
+
+        // no assumptions ... this is set by the signup component, if any.
+        var signupState = ko.observable();
+
+        return {
+            runtime: runtime,
+            uiState: uiState,
+            providers: providers,
+            // providers: providersMap,
+            nextRequest: nextRequest,
+            choice: choice,
+            policiesToResolve: policiesToResolve,
+            doSignin: doSignin,
+            signupState: signupState,
+            error: error,
+            isError: isError,
+            assetsPath: Plugin.plugin.fullPath,
+            config: config,
+            done: done
         };
     }
 
@@ -91,14 +131,13 @@ define([
                 display: 'inline-block'
             }
         }, [
+            '<!-- ko foreach: providers -->',
+            '<!-- ko if: priority === 1 -->',
             div({
                 class: 'row',
                 style: {
                     marginBottom: '20px'
                 },
-                dataBind: {
-                    with: 'providers.google'
-                }
             }, [
                 div({
                     class: 'col-md-3'
@@ -132,6 +171,8 @@ define([
                     }
                 }))
             ]),
+            '<!-- /ko -->',
+            '<!-- /ko -->',
 
             BS.buildCollapsiblePanel({
                 collapsed: true,
@@ -141,43 +182,46 @@ define([
                     marginBottom: '0'
                 },
                 title: 'Additional providers',
-                body: div({
-                    class: 'row',
-                    dataBind: {
-                        with: 'providers.globus'
-                    }
-                }, [
+                body: [
+                    '<!-- ko foreach: providers -->',
+                    '<!-- ko if: priority === 2 -->',                
                     div({
-                        class: 'col-md-3'
-                    }, div({
-                        dataBind: {
-                            component: {
-                                name: SigninButtonComponent.quotedName(),
-                                params: {
-                                    provider: '$data',
-                                    runtime: '$component.runtime',
-                                    nextRequest: '$component.nextRequest',
-                                    assetsPath: '$component.assetsPath',
-                                    origin: '"signup"'
+                        class: 'row',
+                    }, [
+                        div({
+                            class: 'col-md-3'
+                        }, div({
+                            dataBind: {
+                                component: {
+                                    name: SigninButtonComponent.quotedName(),
+                                    params: {
+                                        provider: '$data',
+                                        runtime: '$component.runtime',
+                                        nextRequest: '$component.nextRequest',
+                                        assetsPath: '$component.assetsPath',
+                                        origin: '"signup"'
+                                    }
                                 }
                             }
-                        }
-                    })),
-                    div({
-                        class: 'col-md-9',
-                        style: {
-                            textAlign: 'left'
-                        }
-                    }, div({
-                        style: {
-                            margin: '4px',
-                            padding: '4px'
-                        },
-                        dataBind: {
-                            html: 'description'
-                        }
-                    }))
-                ]),
+                        })),
+                        div({
+                            class: 'col-md-9',
+                            style: {
+                                textAlign: 'left'
+                            }
+                        }, div({
+                            style: {
+                                margin: '4px',
+                                padding: '4px'
+                            },
+                            dataBind: {
+                                html: 'description'
+                            }
+                        }))
+                    ]),
+                    '<!-- /ko -->',
+                    '<!-- /ko -->'
+                ]
             })
         ]);
     }
@@ -237,7 +281,7 @@ define([
                     style: {
                         verticalAlign: 'middle'
                     }
-                }, 'Sign in with one of our supported sign-in providers')
+                }, 'Sign up with one of our supported sign-in providers')
             ]),
             div({
                 dataBind: {
@@ -334,8 +378,8 @@ define([
                     maxWidth: '60em'
                 }
             }, [
-                'When you sign up for KBase, you can use your existing Google or Globus account (or create a new one), ',
-                'and it will be linked to your new KBase account during the sign-up process. ',
+                'You sign up for KBase with an existing or new Google, ORCiD or Globus account. ',
+                'The Google, ORCiD or Globus account will be linked to your new KBase account during the sign-up process. ',
             ]),
             div({
                 class: 'well',
@@ -607,103 +651,7 @@ define([
         ]);
     }
 
-    function viewModel(params) {
-        var runtime = params.runtime;
-        var done = params.done;
-
-        var choice = params.choice;
-
-        var policiesToResolve = params.policiesToResolve;
-
-        var providersInfo = getProviders();
-
-        var providersMap = {};
-        runtime.service('session').getProviders().forEach(function (provider) {
-            provider.description = providersInfo[provider.id.toLowerCase()].description;
-            providersMap[provider.id.toLowerCase()] = provider;
-        });
-
-        var nextRequest = params.nextRequest;
-
-        // UI state
-        var uiState = {
-            auth: ko.observable(false),
-            signin: ko.observable(false),
-            signup: ko.observable(false),
-            error: ko.observable(false),
-            signedup: ko.observable(false)
-        };
-        if (choice) {
-            uiState.auth(true);
-            if (choice.login.length === 1) {
-                uiState.signin(true);
-            } else {
-                uiState.signup(true);
-            }
-        }
-
-        function loginStart(runtime, providerId, state) {
-            runtime.service('session').getClient().loginCancel()
-                .catch(Auth2Error.AuthError, function (err) {
-                    // ignore this specific error...
-                    if (err.code !== '10010') {
-                        throw err;
-                    }
-                })
-                .catch(function (err) {
-                    // TODO: show error.
-                    console.error('Skipping error', err);
-                })
-                .finally(function () {
-                    //  don 't care whether it succeeded or failed.
-                    return runtime.service('session').loginStart({
-                        // TODO: this should be either the redirect url passed in 
-                        // or the dashboard.
-                        // We just let the login page do this. When the login page is 
-                        // entered with a valid token, redirect to the nextrequest,
-                        // and if that is empty, the dashboard.
-                        state: state,
-                        provider: providerId
-                    });
-                });
-        }
-
-        function doSignin(data) {
-            data.loading(true);
-            data.disabled(true);
-            loginStart(runtime, data.id, {
-                nextrequest: nextRequest,
-                origin: 'signup'
-            });
-        }
-
-        var error = ko.observable();
-        var isError = ko.pureComputed(function () {
-            if (error()) {
-                return true;
-            }
-            return false;
-        });
-
-        // no assumptions ... this is set by the signup component, if any.
-        var signupState = ko.observable();
-
-        return {
-            runtime: runtime,
-            uiState: uiState,
-            providers: providersMap,
-            nextRequest: nextRequest,
-            choice: choice,
-            policiesToResolve: policiesToResolve,
-            doSignin: doSignin,
-            signupState: signupState,
-            error: error,
-            isError: isError,
-            assetsPath: Plugin.plugin.fullPath,
-            config: config,
-            done: done
-        };
-    }
+    
 
     function component() {
         return {
