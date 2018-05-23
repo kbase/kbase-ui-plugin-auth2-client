@@ -1,9 +1,12 @@
 define([
     'bluebird',
-    'kb_common/html'
+    'kb_common/html',
+    'json!../resources/data/providers.json',
+
 ], function (
     Promise,
-    html
+    html,
+    providers
 ) {
     'use strict';
 
@@ -19,8 +22,7 @@ define([
         var runtime = config.runtime;
 
         // UI
-
-
+        
         // VIEW
 
         function render() {
@@ -49,21 +51,17 @@ define([
                     p([
                         'If you wish to ensure that your KBase account is inaccessible from this ',
                         'browser, ',
-                        'you should sign out of any Google or Globus account as well.'
+                        'you should sign out of any accounts you have used to access KBase as well.'
                     ]),
-                    ul(runtime.service('session').getProviders()
+                    ul(providers
                         .sort(function (a, b) {
-                            if (a.id === 'Google') {
-                                return -1;
-                            } else if (b.id === 'Google') {
-                                return 1;
+                            let priorityOrder = a.priority - b.priority;
+                            if (priorityOrder !== 0) {
+                                return priorityOrder;
                             }
-                            if (a.id < b.id) {
-                                return -1;
-                            } else if (a.id > b.id) {
-                                return 1;
-                            }
-                            return 0;
+
+                            let labelOrder = a.label < b.label ? -1 : (a.label > b.label ? 0 : 1);
+                            return labelOrder;
                         })
                         .map(function (provider) {
                             return li(a({

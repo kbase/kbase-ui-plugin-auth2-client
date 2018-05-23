@@ -2,17 +2,11 @@ define([
     'bluebird',
     'knockout-plus',
     'kb_common/html',
-    'kb_common/domEvent',
-    'kb_common/bootstrapUtils',
-    'kb_plugin_auth2-client',
-    'kb_common_ts/HttpClient',
-    'kb_common_ts/Auth2',
     'kb_common_ts/Auth2Error',
-    './lib/utilsKO',
-    './widgets/errorWidget',
     './lib/policies',
     './lib/format',
     './lib/countdownClock',
+    'json!../resources/data/providers.json',
     './components/errorView',
     './components/signinView',
 
@@ -22,17 +16,11 @@ define([
     Promise,
     ko,
     html,
-    DomEvents,
-    BS,
-    Plugin,
-    HttpClient,
-    Auth2,
     Auth2Error,
-    Utils,
-    ErrorWidget,
     Policies,
     Format,
     CountDownClock,
+    providers,
     ErrorViewComponent,
     SigninViewComponent
 ) {
@@ -43,6 +31,11 @@ define([
         span = t('span'),
         p = t('p'),
         a = t('a');
+
+    var providersMap = providers.reduce((providersMap, provider) => {
+        providersMap[provider.id] = provider;
+        return providersMap;
+    }, {});
 
     function Query(search) {
         var query = {};
@@ -276,11 +269,13 @@ define([
                         .then(function (policiesToResolve) {
                             var step;
 
-                            // If no policies to resolve and google auth provider then just
-                            // auto-signin.
+                            var provider = providersMap[choice.provider];
+
+                            // If no policies to resolve and auth provider does not require signin
+                            // confirmation, then just auto-signin.
                             if (policiesToResolve.missing.length === 0 &&
                                 policiesToResolve.outdated.length === 0 &&
-                                choice.provider === 'Google') {
+                                !provider.confirmSignin) {
                                 return doSignIn(choice, stateParams.nextrequest);
                             }
 

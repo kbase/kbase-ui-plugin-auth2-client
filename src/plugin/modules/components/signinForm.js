@@ -1,23 +1,17 @@
 define([
     'knockout-plus',
-    'bluebird',
     'kb_common/html',
-    'kb_common/domEvent2',
-    'kb_common/ui',
     'kb_common_ts/Auth2Error',
-    'kb_plugin_auth2-client',
     'kb_common/bootstrapUtils',
-    './policyResolver'
+    './policyResolver',
+    'json!../../resources/data/providers.json'
 ], function (
     ko,
-    Promise,
     html,
-    DomEvent,
-    UI,
     Auth2Error,
-    Plugin,
     BS,
-    PolicyResolverComponent
+    PolicyResolverComponent,
+    providers
 ) {
     'use strict';
 
@@ -175,6 +169,99 @@ define([
         });
     }
 
+    function buildOrcIDOops() {
+        return BS.buildCollapsiblePanel({
+            title: 'Not the account you were expecting?',
+            type: 'warning',
+            collapsed: true,
+            classes: ['kb-panel-help'],
+            body: div([
+                div({
+                    dataBind: {
+                        if: '$component.source === "signin"'
+                    }
+                }, [
+                    p([
+                        'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
+                        'to ORCiD and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of ORCiD, and then try agin.'
+                    ])
+                ]),
+                div({
+                    dataBind: {
+                        if: '$component.source === "signup"'
+                    }
+                }, [
+                    p([
+                        'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
+                        'to ORCiD and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of ORCiD, and then try agin.'
+                    ]),
+                    p([
+                        'If you have signed in with a ORCiD account already linked to a KBase account, you will be unable ',
+                        'to create a new KBase account using that ORCiD account. '
+                    ]),
+                ]),
+                // p([
+                //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+                //     'to do so.'
+                // ]),
+                div({
+                    style: {
+                        marginBottom: '5px'
+                    },
+                    dataBind: {
+                        with: 'providersMap.OrcID'
+                    }
+                }, [
+                    span({
+                        class: 'fa fa-external-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        dataBind: {
+                            attr: {
+                                href: 'logoutUrl'
+                            }
+                        },
+                        target: '_blank'
+                    }, [
+                        'Log out from ',
+                        span({
+                            dataBind: {
+                                text: 'label'
+                            }
+                        })
+                    ])
+                ]),
+                p([
+                    'After signing out you will need to '
+                ]),
+                p([
+                    span({
+                        class: 'fa fa-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        href: '#login'
+                    }, 'Sign in to KBase again')
+                ])
+            ])
+        });
+    }
+
     function buildGoogleOops() {
         return BS.buildCollapsiblePanel({
             title: 'Not the account you were expecting?',
@@ -251,6 +338,11 @@ define([
                     if: '$component.choice.provider === "Globus"'
                 }
             }, buildGlobusOops()),
+            div({
+                dataBind: {
+                    if: '$component.choice.provider === "OrcID"'
+                }
+            }, buildOrcIDOops()),
             div({
                 dataBind: {
                     if: '$component.choice.provider === "Google"'
@@ -430,19 +522,6 @@ define([
                 });
         }
 
-        var providers = runtime.service('session').getProviders().sort(function (a, b) {
-            if (a.id === 'Google') {
-                return -1;
-            } else if (b.id === 'Google') {
-                return 1;
-            }
-            if (a.id < b.id) {
-                return -1;
-            } else if (a.id > b.id) {
-                return 1;
-            }
-            return 0;
-        });
         var providersMap = {};
         providers.forEach(function (provider) {
             providersMap[provider.id] = provider;
@@ -452,7 +531,6 @@ define([
             runtime: runtime,
             choice: choice,
             login: login,
-            providers: providers,
             providersMap: providersMap,
             canSignin: canSignin,
             doSigninSubmit: doSigninSubmit,

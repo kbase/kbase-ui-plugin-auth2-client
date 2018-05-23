@@ -3,13 +3,15 @@ define([
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
-    'kb_plugin_auth2-client'
+    'kb_plugin_auth2-client',    
+    'json!../../resources/data/providers.json'
 ], function (
     Promise,
     html,
     DomEvents,
     BS,
-    Plugin
+    Plugin,
+    providers
 ) {
     'use strict';
     var // t = html.tagMaker(),
@@ -27,6 +29,11 @@ define([
         button = t('button'),
         form = t('form'),
         input = t('input');
+
+    var providersMap = providers.reduce((providersMap, provider) => {
+        providersMap[provider.id] = provider;
+        return providersMap;
+    }, {});
 
     function factory(config) {
         var runtime = config.runtime;
@@ -63,7 +70,7 @@ define([
                         marginRight: '4px'
                     }
                 }, img({
-                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
+                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '/logo.png',
                     style: {
                         height: '24px'
                     }
@@ -128,7 +135,6 @@ define([
         }
 
         function buildLinkForm(events) {
-            var providers = runtime.service('session').getProviders();
             var providerControlId = html.genId();
             var providerMenuId = html.genId();
             var providerMenuLabelId = html.genId();
@@ -307,7 +313,7 @@ define([
                                         tooltip = 'Since this is the only external sign-in account linked to your KBase account, you cannot unlink it';
                                     }
                                     return tr([
-                                        td(buildProviderLabel(runtime.service('session').getClient().getClient().getProvider(identity.provider))),
+                                        td(buildProviderLabel(providersMap[identity.provider])),
                                         td(identity.provusername),
                                         td(button({
                                             class: 'btn btn-danger',
@@ -352,7 +358,6 @@ define([
                     ])
                 }, {
                     name: 'about',
-                    // label: 'About',
                     icon: 'info-circle',
                     content: div({
                         style: {

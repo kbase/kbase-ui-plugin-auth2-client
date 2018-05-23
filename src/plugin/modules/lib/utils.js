@@ -68,7 +68,7 @@ define([
                     }
                 },
                 img({
-                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
+                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '/logo.png',
                     style: {
                         height: '24px'
                     }
@@ -96,7 +96,7 @@ define([
                 }
             }, [
                 img({
-                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '_logo.png',
+                    src: Plugin.plugin.fullPath + '/providers/' + provider.id.toLowerCase() + '/logo.png',
                     style: {
                         height: '24px',
                         marginRight: '10px',

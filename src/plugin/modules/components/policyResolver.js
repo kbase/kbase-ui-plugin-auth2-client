@@ -137,7 +137,7 @@ define([
                                 'You have agreed to this policy.'
                             ]),
                             p([
-                                'To show the agreement again, uncheck the agreement above.'
+                                'To show the agreement again, uncheck the agreement.'
                             ])
                         ])
                     ])
