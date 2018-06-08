@@ -1,34 +1,22 @@
 define([
-    'bluebird',
     'knockout-plus',
     'kb_common/html',
-    'kb_common/domEvent',
     'kb_common/bootstrapUtils',
-    'kb_plugin_auth2-client',
-    'kb_common_ts/HttpClient',
-    'kb_common_ts/Auth2',
     'yaml!../config.yml',
-    './globusProviders',
     './signinForm',
     './signupForm',
-    'json!../../resources/data/providers.json',
+    '../lib/provider',
 
     // loaded for effect
     'bootstrap'
 ], function (
-    Promise,
     ko,
     html,
-    DomEvents,
     BS,
-    Plugin,
-    HttpClient,
-    Auth2,
     config,
-    GlobusProvidersComponent,
     SigninFormComponent,
     SignupFormComponent, 
-    providers
+    provider
 ) {
     'use strict';
     
@@ -55,6 +43,8 @@ define([
 
         var login = null;
         var create = null;
+
+        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
 
         var providersMap = providers.reduce((providersMap, provider) => {
             providersMap[provider.id] = provider;
@@ -377,6 +367,99 @@ define([
         });
     }
 
+    function buildOrcidOops() {
+        return BS.buildCollapsiblePanel({
+            title: 'Not the account you were expecting?',
+            type: 'warning',
+            collapsed: true,
+            classes: ['kb-panel-help'],
+            body: div([
+                div({
+                    dataBind: {
+                        if: '$component.source() === "signin"'
+                    }
+                }, [
+                    p([
+                        'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
+                        'to ORCiD and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of ORCiD, and then try agin.'
+                    ])
+                ]),
+                div({
+                    dataBind: {
+                        if: '$component.source() === "signup"'
+                    }
+                }, [
+                    p([
+                        'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
+                        'to Globus and back again without any warning.'
+                    ]),
+                    p([
+                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                        'to log out of ORCiD, and then try agin.'
+                    ]),
+                    p([
+                        'If you have signed in with a Globus account already linked to a KBase account, you will be unable ',
+                        'to create a new KBase account using that Globus account. '
+                    ]),
+                ]),
+                // p([
+                //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
+                //     'to do so.'
+                // ]),
+                div({
+                    style: {
+                        marginBottom: '5px'
+                    },
+                    dataBind: {
+                        with: 'providers.OrcID'
+                    }
+                }, [
+                    span({
+                        class: 'fa fa-external-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        dataBind: {
+                            attr: {
+                                href: 'logoutUrl'
+                            }
+                        },
+                        target: '_blank'
+                    }, [
+                        'Log out from ',
+                        span({
+                            dataBind: {
+                                text: 'label'
+                            }
+                        })
+                    ])
+                ]),
+                p([
+                    'After signing out you will need to '
+                ]),
+                p([
+                    span({
+                        class: 'fa fa-link',
+                        style: {
+                            marginLeft: '10px',
+                            marginRight: '5px'
+                        }
+                    }),
+                    a({
+                        href: '#login'
+                    }, 'Sign in to KBase again')
+                ])
+            ])
+        });
+    }
+
 
     function buildSignupStep() {
         return div({
@@ -434,9 +517,12 @@ define([
                             dataBind: {
                                 if: 'choice.provider === "Globus"'
                             }
-                        }, buildGlobusOops()
-                            // buildOopsWrongGlobusAccount()
-                        ),
+                        }, buildGlobusOops()),
+                        div({
+                            dataBind: {
+                                if: 'choice.provider === "OrcID"'
+                            }
+                        }, buildOrcidOops()),
                         div({
                             dataBind: {
                                 if: 'choice.provider === "Google"'

@@ -4,7 +4,7 @@ define([
     'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'yaml!../config.yml',
-    'json!../../resources/data/providers.json',
+    '../lib/provider',
     './signinButton',
 
     // for effect
@@ -15,7 +15,7 @@ define([
     Auth2Error,
     Plugin,
     config,
-    providersData,
+    provider,
     SigninButtonComponent
 ) {
     'use strict';
@@ -454,15 +454,29 @@ define([
         // TODO; populate from session, as above.
         var username = runtime.service('session').getUsername();
 
-        var providers = providersData.sort(function (a, b) {
-            let priorityOrder = a.priority - b.priority;
-            if (priorityOrder !== 0) {
-                return priorityOrder;
-            }
+        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
 
-            let labelOrder = a.label < b.label ? -1 : (a.label > b.label ? 0 : 1);
-            return labelOrder;
-        });
+        // var providers = providersData
+        //     .filter(function (provider) {
+        //         if (provider.allow) {
+        //             if (intersect(provider.allow, runtime.config('ui.allow'))) {
+        //                 return true;
+        //             } else {
+        //                 return false;
+        //             }
+        //         } else {
+        //             return true;
+        //         }
+        //     })
+        //     .sort(function (a, b) {
+        //         let priorityOrder = a.priority - b.priority;
+        //         if (priorityOrder !== 0) {
+        //             return priorityOrder;
+        //         }
+
+        //         let labelOrder = a.label < b.label ? -1 : (a.label > b.label ? 0 : 1);
+        //         return labelOrder;
+        //     });
 
         function doSignup() {
             runtime.service('session').getClient().loginCancel()

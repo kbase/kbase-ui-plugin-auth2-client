@@ -5,7 +5,7 @@ define([
     'kb_plugin_auth2-client',
     'kb_common_ts/Auth2Error',
     'yaml!../config.yml',
-    'json!../../resources/data/providers.json',
+    '../lib/provider',
     './errorView',
     './signinForm',
     './signupForm',
@@ -20,7 +20,7 @@ define([
     Plugin,
     Auth2Error,
     config,
-    providers,
+    provider,
     ErrorViewComponent,
     SigninFormComponent,
     SignupFormComponent,
@@ -106,11 +106,12 @@ define([
         // no assumptions ... this is set by the signup component, if any.
         var signupState = ko.observable();
 
+        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
+
         return {
             runtime: runtime,
             uiState: uiState,
             providers: providers,
-            // providers: providersMap,
             nextRequest: nextRequest,
             choice: choice,
             policiesToResolve: policiesToResolve,
