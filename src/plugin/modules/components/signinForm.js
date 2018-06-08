@@ -4,14 +4,14 @@ define([
     'kb_common_ts/Auth2Error',
     'kb_common/bootstrapUtils',
     './policyResolver',
-    'json!../../resources/data/providers.json'
+    '../lib/provider'
 ], function (
     ko,
     html,
     Auth2Error,
     BS,
     PolicyResolverComponent,
-    providers
+    provider
 ) {
     'use strict';
 
@@ -521,6 +521,8 @@ define([
                     // });
                 });
         }
+
+        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
 
         var providersMap = {};
         providers.forEach(function (provider) {

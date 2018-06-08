@@ -17,7 +17,8 @@
         "confirmSignin": true,
         "description": [
             "Use your ORCiD account to access KBase"
-        ]
+        ],
+        "allow": ["alpha"]
     },
     {
         "id": "Globus",

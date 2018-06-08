@@ -3,15 +3,15 @@ define([
     'kb_common/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
-    'kb_plugin_auth2-client',    
-    'json!../../resources/data/providers.json'
+    'kb_plugin_auth2-client',
+    '../lib/provider'
 ], function (
     Promise,
     html,
     DomEvents,
     BS,
     Plugin,
-    providers
+    provider
 ) {
     'use strict';
     var // t = html.tagMaker(),
@@ -30,13 +30,16 @@ define([
         form = t('form'),
         input = t('input');
 
-    var providersMap = providers.reduce((providersMap, provider) => {
-        providersMap[provider.id] = provider;
-        return providersMap;
-    }, {});
-
     function factory(config) {
         var runtime = config.runtime;
+        
+        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
+
+        var providersMap = providers.reduce((providersMap, provider) => {
+            providersMap[provider.id] = provider;
+            return providersMap;
+        }, {});
+    
         var hostNode, container;
         var vm = {
             identities: {

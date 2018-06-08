@@ -1,12 +1,9 @@
 define([
-    'bluebird',
     'kb_common/html',
-    'json!../resources/data/providers.json',
-
+    './lib/provider',
 ], function (
-    Promise,
     html,
-    providers
+    provider
 ) {
     'use strict';
 
@@ -20,6 +17,8 @@ define([
     function factory(config) {
         var hostNode, container;
         var runtime = config.runtime;
+
+        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
 
         // UI
         

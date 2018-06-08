@@ -6,7 +6,7 @@ define([
     './lib/policies',
     './lib/format',
     './lib/countdownClock',
-    'json!../resources/data/providers.json',
+    './lib/provider',
     './components/errorView',
     './components/signinView',
 
@@ -20,7 +20,7 @@ define([
     Policies,
     Format,
     CountDownClock,
-    providers,
+    provider,
     ErrorViewComponent,
     SigninViewComponent
 ) {
@@ -31,11 +31,6 @@ define([
         span = t('span'),
         p = t('p'),
         a = t('a');
-
-    var providersMap = providers.reduce((providersMap, provider) => {
-        providersMap[provider.id] = provider;
-        return providersMap;
-    }, {});
 
     function Query(search) {
         var query = {};
@@ -237,6 +232,14 @@ define([
                     path: 'dashboard'
                 });
             }
+
+            var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
+    
+            var providersMap = providers.reduce((providersMap, provider) => {
+                providersMap[provider.id] = provider;
+                return providersMap;
+            }, {});
+
 
             runtime.send('ui', 'setTitle', 'KBase Sign-In');
             return runtime.service('session').getClient().getClient().getLoginChoice()
