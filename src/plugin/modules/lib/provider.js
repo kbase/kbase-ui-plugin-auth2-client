@@ -5,22 +5,13 @@ define([
 ) {
     'use strict';
 
-    function intersect(a1, a2) {
-        return a1.some(function (a) {
-            return a2.includes(a);
-        });
-    }
-
     class Providers {
-        constructor({allowed}) {
+        constructor({runtime}) {
+            this.providerWhitelist = runtime.config('services.auth2.providers');
             this.providers = providersData
                 .filter((provider) => {
-                    if (provider.allow) {
-                        if (intersect(provider.allow, allowed)) {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                    if (this.providerWhitelist) {
+                        return this.providerWhitelist.includes(provider.id);
                     } else {
                         return true;
                     }

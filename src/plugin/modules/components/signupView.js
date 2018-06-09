@@ -106,7 +106,7 @@ define([
         // no assumptions ... this is set by the signup component, if any.
         var signupState = ko.observable();
 
-        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
+        var providers = new provider.Providers({runtime: runtime}).get();
 
         return {
             runtime: runtime,
