@@ -18,7 +18,7 @@ define([
         var hostNode, container;
         var runtime = config.runtime;
 
-        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
+        var providers = new provider.Providers({runtime: runtime}).get();
 
         // UI
         

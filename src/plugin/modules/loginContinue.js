@@ -233,7 +233,7 @@ define([
                 });
             }
 
-            var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
+            var providers = new provider.Providers({runtime: runtime}).get();
     
             var providersMap = providers.reduce((providersMap, provider) => {
                 providersMap[provider.id] = provider;

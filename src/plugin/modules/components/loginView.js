@@ -454,7 +454,7 @@ define([
         // TODO; populate from session, as above.
         var username = runtime.service('session').getUsername();
 
-        var providers = new provider.Providers({allowed: runtime.config('ui.allow')}).get();
+        var providers = new provider.Providers({runtime: runtime}).get();
 
         // var providers = providersData
         //     .filter(function (provider) {
