@@ -5,7 +5,6 @@ package:
     name: auth2-client
     description: Auth2 client plugin
     date: Feb 14, 2017
-    version: 0.0.1
 source:
     modules:
     styles:
@@ -126,3 +125,12 @@ install:
             path: [auth2, account]
             label: Account
             icon: user-circle-o
+    coreServices:
+        dependencies:
+            auth2:
+                version:
+                    minimum: 0.2.5
+                providers: ['Google', 'Globus', 'OrcID']
+            userProfile:
+                version:
+                    minimum: 0.2.0
