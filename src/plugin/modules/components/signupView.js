@@ -1,5 +1,7 @@
 define([
-    'knockout-plus',
+    'knockout',
+    'kb_knockout/registry',
+    'kb_knockout/lib/generators',
     'kb_common/html',
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client',
@@ -15,6 +17,8 @@ define([
     'bootstrap'
 ], function (
     ko,
+    reg,
+    gen,
     html,
     BS,
     Plugin,
@@ -106,7 +110,7 @@ define([
         // no assumptions ... this is set by the signup component, if any.
         var signupState = ko.observable();
 
-        var providers = new provider.Providers({runtime: runtime}).get();
+        var providers = new provider.Providers({runtime}).get();
 
         return {
             runtime: runtime,
@@ -132,62 +136,13 @@ define([
                 display: 'inline-block'
             }
         }, [
-            '<!-- ko foreach: providers -->',
-            '<!-- ko if: priority === 1 -->',
-            div({
-                class: 'row',
-                style: {
-                    marginBottom: '20px'
-                },
-            }, [
-                div({
-                    class: 'col-md-3'
-                }, div({
-                    dataBind: {
-                        component: {
-                            name: SigninButtonComponent.quotedName(),
-                            params: {
-                                provider: '$data',
-                                runtime: '$component.runtime',
-                                nextRequest: '$component.nextRequest',
-                                assetsPath: '$component.assetsPath',
-                                origin: '"signup"'
-                            }
-                        }
-                    }
-                })),
-                div({
-                    class: 'col-md-9',
-                    style: {
-                        textAlign: 'left',
-                        paddingTop: '4px'
-                    }
-                }, div({
-                    style: {
-                        margin: '4px',
-                        padding: '4px'
-                    },
-                    dataBind: {
-                        html: 'description'
-                    }
-                }))
-            ]),
-            '<!-- /ko -->',
-            '<!-- /ko -->',
-
-            BS.buildCollapsiblePanel({
-                collapsed: true,
-                type: 'default',
-                classes: ['kb-panel-light', '-lighter'],
-                style: {
-                    marginBottom: '0'
-                },
-                title: 'Additional providers',
-                body: [
-                    '<!-- ko foreach: providers -->',
-                    '<!-- ko if: priority === 2 -->',                
+            gen.foreach('providers', 
+                gen.if('priority === 1', 
                     div({
                         class: 'row',
+                        style: {
+                            marginBottom: '20px'
+                        },
                     }, [
                         div({
                             class: 'col-md-3'
@@ -208,7 +163,8 @@ define([
                         div({
                             class: 'col-md-9',
                             style: {
-                                textAlign: 'left'
+                                textAlign: 'left',
+                                paddingTop: '4px'
                             }
                         }, div({
                             style: {
@@ -216,13 +172,55 @@ define([
                                 padding: '4px'
                             },
                             dataBind: {
-                                html: 'description'
+                                markdown: 'description'
                             }
                         }))
-                    ]),
-                    '<!-- /ko -->',
-                    '<!-- /ko -->'
-                ]
+                    ]))),
+                    
+            BS.buildCollapsiblePanel({
+                collapsed: true,
+                type: 'default',
+                classes: ['kb-panel-light', '-lighter'],
+                style: {
+                    marginBottom: '0'
+                },
+                title: 'Additional providers',
+                body:  gen.foreach('providers', 
+                    gen.if('priority === 2',
+                        div({
+                            class: 'row',
+                        }, [
+                            div({
+                                class: 'col-md-3'
+                            }, div({
+                                dataBind: {
+                                    component: {
+                                        name: SigninButtonComponent.quotedName(),
+                                        params: {
+                                            provider: '$data',
+                                            runtime: '$component.runtime',
+                                            nextRequest: '$component.nextRequest',
+                                            assetsPath: '$component.assetsPath',
+                                            origin: '"signup"'
+                                        }
+                                    }
+                                }
+                            })),
+                            div({
+                                class: 'col-md-9',
+                                style: {
+                                    textAlign: 'left'
+                                }
+                            }, div({
+                                style: {
+                                    margin: '4px',
+                                    padding: '4px'
+                                },
+                                dataBind: {
+                                    markdown: 'description'
+                                }
+                            }))
+                        ]))),
             })
         ]);
     }
@@ -308,22 +306,7 @@ define([
                             fontWeight: 'bold'
                         }
                     })
-                ]),
-                // '<!-- ko if: uiState.complete() -->',
-                // p([
-                //     'Now you are ready to create your KBase account below, ',
-                //     'which will be linked to this ',
-                //     span({
-                //         dataBind: {
-                //             text: 'choice.provider'
-                //         },
-                //         style: {
-                //             fontWeight: 'bold'
-                //         }
-                //     }),
-                //     ' account.'
-                // ]),
-                // '<!-- /ko -->'
+                ])
             ]), div({
                 dataBind: {
                     if: 'choice.login.length === 1'
@@ -353,6 +336,21 @@ define([
         ]);
     }
 
+    function buildProvidersList() {
+        return gen.foreach('providers', span([
+            span({
+                dataBind: {
+                    text: 'label'
+                }
+            }),                  
+            gen.switch('$parent.providers.length - $index()', [
+                ['1', ''],
+                ['2', ' or '],
+                ['$default', ', ']
+            ])
+        ]));
+    }
+
     function buildStep1Active() {
         return div({
             style: {
@@ -379,8 +377,12 @@ define([
                     maxWidth: '60em'
                 }
             }, [
-                'You sign up for KBase with an existing or new Google, ORCiD or Globus account. ',
-                'The Google, ORCiD or Globus account will be linked to your new KBase account during the sign-up process. ',
+                'You may sign up for KBase with an existing or new ',
+                buildProvidersList(),                
+                ' account. ',
+                'The ', 
+                buildProvidersList(),
+                ' account will be linked to your new KBase account during the sign-up process. ',
             ]),
             div({
                 class: 'well',
@@ -566,21 +568,20 @@ define([
                         }, 'KBase account successfully created'))
                     ]))
                 ]),
-                '<!-- ko if: signupState() === "incomplete" -->',
-                p([
-                    'Now you are ready to create your KBase account below, ',
-                    'which will be linked to this ',
-                    span({
-                        dataBind: {
-                            text: 'choice.provider'
-                        },
-                        style: {
-                            fontWeight: 'bold'
-                        }
-                    }),
-                    ' account.'
-                ]),
-                '<!-- /ko -->',
+                gen.if('signupState() === "incomplete"',
+                    p([
+                        'Now you are ready to create your KBase account below, ',
+                        'which will be linked to this ',
+                        span({
+                            dataBind: {
+                                text: 'choice.provider'
+                            },
+                            style: {
+                                fontWeight: 'bold'
+                            }
+                        }),
+                        ' account.'
+                    ])),
                 div({
                     dataBind: {
                         component: {
@@ -652,13 +653,12 @@ define([
         ]);
     }
 
-    
-
     function component() {
         return {
             viewModel: viewModel,
             template: template()
         };
     }
-    return ko.kb.registerComponent(component);
+    
+    return reg.registerComponent(component);
 });

@@ -1,5 +1,5 @@
 define([
-    'json!../../resources/data/providers.json',
+    'yaml!../../resources/data/providers.yaml',
 ], function (
     providersData
 ) {

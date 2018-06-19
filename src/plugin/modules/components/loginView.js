@@ -185,7 +185,6 @@ define([
                         })
                     ]),
                     div({
-                        // class: 'btn-group-vertical',
                         style: {
                             width: '100%',
                             display: 'inline-block',
@@ -207,21 +206,6 @@ define([
                             }
                         }
                     }))
-                    // div({
-                    //     style: {
-                    //         marginTop: '0.5em',
-                    //         textAlign: 'center'
-                    //     }
-                    // }, [
-                    //     input({
-                    //         type: 'checkbox',
-                    //         dataBind: {
-                    //             checked: 'isSessionPersistent',
-
-                    //         },
-                    //     }),
-                    //     ' Stay signed in'
-                    // ]),
                 ])),
                 button({
                     dataKBTesthookButton: 'signup',
@@ -443,40 +427,9 @@ define([
 
         var authorized = runtime.service('session').isAuthorized();
 
-        // todo set initial value from sessino service,
-        // udpate session service when the value changes.
-        // var isSessionPersistent = ko.observable(runtime.service('session').getClient().isSessionPersistent());
-
-        // isSessionPersistent.subscribe(function (persist) {
-        //     runtime.service('session').getClient().setSessionPersistent(persist);
-        // });
-
-        // TODO; populate from session, as above.
         var username = runtime.service('session').getUsername();
 
         var providers = new provider.Providers({runtime: runtime}).get();
-
-        // var providers = providersData
-        //     .filter(function (provider) {
-        //         if (provider.allow) {
-        //             if (intersect(provider.allow, runtime.config('ui.allow'))) {
-        //                 return true;
-        //             } else {
-        //                 return false;
-        //             }
-        //         } else {
-        //             return true;
-        //         }
-        //     })
-        //     .sort(function (a, b) {
-        //         let priorityOrder = a.priority - b.priority;
-        //         if (priorityOrder !== 0) {
-        //             return priorityOrder;
-        //         }
-
-        //         let labelOrder = a.label < b.label ? -1 : (a.label > b.label ? 0 : 1);
-        //         return labelOrder;
-        //     });
 
         function doSignup() {
             runtime.service('session').getClient().loginCancel()
@@ -512,7 +465,6 @@ define([
             }
         }
 
-        // var title = ko.observable();
         var tabs = ko.observableArray([{
             name: 'authorization',
             label: 'Authorization Required',
@@ -566,11 +518,9 @@ define([
             assetsPath: Plugin.plugin.fullPath,
             source: source,
             docs: docs,
-            // isSessionPersistent: isSessionPersistent,
             providers: providers,
             authorized: authorized,
             username: username,
-            // doSignin: doSignin,
             doSignup: doSignup,
             doSetSigninMode: doSetSigninMode,
             doSetSignupMode: doSetSignupMode,
