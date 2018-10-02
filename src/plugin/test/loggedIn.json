@@ -1,6 +1,9 @@
 [
     {
         "description": "Logged in already",
+        "disable": {
+            "envs": ["appdev"]
+        },
         "specs": [
             {
                 "description": "Login widget should show username",

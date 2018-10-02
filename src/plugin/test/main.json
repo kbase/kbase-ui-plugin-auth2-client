@@ -1,6 +1,9 @@
 [
     {
         "description": "Signin spec",
+        "disable": {
+            "envs": ["appdev"]
+        },
         "specs": [
             {
                 "description": "Click the signin button",
