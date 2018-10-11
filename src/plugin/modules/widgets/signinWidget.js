@@ -14,6 +14,12 @@ define([
 ) {
     'use strict';
 
+    function cleanText(text) {
+        const n = document.createElement('div');
+        n.textContent = text;
+        return n.innerHTML;
+    }
+
     function myWidget(config) {
         var runtime = config.runtime;
         if (!runtime) {
@@ -93,8 +99,8 @@ define([
                                 // yet.
                                 return;
                             }
-                            var realname = profile.user.realname;
-                            var username = profile.user.username;
+                            var realname = cleanText(profile.user.realname);
+                            var username = cleanText(profile.user.username);
                             return div({
                                 class: 'navbar container-fluid'
                             }, div({
