@@ -11,7 +11,8 @@ define([
     'kb_plugin_auth2-client',
     '../../lib/geoNames',
     '../../lib/dataSource',
-    '../../components/typeaheadInput'
+    '../../components/typeaheadInput',
+    'plugins/user-profile/modules/components/profileView'
 ], function (
     Promise,
     ko,
@@ -25,7 +26,8 @@ define([
     Plugin,
     GeoNames,
     DataSource,
-    TypeaheadInputComponent
+    TypeaheadInputComponent,
+    ProfileViewerComponent
 ) {
     'use strict';
 
@@ -537,8 +539,9 @@ define([
                         },
                         dataBind: {
                             component: {
-                                name: '"profile-view"',
+                                name: ProfileViewerComponent.quotedName(),
                                 params: {
+                                    runtime: 'runtime',
                                     profile: 'exportedProfile()'
                                 }
                             }
@@ -1577,6 +1580,7 @@ define([
         }
 
         return {
+            runtime: runtime,
             // fields being edited or displayed
             profile: {
                 ready: ready,
