@@ -83,7 +83,7 @@ define([
         }
 
         function setContent(parentNode, element, content) {
-            var node = parentNode.querySelector('[data-element=["' + element + ']');
+            var node = parentNode.querySelector('[data-element="' + element + '"');
             if (!node) {
                 return;
             }
@@ -102,7 +102,7 @@ define([
 
         function showError(errorInfo) {
             vm.error.value = errorInfo;
-            vm.error.node.hidden = false;
+            vm.error.node.classList.remove('hidden');
             renderError();
         }
 
@@ -133,7 +133,11 @@ define([
                     return null;
                 })
                 .catch(function (err) {
-                    console.error('ERROR', err);
+                    showError({
+                        name: 'UnLinkError',
+                        message: 'Error with the unlink process',
+                        detail: err.message
+                    });
                 });
         }
 
@@ -355,7 +359,18 @@ define([
                                 }),
                                 div({
                                     dataElement: 'detail'
-                                })
+                                }),
+                                div({
+                                    textAlign: 'center'
+                                }, [
+                                    button({
+                                        class: 'btn btn-primary',
+                                        type: 'button',
+                                        id: events.addEvent('click', function () {
+                                            vm.error.node.classList.add('hidden');
+                                        })
+                                    }, 'Close')
+                                ])
                             ])
                         })
                     ])
@@ -378,6 +393,7 @@ define([
                     marginTop: '10px'
                 }
             }, tabs.content);
+            vm.error.node = container.querySelector('[data-element="error"]');
             events.attachEvents();
         }
 
