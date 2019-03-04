@@ -18,6 +18,8 @@ define([
         // datasource is an object with the method "search"...
         var dataSource = params.dataSource;
 
+        var userOpenedSearch = ko.observable(false);
+
         var loading = ko.observable(false);
         // var searchRegexp = ko.pureComputed(function () {
         //     if (!inputValue() || inputValue().length < 2) {
@@ -25,22 +27,27 @@ define([
         //     }
         //     return new RegExp(inputValue(), 'i');
         // });
+        var forceSearch = ko.observable();
         var searchExpression = ko.pureComputed(function () {
             if (!inputValue() || inputValue().length < 2) {
-                return null;
+                return { input: null, forced: forceSearch() };
             }
-            return inputValue();
+            return {
+                input: inputValue(),
+                forced: forceSearch()
+            };
         });
 
         var tooManyResults = ko.observable(false);
         var searchCount = ko.observable();
         var totalCount = ko.observable();
-        subscriptions.add(searchExpression.subscribe(function (newValue) {
+
+        subscriptions.add(searchExpression.subscribe(function ({ input }) {
             isSearching(true);
             dataSource.totalCount()
                 .then(function (result) {
                     totalCount(result);
-                    return dataSource.search(newValue);
+                    return dataSource.search(input);
                 })
                 .then(function (result) {
                     isSearching(false);
@@ -144,12 +151,24 @@ define([
         if (inputValue() && inputValue().length > 0) {
             itemSelected(true);
         }
+
+        // When the input value is modified, ensure that the
+        // "item selected" flag is flipped to false.
+        // All part of the weird logic tries to control the ui based
+        // on the inherent values of things, rather than
+        // explicit flags.
         subscriptions.add(inputValue.subscribe(function () {
             itemSelected(false);
+            // Whenever the user changes the input, we open the search
+            // userOpenedSearch(true);
         }));
 
+        // We consider the field to be "modified" if it 
+        // has been modified (isDirty) and it is not
+        // selected. Weird logic. Improve it!
         var userHasModified = ko.pureComputed(function () {
             return (inputValue.isDirty() && !itemSelected());
+            // return !itemSelected();
         });
 
         var isSearching = ko.observable(false);
@@ -171,10 +190,9 @@ define([
 
         var showingAll = ko.observable(false);
 
-
         function doSelectValue(selected) {
             inputValue(selected.label);
-            inputValue.markClean();
+            userOpenedSearch(false);
             itemSelected(true);
             showingAll(false);
         }
@@ -188,9 +206,7 @@ define([
         }
 
         function doCancelSearch() {
-            inputValue.markClean();
-            // inputValue.reset();
-            // restoring the value should be all we need to do... 
+            userOpenedSearch(false);
         }
 
         // handle user clicking the search button.
@@ -199,17 +215,12 @@ define([
         // if is searching, should close the search selection and mark the field as clean.
         // how to tell if searching? --- maybe just with the dirty flag on the input? try it.
         function doToggleSearch() {
-            if (inputValue.isDirty()) {
-                inputValue.markClean();
-            } else {
-                inputValue.markDirty();
-            }
+            userOpenedSearch(true);
+            forceSearch(html.genId());
         }
 
-        function onInputKeyup(data, ev) {
-            if (ev.key === 'Escape') {
-                inputValue.markClean();
-            }
+        function onInputKeyup() {
+            userOpenedSearch(true);
         }
 
         function dispose() {
@@ -230,6 +241,7 @@ define([
             doCancelSearch: doCancelSearch,
             tooManyResults: tooManyResults,
             mode: mode,
+            userOpenedSearch,
 
             // ACTIONS
             doDeactivate: doDeactivate,
@@ -242,7 +254,6 @@ define([
             dispose: dispose
         };
     }
-    
 
     function template() {
         return div({
@@ -273,17 +284,22 @@ define([
                             }
                         }
                     }),
+                    // This is the search button, which also serves to show an active
+                    // search with a spinner.
                     span({
                         class: 'input-group-addon fa',
                         dataBind: {
-                            visible: 'mode() !== "canselect"',
+                            // visible: 'mode() !== "canselect"',
+                            visible: '!userOpenedSearch()',
                             css: {
-                                '"fa-search"': 'mode() === "cansearch"',
+                                '"fa-search"': 'mode() !== "searching"',
                                 '"fa-spinner fa-pulse fa-fw"': 'mode() === "searching"',
                             },
                             click: 'doToggleSearch'
                         }
                     }),
+                    // This is the search cancellation button, which simply closes 
+                    // the search dropdown if it is open.
                     span({
                         class: 'input-group-addon fa fa-times',
                         style: {
@@ -291,13 +307,15 @@ define([
                         },
                         dataBind: {
                             click: 'doCancelSearch',
-                            visible: 'mode() === "canselect"'
+                            visible: 'userOpenedSearch()'
+                            // visible: 'mode() === "canselect"'
                         }
                     })
                 ]),
                 div({
                     dataBind: {
-                        if: 'mode() === "canselect"'
+                        // if: 'mode() === "canselect"'
+                        if: 'userOpenedSearch()'
                     },
                     style: {
                         position: 'relative',
@@ -400,13 +418,13 @@ define([
             ])
         ]);
     }
-   
+
     function component() {
         return {
             viewModel: viewModel,
             template: template()
         };
     }
-    
+
     return ko.kb.registerComponent(component);
 });
