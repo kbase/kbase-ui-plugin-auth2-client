@@ -1,14 +1,9 @@
 define([
     'bluebird',
     'knockout-plus',
-    'md5',
     'kb_common/html',
-    'kb_common/bootstrapUtils',
-    'kb_common/format',
-    'kb_service/userProfile',
     'kb_service/client/userProfile',
     '../../lib/fieldBuilders',
-    'kb_plugin_auth2-client',
     '../../lib/geoNames',
     '../../lib/dataSource',
     '../../components/typeaheadInput',
@@ -16,14 +11,9 @@ define([
 ], function (
     Promise,
     ko,
-    md5,
     html,
-    BS,
-    Format,
-    UserProfile,
     UserProfileService,
     FieldBuilders,
-    Plugin,
     GeoNames,
     DataSource,
     TypeaheadInputComponent,
@@ -31,7 +21,7 @@ define([
 ) {
     'use strict';
 
-    var t = html.tag,
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         a = t('a'),
@@ -1222,15 +1212,15 @@ define([
             field: ko.observableArray(affils.map(function (affil) {
                 return affiliationVm(affil);
             }))
-                // .sort(function (a, b) {
-                //     if (a.started.field() < b.started.field()) {
-                //         return -1;
-                //     } else if (a.started.field() > b.started.field()) {
-                //         return 1;
-                //     } else {
-                //         return 0;
-                //     }
-                // })
+            // .sort(function (a, b) {
+            //     if (a.started.field() < b.started.field()) {
+            //         return -1;
+            //     } else if (a.started.field() > b.started.field()) {
+            //         return 1;
+            //     } else {
+            //         return 0;
+            //     }
+            // })
                 .extend({
                     constraint: {
                         required: false
