@@ -99,9 +99,19 @@ define([
         }
 
         function loadTab(tabName) {
-            currentTabWidget = tabsMap[tabName].panel.factory.make({
-                runtime: runtime
-            });
+            const panel = tabsMap[tabName].panel;
+            if (panel.factory) {
+                currentTabWidget = panel.factory.make({
+                    runtime
+                });
+            } else if (panel.class) {
+                currentTabWidget = new panel.class({
+                    runtime
+                });
+            } else {
+                throw new Error('No panel factory or class');
+            }
+
             var tabNode = hostNode.querySelector('[data-tab-panel="' + tabName + '"]');
             return currentTabWidget.attach(tabNode)
                 .then(function () {

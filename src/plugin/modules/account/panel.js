@@ -57,53 +57,53 @@ define([
                     name: 'profile',
                     label: 'Your Profile',
                     panel: {
-                        factory: ProfileManager
+                        class: ProfileManager
                     }
                 }, {
                     name: 'account',
                     label: 'Account',
                     panel: {
-                        factory: PersonalInfoEditor
+                        class: PersonalInfoEditor
                     }
                 }, {
                     name: 'links',
                     label: 'Linked Sign-In Accounts',
                     panel: {
-                        factory: LinksManager
+                        class: LinksManager
                     }
                 }, (function () {
-                        if (vm.developerTokens.enabled) {
-                            return {
-                                name: 'developer-tokens',
-                                label: 'Developer Tokens',
-                                panel: {
-                                    factory: DeveloperTokenManager
-                                }
-                            };
-                        }
-                    }()), (function () {
-                        if (vm.serviceTokens.enabled) {
-                            return {
-                                name: 'service-tokens',
-                                label: 'Service Tokens',
-                                panel: {
-                                    factory: ServiceTokenManager
-                                }
-                            };
-                        }
-                    }()), {
-                        name: 'signins',
-                        label: 'Sign-Ins',
-                        panel: {
-                            factory: SigninManager
-                        }
-                    }, {
-                        name: 'agreements',
-                        label: 'Usage Agreements',
-                        panel: {
-                            factory: AgreementsManager
-                        }
-                    }                    
+                    if (vm.developerTokens.enabled) {
+                        return {
+                            name: 'developer-tokens',
+                            label: 'Developer Tokens',
+                            panel: {
+                                class: DeveloperTokenManager
+                            }
+                        };
+                    }
+                }()), (function () {
+                    if (vm.serviceTokens.enabled) {
+                        return {
+                            name: 'service-tokens',
+                            label: 'Service Tokens',
+                            panel: {
+                                class: ServiceTokenManager
+                            }
+                        };
+                    }
+                }()), {
+                    name: 'signins',
+                    label: 'Sign-Ins',
+                    panel: {
+                        class: SigninManager
+                    }
+                }, {
+                    name: 'agreements',
+                    label: 'Usage Agreements',
+                    panel: {
+                        class: AgreementsManager
+                    }
+                }
                 ].filter(function (tab) {
                     return tab ? true : false;
                 })

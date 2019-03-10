@@ -1,20 +1,20 @@
 define([
     'bluebird',
-    'kb_common/html',
+    'kb_lib/html',
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
     'kb_plugin_auth2-client',
     '../lib/provider'
-], function (
+], (
     Promise,
     html,
     DomEvents,
     BS,
     Plugin,
     provider
-) {
+) => {
     'use strict';
-    var // t = html.tagMaker(),
+    const // t = html.tagMaker(),
         t = html.tag,
         p = t('p'),
         div = t('div'),
@@ -30,34 +30,37 @@ define([
         form = t('form'),
         input = t('input');
 
-    function factory(config) {
-        var runtime = config.runtime;
+    class LinksManager {
+        constructor({ runtime }) {
+            this.runtime = runtime;
 
-        var providers = new provider.Providers({runtime: runtime}).get();
+            this.providers = new provider.Providers({ runtime: runtime }).get();
 
-        var providersMap = providers.reduce((providersMap, provider) => {
-            providersMap[provider.id] = provider;
-            return providersMap;
-        }, {});
-    
-        var hostNode, container;
-        var vm = {
-            identities: {
-                label: 'Identities',
-                value: null
-            },
-            error: {
-                node: null,
-                value: {
-                    name: null,
-                    title: null,
-                    message: null,
-                    detail: null
+            this.providersMap = this.providers.reduce((providersMap, provider) => {
+                providersMap[provider.id] = provider;
+                return providersMap;
+            }, {});
+
+            this.hostNode = null;
+            this.container = null;
+            this.vm = {
+                identities: {
+                    label: 'Identities',
+                    value: null
+                },
+                error: {
+                    node: null,
+                    value: {
+                        name: null,
+                        title: null,
+                        message: null,
+                        detail: null
+                    }
                 }
-            }
-        };
+            };
+        }
 
-        function buildProviderLabel(provider) {
+        buildProviderLabel(provider) {
             return div({
                 style: {
                     display: 'inline',
@@ -82,7 +85,7 @@ define([
             ]);
         }
 
-        function setContent(parentNode, element, content) {
+        setContent(parentNode, element, content) {
             var node = parentNode.querySelector('[data-element="' + element + '"');
             if (!node) {
                 return;
@@ -90,33 +93,33 @@ define([
             node.innerHTML = content;
         }
 
-        function renderError() {
-            if (vm.error.hidden) {
-                vm.error.node.classList.add('hidden');
+        renderError() {
+            if (this.vm.error.hidden) {
+                this.vm.error.node.classList.add('hidden');
                 return;
             }
-            Object.keys(vm.error.value).forEach(function (name) {
-                setContent(vm.error.node, name, vm.error.value[name]);
+            Object.keys(this.vm.error.value).forEach((name) => {
+                this.setContent(this.vm.error.node, name, this.vm.error.value[name]);
             });
         }
 
-        function showError(errorInfo) {
-            vm.error.value = errorInfo;
-            vm.error.node.classList.remove('hidden');
-            renderError();
+        showError(errorInfo) {
+            this.vm.error.value = errorInfo;
+            this.vm.error.node.classList.remove('hidden');
+            this.renderError();
         }
 
-        function doLink() {
+        doLink() {
             var providerSelect = document.querySelector('[data-element="link-form"] [name="provider"]');
             var providerId = providerSelect.value;
 
             try {
-                runtime.service('session').getClient().linkStart({
+                this.runtime.service('session').getClient().linkStart({
                     provider: providerId,
-                    node: container
+                    node: this.container
                 });
             } catch (ex) {
-                showError({
+                this.showError({
                     name: 'LinkError',
                     message: 'Exception starting the link process',
                     detail: ex.message
@@ -124,16 +127,16 @@ define([
             }
         }
 
-        function doUnlink(identityId) {
-            runtime.service('session').getClient().removeLink({
+        doUnlink(identityId) {
+            this.runtime.service('session').getClient().removeLink({
                 identityId: identityId
             })
-                .then(function () {
-                    reload();
+                .then(() => {
+                    this.reload();
                     return null;
                 })
-                .catch(function (err) {
-                    showError({
+                .catch((err) => {
+                    this.showError({
                         name: 'UnLinkError',
                         message: 'Error with the unlink process',
                         detail: err.message
@@ -141,12 +144,12 @@ define([
                 });
         }
 
-        function buildLinkForm(events) {
+        buildLinkForm(events) {
             var providerControlId = html.genId();
             var providerMenuId = html.genId();
             var providerMenuLabelId = html.genId();
             var selectedProviderId = 'Globus';
-            var selectedProvider = providers.filter(function (provider) {
+            var selectedProvider = this.providers.filter((provider) => {
                 return (provider.id === selectedProviderId);
             })[0];
             return form({
@@ -157,7 +160,9 @@ define([
                     button({
                         class: 'btn btn-primary',
                         type: 'button',
-                        id: events.addEvent('click', doLink)
+                        id: events.addEvent('click', () => {
+                            this.doLink();
+                        })
                     }, 'Link '),
                     ' a ',
                     div({
@@ -176,7 +181,7 @@ define([
                         button({
                             class: 'btn btn-default dropdown-toggle',
                             type: 'button',
-                            id: events.addEvent('click', function () {
+                            id: events.addEvent('click', () => {
                                 var n = document.getElementById(providerMenuId);
                                 if (n.style.display === 'none') {
                                     n.style.display = 'block';
@@ -190,7 +195,7 @@ define([
                         }, [
                             span({
                                 id: providerMenuLabelId
-                            }, buildProviderLabel(selectedProvider)),
+                            }, this.buildProviderLabel(selectedProvider)),
                             span({
                                 class: 'caret',
                                 style: {
@@ -212,7 +217,7 @@ define([
                             },
                             id: providerMenuId,
                             xariaLabelledby: providerMenuId
-                        }, providers.map(function (provider) {
+                        }, this.providers.map((provider) => {
                             return li({
                                 class: 'login-provider',
                                 style: {
@@ -223,16 +228,16 @@ define([
                                     whiteSpace: 'nowrap'
                                 }
                             }, div({
-                                id: events.addEvent('click', function () {
+                                id: events.addEvent('click', () => {
                                     // var controlNode = document.getElementById(providerControlId);
                                     var providerInput = document.querySelector('[data-element="link-form"] [name="provider"]');
                                     providerInput.value = provider.id;
                                     var menuLabelNode = document.getElementById(providerMenuLabelId);
-                                    menuLabelNode.innerHTML = buildProviderLabel(provider);
+                                    menuLabelNode.innerHTML = this.buildProviderLabel(provider);
                                     var n = document.getElementById(providerMenuId);
                                     n.style.display = 'none';
                                 })
-                            }, buildProviderLabel(provider)));
+                            }, this.buildProviderLabel(provider)));
                         }))
                     ]),
                     span({
@@ -244,8 +249,8 @@ define([
             ]));
         }
 
-        function renderInfo() {
-            var canUnlink = (vm.identities.value.length > 1);
+        renderInfo() {
+            var canUnlink = (this.vm.identities.value.length > 1);
             var content = [
                 p([
                     'This tab provides access to all of the the external accounts which you have set up sign in to your KBase account.',
@@ -287,11 +292,11 @@ define([
             return content;
         }
 
-        function render() {
+        render() {
             var events = DomEvents.make({
-                node: container
+                node: this.container
             });
-            var canUnlink = (vm.identities.value.length > 1);
+            var canUnlink = (this.vm.identities.value.length > 1);
 
             var tabs = BS.buildTabs({
                 initialTab: 0,
@@ -312,7 +317,7 @@ define([
                                     th('Action')
                                 ])
                             ].concat(
-                                vm.identities.value.map(function (identity) {
+                                this.vm.identities.value.map((identity) => {
                                     var tooltip;
                                     if (canUnlink) {
                                         tooltip = 'Unlink this  ' + identity.provider + ' account from your KBase account';
@@ -320,7 +325,7 @@ define([
                                         tooltip = 'Since this is the only external sign-in account linked to your KBase account, you cannot unlink it';
                                     }
                                     return tr([
-                                        td(buildProviderLabel(providersMap[identity.provider])),
+                                        td(this.buildProviderLabel(this.providersMap[identity.provider])),
                                         td(identity.provusername),
                                         td(button({
                                             class: 'btn btn-danger',
@@ -329,8 +334,8 @@ define([
                                             dataToggle: 'tooltip',
                                             dataPlacement: 'top',
                                             title: tooltip,
-                                            id: events.addEvent('click', function () {
-                                                doUnlink(identity.id);
+                                            id: events.addEvent('click', () => {
+                                                this.doUnlink(identity.id);
                                             })
                                         }, 'Unlink'))
                                     ]);
@@ -340,7 +345,7 @@ define([
                             name: 'linkForm',
                             classes: ['kb-panel-light'],
                             title: 'Link an additional sign-in account to this KBase Account',
-                            body: buildLinkForm(events)
+                            body: this.buildLinkForm(events)
                         }),
                         BS.buildPanel({
                             name: 'error',
@@ -366,8 +371,8 @@ define([
                                     button({
                                         class: 'btn btn-primary',
                                         type: 'button',
-                                        id: events.addEvent('click', function () {
-                                            vm.error.node.classList.add('hidden');
+                                        id: events.addEvent('click', () => {
+                                            this.vm.error.node.classList.add('hidden');
                                         })
                                     }, 'Close')
                                 ])
@@ -382,74 +387,61 @@ define([
                             maxWidth: '60em',
                             margin: '10px auto 0 auto'
                         }
-                    }, renderInfo())
+                    }, this.renderInfo())
 
 
                 }]
             });
 
-            container.innerHTML = div({
+            this.container.innerHTML = div({
                 style: {
                     marginTop: '10px'
                 }
             }, tabs.content);
-            vm.error.node = container.querySelector('[data-element="error"]');
+            this.vm.error.node = this.container.querySelector('[data-element="error"]');
             events.attachEvents();
         }
 
-        function reload() {
-            return runtime.service('session').getClient().getMe()
-                .then(function (account) {
-                    vm.identities.value = account.idents;
-                    render();
+        reload() {
+            return this.runtime.service('session').getClient().getMe()
+                .then((account) => {
+                    this.vm.identities.value = account.idents;
+                    this.render();
                     return null;
                 });
         }
 
         // API
 
-        function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
+        attach(node) {
+            return Promise.try(() => {
+                this.hostNode = node;
+                this.container = this.hostNode.appendChild(document.createElement('div'));
             });
         }
 
-        function start() {
-            return Promise.try(function () {
-                return reload();
+        start() {
+            return Promise.try(() => {
+                return this.reload();
             })
-                .then(function () {
-                    BS.activateTooltips(container);
+                .then(() => {
+                    BS.activateTooltips(this.container);
                     return null;
                 });
         }
 
-        function stop() {
-            return Promise.try(function () {});
+        stop() {
+            return Promise.resolve();
         }
 
-        function detach() {
-            return Promise.try(function () {
-                if (hostNode && container) {
-                    hostNode.removeChild(container);
-                    hostNode.innerHTML = '';
+        detach() {
+            return Promise.try(() => {
+                if (this.hostNode && this.container) {
+                    this.hostNode.removeChild(this.container);
+                    this.hostNode.innerHTML = '';
                 }
             });
         }
-
-        return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
-        };
-
     }
-
-    return {
-        make: function (config) {
-            return factory(config);
-        }
-    };
+    return LinksManager;
 });

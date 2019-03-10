@@ -27,7 +27,6 @@
     color: #000;
 }
 
-
 /* Policy resolver component styles */
 
 .policy-markdown {
@@ -85,7 +84,6 @@
 .policy-markdown a:hover,
 .policy-markdown a:active {}
 
-
 /* TABS */
 
 .flex-tabs {
@@ -101,6 +99,8 @@
     flex-direction: row;
     padding-left: 2em;
     border-bottom: 2px rgba(200, 200, 200, 0.5) solid;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .flex-tabs>.-tabs>.-tab {
@@ -117,6 +117,7 @@
     padding: 0 8px;
     display: inline-block;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .flex-tabs>.-tabs>.-tab.-active {
@@ -128,7 +129,6 @@
 .flex-tabs>.-tabs>.-tab.-inactive {
     background-color: transparent;
 }
-
 
 /* Panels */
 
@@ -152,7 +152,6 @@
 }
 
 .flex-tabs>.-panels>.-panel.-active {}
-
 
 /* responsive youtube */
 

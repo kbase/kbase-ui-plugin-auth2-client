@@ -1,30 +1,31 @@
 define([
     'bluebird',
-    'kb_common/html',
-    'kb_common/bootstrapUtils',
+    'knockout',
+    'kb_lib/html',
     'kb_service/client/userProfile',
-    'knockout-plus',
     './components/profileEditor'
-], function (
+], (
     Promise,
-    html,
-    BS,
-    UserProfileService,
     ko,
+    html,
+    UserProfileService,
     ProfileEditorComponent
-) {
+) => {
     'use strict';
-    
-    var t = html.tag,
+
+    const t = html.tag,
         div = t('div');
 
-    function factory(config) {
-        var runtime = config.runtime;
-        var hostNode, container;
-        var componentNode;
-        var vm;
+    class ProfileManager {
+        constructor({ runtime }) {
+            this.runtime = runtime;
+            this.hostNode = null;
+            this.container = null;
+            this.componentNode = null;
+            this.vm = null;
+        }
 
-        function render(id) {
+        render(id) {
             return div({
                 id: id,
                 style: {
@@ -37,24 +38,24 @@ define([
                 dataBind: {
                     component: {
                         name: ProfileEditorComponent.quotedName(),
-                        params: (function () {
+                        params: (() => {
                             var params = {};
-                            Object.keys(vm).forEach(function (k) {
+                            Object.keys(this.vm).forEach((k) => {
                                 params[k] = k;
                             });
                             return params;
-                        }())
+                        })()
                     }
                 }
             });
         }
 
-        function getProfile() {
-            var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
-                token: runtime.service('session').getAuthToken()
+        getProfile() {
+            var userProfileClient = new UserProfileService(this.runtime.config('services.user_profile.url'), {
+                token: this.runtime.service('session').getAuthToken()
             });
-            return userProfileClient.get_user_profile([runtime.service('session').getUsername()])
-                .then(function (profiles) {
+            return userProfileClient.get_user_profile([this.runtime.service('session').getUsername()])
+                .then((profiles) => {
                     if (profiles.length === 0) {
                         throw new Error('Profile not found');
                     }
@@ -62,58 +63,42 @@ define([
                 });
         }
 
-        function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode;
+        attach(node) {
+            return Promise.try(() => {
+                this.hostNode = node;
+                this.container = this.hostNode;
             });
         }
 
-        function start() {
+        start() {
             return Promise.all([
-                runtime.service('session').getClient().getMe(),
-                getProfile()
+                this.runtime.service('session').getClient().getMe(),
+                this.getProfile()
             ])
-                .spread(function (account, profile) {
+                .spread((account, profile) => {
                     var id = html.genId();
-                    vm = {
-                        runtime: runtime,
+                    this.vm = {
+                        runtime: this.runtime,
                         profile: profile
                     };
-                    container.innerHTML = render(id);
-                    componentNode = document.getElementById(id);
-                    ko.applyBindings(vm, componentNode);
+                    this.container.innerHTML = this.render(id);
+                    this.componentNode = document.getElementById(id);
+                    ko.applyBindings(this.vm, this.componentNode);
                 });
         }
 
-        function stop() {
-            return Promise.try(function () {});
+        stop() {
+            return Promise.resolve();
         }
 
-        function detach() {
-            return Promise.try(function () {
-                // if (hostNode && container) {
-                //     hostNode.removeChild(container);
-                //     hostNode.innerHTML = '';
-                // }
-                if (componentNode) {
-                    ko.cleanNode(componentNode);
-                    container.removeChild(componentNode);
+        detach() {
+            return Promise.try(() => {
+                if (this.componentNode) {
+                    ko.cleanNode(this.componentNode);
+                    this.container.removeChild(this.componentNode);
                 }
             });
         }
-
-        return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
-        };
     }
-
-    return {
-        make: function (config) {
-            return factory(config);
-        }
-    };
+    return ProfileManager;
 });

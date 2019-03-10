@@ -4,7 +4,7 @@ define([
     HttpClient
 ) {
     'use strict';
-    
+
     var urlBase = window.location.origin + '/geonames';
 
     function getCountryCode(arg) {

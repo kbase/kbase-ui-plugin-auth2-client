@@ -1,7 +1,7 @@
 define([
     'bluebird',
     'knockout-plus',
-    'kb_common/html',
+    'kb_lib/html',
     './components/interruptedView'
 ], function (
     Promise,

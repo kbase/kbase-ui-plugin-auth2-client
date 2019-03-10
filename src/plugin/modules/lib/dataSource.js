@@ -11,8 +11,6 @@ define([
 ) {
     'use strict';
 
-
-
     function factory(config) {
         var db = {};
 

@@ -79,7 +79,7 @@ define([
                 clockNode.innerHTML = Format.niceDuration(remainingTime);
             }
 
-            clock = CountDownClock({
+            clock = new CountDownClock({
                 tick: 1000,
                 until: response.expires - timeOffset,
                 // for: 5000,
@@ -230,12 +230,12 @@ define([
             // var cookieManager = new M_Cookie.CookieManager();
             // inProcessToken = cookieManager.getItem('in-process-login-token');
 
-            // Clean up window 
+            // Clean up window
             // if (window.history != undefined &&
             //     window.history.pushState != undefined &&
             //     window.location.search &&
             //     window.location.search.length > 0) {
-            //     // if pushstate exists, add a new state the the history, this changes the url without 
+            //     // if pushstate exists, add a new state the the history, this changes the url without
             //     // reloading the page
             //     var newUrl = new URL(window.location.href);
             //     var oldQuery = newUrl.search;

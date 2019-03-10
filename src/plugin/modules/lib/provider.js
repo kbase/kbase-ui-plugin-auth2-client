@@ -6,7 +6,7 @@ define([
     'use strict';
 
     class Providers {
-        constructor({runtime}) {
+        constructor({ runtime }) {
             this.providerWhitelist = runtime.config('services.auth2.providers');
             this.providers = providersData
                 .filter((provider) => {
@@ -21,12 +21,12 @@ define([
 
         sortByPriority() {
             this.providers.sort(function (a, b) {
-                let priorityOrder = a.priority - b.priority;
+                const priorityOrder = a.priority - b.priority;
                 if (priorityOrder !== 0) {
                     return priorityOrder;
                 }
 
-                let labelOrder = a.label < b.label ? -1 : (a.label > b.label ? 0 : 1);
+                const labelOrder = a.label < b.label ? -1 : (a.label > b.label ? 0 : 1);
                 return labelOrder;
             });
         }
@@ -36,5 +36,5 @@ define([
         }
     }
 
-    return {Providers};
+    return { Providers };
 });

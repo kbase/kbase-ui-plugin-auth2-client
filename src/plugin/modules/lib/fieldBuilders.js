@@ -1,18 +1,20 @@
 define([
-    'knockout-plus',
-    'kb_common/html',
+    'kb_lib/html',
+    'kb_knockout/lib/generators',
     '../components/selectInput',
     '../components/checkboxesInput',
-    '../components/typeaheadInput'
+    '../components/typeaheadInput',
+    '../components/fieldDoc'
 ], function (
-    ko,
     html,
+    gen,
     SelectInputComponent,
     CheckboxesInputComponent,
-    TypeaheadInputComponent
+    TypeaheadInputComponent,
+    FieldDocComponent
 ) {
     'use strict';
-    
+
     var t = html.tag,
         div = t('div'),
         span = t('span'),
@@ -27,7 +29,10 @@ define([
         var result = span({
             class: 'glyphicon',
             dataBind: {
-                css: '{"glyphicon-asterisk text-danger": ' + field.vmId + '.isValid() === false, "glyphicon-ok text-success":' + field.vmId + '.isValid()}'
+                css: '{"glyphicon-asterisk text-danger": ' + field.vmId + '.isValid() === false, "glyphicon-ok text-success":' + field.vmId + '.isValid()}',
+                style: {
+                    opacity: 'field.constraint.isValid() ? "0.5" : "1.0"'
+                }
             },
             style: {
                 marginLeft: '4px'
@@ -37,10 +42,10 @@ define([
     }
 
     /*
-        In the context of the field:
-        required - boolean
-        isValid() - must have validation enabled for the field
-    */
+            In the context of the field:
+            required - boolean
+            isValid() - must have validation enabled for the field
+        */
     function buildRequiredIcon2() {
         var result = span({
             dataBind: {
@@ -49,7 +54,10 @@ define([
         }, span({
             class: 'glyphicon',
             dataBind: {
-                css: '{"glyphicon-asterisk text-danger": field.isValid() === false, "glyphicon-ok text-success": field.isValid()}'
+                css: '{"glyphicon-asterisk text-danger": field.isValid() === false, "glyphicon-ok text-success": field.isValid()}',
+                style: {
+                    opacity: 'field.constraint.isValid() ? "0.5" : "1.0"'
+                }
             },
             style: {
                 marginLeft: '4px'
@@ -66,7 +74,10 @@ define([
         }, span({
             class: 'glyphicon',
             dataBind: {
-                css: '{"glyphicon-asterisk text-danger": field.constraint.isValid() === false, "glyphicon-ok text-success": field.constraint.isValid()}'
+                css: '{"glyphicon-asterisk text-danger": field.constraint.isValid() === false, "glyphicon-ok text-success": field.constraint.isValid()}',
+                style: {
+                    opacity: 'field.constraint.isValid() ? "0.5" : "1.0"'
+                }
             },
             style: {
                 marginLeft: '4px'
@@ -101,145 +112,6 @@ define([
         return result;
     }
 
-    function fieldDoc(description, content, name) {
-        if (!description) {
-            return;
-        }
-        return div({
-            dataElement: 'more',
-            class: 'field-doc',
-            dataBind: {
-                if: 'more'
-            }
-        }, [
-            div([
-                span({
-                    style: {
-                        padding: '2px',
-                        cursor: 'pointer'
-                    },
-                    dataElement: 'button',
-                    dataBind: {
-                        click: 'showMore.bind($data, "' + name + '")'
-                    }
-                }, span({
-                    dataElement: 'label'
-                }, [
-                    description,
-                    span({
-                        class: 'fa ',
-                        style: {
-                            marginLeft: '5px',
-                        },
-                        dataBind: {
-                            css: {
-                                '"fa-caret-right"': 'more.' + name + '()',
-                                '"fa-caret-down"': '!more.' + name + '()'
-                            }
-                        }
-                    })
-                ]))
-            ]),
-            div({
-                dataBind: {
-                    css: {
-                        hidden: 'more.' + name + '()'
-                    }
-                },
-                dataElement: 'content',
-                style: {
-                    border: '1px silver dashed',
-                    padding: '6px'
-                }
-            }, content)
-        ]);
-    }
-
-    // description, content, name
-    // context is the vm field.
-
-    function buildDocWithMore() {
-        return div([
-            div({}, [
-                span({
-                    style: {
-                        padding: '2px',
-                        cursor: 'pointer'
-                    },
-                    // TODO: toggle more observable
-                    dataBind: {
-                        click: 'toggleShowMore.bind($data)'
-                    }
-                }, span({
-
-                }, [
-                    span({
-                        dataBind: {
-                            html: 'description'
-                        }
-                    }),
-                    span({
-                        class: 'fa ',
-                        style: {
-                            marginLeft: '5px',
-                        },
-                        dataBind: {
-                            css: {
-                                '"fa-caret-right"': '!showMore()',
-                                '"fa-caret-down"': 'showMore()'
-                            }
-                        }
-                    })
-                ]))
-            ]),
-            div({
-                dataBind: {
-                    css: {
-                        hidden: '!showMore()',
-                    },
-                    html: 'more'
-                },
-                style: {
-                    borderLeft: '2px silver solid',
-                    marginLeft: '4px',
-                    padding: '4px'
-                }
-            })
-        ]);
-    }
-
-    function buildDocNoMore() {
-        return div({
-            dataBind: {
-                html: 'description'
-            }
-        });
-    }
-
-    function buildDoc() {
-        return div({
-            dataBind: {
-                if: 'doc'
-            }
-        }, div({
-            class: 'field-doc',
-            dataBind: {
-                with: 'doc'
-            }
-        }, [
-            div({
-                dataBind: {
-                    if: 'more'
-                }
-            }, buildDocWithMore()),
-            div({
-                dataBind: {
-                    ifnot: 'more'
-                }
-            }, buildDocNoMore())
-        ]));
-    }
-
     function buildLabel(id) {
         return label({
             for: id
@@ -254,12 +126,31 @@ define([
         ]);
     }
 
+    function buildInlineLabel() {
+        return span({
+        }, [
+            buildRequiredIcon3(),
+            buildDirtyIcon2()
+        ]);
+    }
+
     function buildFieldGroup(id, control) {
         return div({
             class: 'form-group'
         }, [
             buildLabel(id),
-            buildDoc(),
+            gen.if('doc',
+                div({
+                    dataBind: {
+                        component: {
+                            name: FieldDocComponent.quotedName(),
+                            params: {
+                                description: 'doc.description',
+                                more: 'doc.more'
+                            }
+                        }
+                    }
+                })),
             control,
             div({
                 dataBind: {
@@ -293,7 +184,18 @@ define([
                     buildRequiredIcon2(),
                     buildDirtyIcon2()
                 ]),
-                buildDoc()
+                gen.if('$data.doc',
+                    div({
+                        dataBind: {
+                            component: {
+                                name: FieldDocComponent.quotedName(),
+                                params: {
+                                    description: '$data.doc.description',
+                                    more: '$data.doc.more'
+                                }
+                            }
+                        }
+                    })),
             ])
         ]);
     }
@@ -437,37 +339,6 @@ define([
         }, buildFieldGroup(id, control)));
     }
 
-    function buildDisplay(field) {
-        var id = html.genId();
-        return div({
-            class: 'form-group  form-row'
-        }, [
-            div({
-                class: 'row row-edgeless'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    label({
-                        for: id
-                    }, field.label),
-                    fieldDoc(field.description, field.more, field.name)
-                ])
-            ]),
-            div({
-                class: 'row row-edgeless'
-            }, [
-                div({
-                    class: 'col-md-12'
-                }, [
-                    div({
-                        dataBind: 'text: ' + (field.vmId)
-                    })
-                ])
-            ])
-        ]);
-    }
-
     function buildContent(content) {
         return div({
             class: 'form-group'
@@ -488,13 +359,11 @@ define([
         buildTypeahead: buildTypeahead,
         buildSelect: buildSelect,
         buildCheckboxes: buildCheckboxes,
-        buildDislay: buildDisplay,
         buildContent: buildContent,
         requiredIcon: requiredIcon,
         dirtyIcon: dirtyIcon,
-        fieldDoc: fieldDoc,
-        buildDoc: buildDoc,
         buildLabelRow: buildLabelRow,
-        buildFieldRow: buildFieldRow
+        buildFieldRow: buildFieldRow,
+        buildInlineLabel
     };
 });

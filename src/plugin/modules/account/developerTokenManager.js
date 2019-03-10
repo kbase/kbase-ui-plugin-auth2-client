@@ -1,12 +1,12 @@
 define([
     'bluebird',
-    'kb_common/html',
+    'kb_lib/html',
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     'kb_common/format',
     '../lib/format',
     '../lib/utils'
-], function (
+], (
     Promise,
     html,
     DomEvent,
@@ -14,10 +14,9 @@ define([
     Format,
     fmt,
     Utils
-) {
+) => {
     'use strict';
-    var // t = html.tagMaker(),
-        t = html.tag,
+    const t = html.tag,
         div = t('div'),
         table = t('table'),
         tr = t('tr'),
@@ -31,53 +30,56 @@ define([
         b = t('b'),
         span = t('span');
 
-    function factory(config) {
-        var hostNode, container;
-        var runtime = config.runtime;
-        var serverBias;
-        var utils = Utils.make({
-            runtime: runtime
-        });
+    class DeveloperTokenManager {
+        constructor({ runtime }) {
+            this.runtime = runtime;
 
-        var vm = {
-            roles: {
-                value: null
-            },
-            alerts: {
-                id: html.genId(),
-                enabled: true,
-                value: false
-            },
-            addTokenForm: {
-                id: html.genId(),
-                enabled: true,
-                value: null
-            },
-            allTokens: {
-                id: html.genId(),
-                enabled: true,
-                value: null
-            },
-            newToken: {
-                id: html.genId(),
-                enabled: true,
-                value: null
-            }
-        };
+            this.hostNode = null;
+            this.container = null;
+            this.serverBias = null;
+            this.utils = Utils.make({
+                runtime: runtime
+            });
 
-        function bindVmNode(vmNode) {
-            vmNode.node = document.getElementById(vmNode.id);
+            this.vm = {
+                roles: {
+                    value: null
+                },
+                alerts: {
+                    id: html.genId(),
+                    enabled: true,
+                    value: false
+                },
+                addTokenForm: {
+                    id: html.genId(),
+                    enabled: true,
+                    value: null
+                },
+                allTokens: {
+                    id: html.genId(),
+                    enabled: true,
+                    value: null
+                },
+                newToken: {
+                    id: html.genId(),
+                    enabled: true,
+                    value: null
+                }
+            };
         }
 
-        function bindVm() {
-            bindVmNode(vm.addTokenForm);
-            bindVmNode(vm.alerts);
-            bindVmNode(vm.newToken);
-            bindVmNode(vm.allTokens);
+        bindVm() {
+            const bindVmNode = (n) => {
+                n.node = document.getElementById(n.id);
+            };
+            bindVmNode(this.vm.addTokenForm);
+            bindVmNode(this.vm.alerts);
+            bindVmNode(this.vm.newToken);
+            bindVmNode(this.vm.allTokens);
         }
 
-        function showAlert(type, message) {
-            var alert = div({
+        showAlert(type, message) {
+            const alert = div({
                 class: 'alert ' + 'alert-' + type,
                 style: {
                     marginTop: '10px'
@@ -94,18 +96,17 @@ define([
                 }, '&times;')),
                 div({}, message)
             ]);
-            var temp = document.createElement('div');
+            const temp = document.createElement('div');
             temp.innerHTML = alert;
-            vm.alerts.node.appendChild(temp);
+            this.vm.alerts.node.appendChild(temp);
         }
 
-        function timeRemaining(time) {
-            var now = new Date().getTime();
-            return time - (now + serverBias);
+        timeRemaining(time) {
+            return time - (new Date().getTime() + this.serverBias);
         }
 
-        function renderLayout() {
-            container.innerHTML = div({
+        renderLayout() {
+            this.container.innerHTML = div({
                 style: {
                     marginTop: '10px'
                 }
@@ -120,20 +121,20 @@ define([
                             }
                         }, [
                             div({
-                                id: vm.alerts.id
+                                id: this.vm.alerts.id
                             }),
                             BS.buildPanel({
                                 classes: ['kb-panel-light'],
                                 title: 'Add a new developer token',
                                 body: [
                                     div({
-                                        id: vm.addTokenForm.id,
+                                        id: this.vm.addTokenForm.id,
                                         style: {
                                             marginBottom: '10px'
                                         }
                                     }),
                                     div({
-                                        id: vm.newToken.id
+                                        id: this.vm.newToken.id
                                     })
                                 ]
                             }),
@@ -141,39 +142,38 @@ define([
                                 classes: ['kb-panel-light'],
                                 title: 'Your active developer tokens',
                                 body: div({
-                                    id: vm.allTokens.id
+                                    id: this.vm.allTokens.id
                                 })
                             })
                         ])
                     }]
                 }).content
             ]);
-            bindVm();
+            this.bindVm();
         }
 
-        function niceDate(epoch) {
-            var date = new Date(epoch);
-            return Format.niceTime(date);
+        niceDate(epoch) {
+            return Format.niceTime(new Date(epoch));
         }
 
-        function doRevokeToken(tokenId) {
+        doRevokeToken(tokenId) {
             // Revoke
-            runtime.service('session').getClient().revokeToken(tokenId)
-                .then(function () {
-                    return render();
+            this.runtime.service('session').getClient().revokeToken(tokenId)
+                .then(() => {
+                    return this.render();
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('ERROR', err);
                 });
         }
 
-        function renderNewToken() {
-            var newToken = vm.newToken.value;
-            var clockId = html.genId();
-            var events = new DomEvent.make({
-                node: vm.newToken.node
+        renderNewToken() {
+            const newToken = this.vm.newToken.value;
+            const clockId = html.genId();
+            const events = new DomEvent.make({
+                node: this.vm.newToken.node
             });
-            vm.newToken.node.innerHTML = div({
+            this.vm.newToken.node.innerHTML = div({
                 class: 'well',
                 style: {
                     marginTop: '10px'
@@ -197,91 +197,91 @@ define([
                     class: 'btn btn-danger',
                     id: events.addEvent({
                         type: 'click',
-                        handler: function () {
+                        handler: () => {
                             clock.stop();
-                            vm.newToken.node.innerHTML = '';
+                            this.vm.newToken.node.innerHTML = '';
                         }
                     })
                 }, 'Done'))
             ]);
             events.attachEvents();
 
-            function CountDownClock(countDownInSeconds, id) {
-                var countdown = countDownInSeconds * 1000;
-                var node = document.getElementById(id);
-                var startTime = new Date().getTime();
-                var timer;
+            const CountDownClock = (countDownInSeconds, id) => {
+                let countdown = countDownInSeconds * 1000;
+                const node = document.getElementById(id);
+                const startTime = new Date().getTime();
+                let timer;
                 if (!node) {
                     return;
                 }
 
-                function render(timeLeft) {
+                const render = (timeLeft) => {
                     node.innerHTML = fmt.niceDuration(timeLeft);
-                }
+                };
 
-                function loop() {
-                    timer = window.setTimeout(function () {
-                        var now = new Date().getTime();
-                        var elapsed = now - startTime;
+                const loop = () => {
+                    timer = window.setTimeout(() => {
+                        const now = new Date().getTime();
+                        const elapsed = now - startTime;
                         render(countdown - elapsed);
                         if (elapsed < countdown) {
                             loop();
                         } else {
-                            vm.newToken.node.innerHTML = '';
+                            this.vm.newToken.node.innerHTML = '';
                         }
                     }, 500);
-                }
+                };
 
-                function stop() {
+                const stop = () => {
                     countdown = 0;
                     if (timer) {
                         window.clearTimeout(timer);
                     }
-                }
+                };
                 render();
                 loop();
                 return {
                     stop: stop
                 };
-            }
-            var clock = CountDownClock(300, clockId);
+            };
+            const clock = CountDownClock(300, clockId);
         }
 
-        function handleSubmitAddToken() {
-            var name = vm.addTokenForm.node.querySelector('[name="name"]');
+        handleSubmitAddToken() {
+            const name = this.vm.addTokenForm.node.querySelector('[name="name"]');
 
-            var tokenName = name.value;
+            const tokenName = name.value;
             if (tokenName.length === 0) {
-                showAlert('danger', 'A token must have a non-zero length name');
+                this.showAlert('danger', 'A token must have a non-zero length name');
                 return;
             }
 
-            runtime.service('session').getClient().createToken({
+            this.runtime.service('session').getClient().createToken({
                 name: name.value,
                 type: 'developer'
             })
-                .then(function (result) {
-                    vm.newToken.value = result;
-                    renderNewToken();
-                    return render();
+                .then((result) => {
+                    this.vm.newToken.value = result;
+                    this.renderNewToken();
+                    return this.render();
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('ERROR', err);
                 });
 
         }
 
-        function renderAddTokenForm() {
-            var events = DomEvent.make({
-                node: vm.addTokenForm.node
+        renderAddTokenForm() {
+            const events = DomEvent.make({
+                node: this.vm.addTokenForm.node
             });
-            vm.addTokenForm.node.innerHTML = form({
+            this.vm.addTokenForm.node.innerHTML = form({
                 class: 'form-inline',
                 id: events.addEvent({
                     type: 'submit',
-                    handler: function (e) {
+                    handler: (e) => {
                         e.preventDefault();
-                        handleSubmitAddToken();
+                        this.handleSubmitAddToken();
                         return false;
                     }
                 })
@@ -306,18 +306,20 @@ define([
             events.attachEvents();
         }
 
-        function renderTokens() {
-            var events = DomEvent.make({
-                node: vm.allTokens.node
+        renderTokens() {
+            const events = DomEvent.make({
+                node: this.vm.allTokens.node
             });
-            var revokeAllButton;
-            if (vm.allTokens.value.length > 0) {
+            let revokeAllButton;
+            if (this.vm.allTokens.value.length > 0) {
                 revokeAllButton = button({
                     type: 'button',
                     class: 'btn btn-danger',
                     id: events.addEvent({
                         type: 'click',
-                        handler: doRevokeAll
+                        handler: () => {
+                            this.doRevokeAll();
+                        }
                     })
                 }, 'Revoke All');
             } else {
@@ -327,7 +329,7 @@ define([
                     disabled: true
                 }, 'Revoke All');
             }
-            vm.allTokens.node.innerHTML = table({
+            this.vm.allTokens.node.innerHTML = table({
                 class: 'table table-striped',
                 style: {
                     width: '100%'
@@ -356,10 +358,10 @@ define([
                         }
                     }, revokeAllButton)
                 ])
-            ].concat(vm.allTokens.value.map(function (token) {
+            ].concat(this.vm.allTokens.value.map((token) => {
                 return tr([
-                    td(niceDate(token.created)),
-                    td(fmt.niceDuration(timeRemaining(token.expires), {
+                    td(this.niceDate(token.created)),
+                    td(fmt.niceDuration(this.timeRemaining(token.expires), {
                         trimEnd: true
                     })),
                     td(token.name),
@@ -372,8 +374,8 @@ define([
                         type: 'button',
                         id: events.addEvent({
                             type: 'click',
-                            handler: function () {
-                                doRevokeToken(token.id);
+                            handler: () => {
+                                this.doRevokeToken(token.id);
                             }
                         })
                     }, 'Revoke'))
@@ -382,76 +384,64 @@ define([
             events.attachEvents();
         }
 
-        function doRevokeAll() {
-            return Promise.all(vm.allTokens.value.map(function (token) {
-                return runtime.service('session').getClient().revokeToken(token.id);
+        doRevokeAll() {
+            return Promise.all(this.vm.allTokens.value.map((token) => {
+                return this.runtime.service('session').getClient().revokeToken(token.id);
             }))
-                .then(function () {
-                    return render();
+                .then(() => {
+                    return this.render();
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('ERROR', err);
                 });
         }
 
-        function render() {
-            return runtime.service('session').getClient().getTokens()
-                .then(function (result) {
-                    vm.allTokens.value = result.tokens
-                        .filter(function (token) {
+        render() {
+            return this.runtime.service('session').getClient().getTokens()
+                .then((result) => {
+                    this.vm.allTokens.value = result.tokens
+                        .filter((token) => {
                             return (token.type === 'Developer');
                         });
 
-                    renderTokens();
-                    renderAddTokenForm();
+                    this.renderTokens();
+                    this.renderAddTokenForm();
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('ERROR', err);
-                    showAlert('danger', 'Sorry, error, look in console: ' + err.message);
+                    this.showAlert('danger', 'Sorry, error, look in console: ' + err.message);
                 });
         }
 
-        function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode.appendChild(document.createElement('div'));
+        attach(node) {
+            return Promise.try(() => {
+                this.hostNode = node;
+                this.container = this.hostNode.appendChild(document.createElement('div'));
             });
         }
 
-        function start() {
-            return utils.getTimeBias()
-                .then(function (bias) {
-                    serverBias = bias;
-                    renderLayout();
-                    return render();
+        start() {
+            return this.utils.getTimeBias()
+                .then((bias) => {
+                    this.serverBias = bias;
+                    this.renderLayout();
+                    return this.render();
                 });
         }
 
-        function stop() {
-            return Promise.try(function () {});
+        stop() {
+            return Promise.resolve();
         }
 
-        function detach() {
-            return Promise.try(function () {
-                if (hostNode && container) {
-                    hostNode.removeChild(container);
-                    hostNode.innerHTML = '';
+        detach() {
+            return Promise.try(() => {
+                if (this.hostNode && this.container) {
+                    this.hostNode.removeChild(this.container);
+                    this.hostNode.innerHTML = '';
                 }
             });
         }
-
-        return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
-        };
-
     }
 
-    return {
-        make: function (config) {
-            return factory(config);
-        }
-    };
+    return DeveloperTokenManager;
 });
