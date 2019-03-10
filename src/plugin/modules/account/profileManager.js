@@ -23,11 +23,12 @@ define([
             this.container = null;
             this.componentNode = null;
             this.vm = null;
+            this.id = html.genId();
         }
 
-        render(id) {
-            return div({
-                id: id,
+        createComponentNode() {
+            const node = document.createElement('div');
+            const componentMarkup = div({
                 style: {
                     marginTop: '10px',
                     display: 'flex',
@@ -48,6 +49,8 @@ define([
                     }
                 }
             });
+            node.innerHTML = componentMarkup;
+            return node.firstChild;
         }
 
         getProfile() {
@@ -76,13 +79,12 @@ define([
                 this.getProfile()
             ])
                 .spread((account, profile) => {
-                    var id = html.genId();
                     this.vm = {
                         runtime: this.runtime,
                         profile: profile
                     };
-                    this.container.innerHTML = this.render(id);
-                    this.componentNode = document.getElementById(id);
+                    this.componentNode = this.createComponentNode();
+                    this.container.appendChild(this.componentNode);
                     ko.applyBindings(this.vm, this.componentNode);
                 });
         }
