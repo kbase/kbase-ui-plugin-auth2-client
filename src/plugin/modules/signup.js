@@ -2,14 +2,7 @@ define([
     'bluebird',
     'knockout-plus',
     'kb_common/html',
-    'kb_common/domEvent',
-    'kb_common/bootstrapUtils',
-    'kb_plugin_auth2-client',
-    'kb_common_ts/HttpClient',
-    'kb_common_ts/Auth2',
     'kb_common_ts/Auth2Error',
-    './lib/utilsKO',
-    './widgets/errorWidget',
     './lib/policies',
     './lib/countdownClock',
     './lib/format',
@@ -22,14 +15,7 @@ define([
     Promise,
     ko,
     html,
-    DomEvents,
-    BS,
-    Plugin,
-    HttpClient,
-    Auth2,
     Auth2Error,
-    Utils,
-    ErrorWidget,
     Policies,
     CountDownClock,
     Format,
@@ -169,7 +155,7 @@ define([
                 clockNode.innerHTML = Format.niceDuration(remainingTime);
             }
 
-            clock = CountDownClock({
+            clock = new CountDownClock({
                 tick: 1000,
                 until: response.expires - timeOffset,
                 // for: 60000,
@@ -266,7 +252,7 @@ define([
                     });
 
                     // quick'n'dirty
-                    // TODO: done should be a boolean observable which 
+                    // TODO: done should be a boolean observable which
                     // signals that someone things the choice session is done...
                     var done = ko.observable(false);
 

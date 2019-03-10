@@ -57,7 +57,7 @@ define([
             host = fullUrl[2];
             schemaLess = fullUrl[3] || '';
         } else {
-            // If it has no schema, it is a url relative to the 
+            // If it has no schema, it is a url relative to the
             // current origin.
             // TODO: add that in here?
             schemaLess = url;
@@ -118,7 +118,7 @@ define([
                 clockNode.innerHTML = Format.niceDuration(remainingTime);
             }
 
-            var clock = CountDownClock({
+            var clock = new CountDownClock({
                 tick: 1000,
                 until: expires - timeOffset,
                 // for: 600000,
@@ -233,8 +233,8 @@ define([
                 });
             }
 
-            var providers = new provider.Providers({runtime: runtime}).get();
-    
+            var providers = new provider.Providers({ runtime: runtime }).get();
+
             var providersMap = providers.reduce((providersMap, provider) => {
                 providersMap[provider.id] = provider;
                 return providersMap;
@@ -277,8 +277,8 @@ define([
                             // If no policies to resolve and auth provider does not require signin
                             // confirmation, then just auto-signin.
                             if (policiesToResolve.missing.length === 0 &&
-                                policiesToResolve.outdated.length === 0 &&
-                                !provider.confirmSignin) {
+                                    policiesToResolve.outdated.length === 0 &&
+                                    !provider.confirmSignin) {
                                 return doSignIn(choice, stateParams.nextrequest);
                             }
 

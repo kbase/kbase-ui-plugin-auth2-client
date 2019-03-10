@@ -17,6 +17,7 @@ define([
         var inputValue = params.inputValue;
         // datasource is an object with the method "search"...
         var dataSource = params.dataSource;
+        var placeholder = params.placeholder;
 
         var userOpenedSearch = ko.observable(false);
 
@@ -163,7 +164,7 @@ define([
             // userOpenedSearch(true);
         }));
 
-        // We consider the field to be "modified" if it 
+        // We consider the field to be "modified" if it
         // has been modified (isDirty) and it is not
         // selected. Weird logic. Improve it!
         var userHasModified = ko.pureComputed(function () {
@@ -242,6 +243,7 @@ define([
             tooManyResults: tooManyResults,
             mode: mode,
             userOpenedSearch,
+            placeholder,
 
             // ACTIONS
             doDeactivate: doDeactivate,
@@ -279,6 +281,9 @@ define([
                         dataBind: {
                             value: 'inputValue',
                             valueUpdate: '"input"',
+                            attr: {
+                                placeholder: '$component.placeholder',
+                            },
                             event: {
                                 keyup: '$component.onInputKeyup'
                             }
@@ -298,7 +303,7 @@ define([
                             click: 'doToggleSearch'
                         }
                     }),
-                    // This is the search cancellation button, which simply closes 
+                    // This is the search cancellation button, which simply closes
                     // the search dropdown if it is open.
                     span({
                         class: 'input-group-addon fa fa-times',

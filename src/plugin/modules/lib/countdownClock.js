@@ -1,58 +1,57 @@
-define([], function () {
+define([], () => {
     'use strict';
-    
-    function CountDownClock(config) {
-        var targetTime;
-        // Either countdown until a specific time ...
-        if (config.until) {
-            targetTime = config.until;
-            // ... or for a quantity of time.
-        } else if (config.for) {
-            targetTime = new Date().getTime() + config.for;
-        }
-        // var startTime;
-        var tickInterval = config.tick || 1000;
-        var onTick = config.onTick;
-        var onExpired = config.onExpired;
-        var timer;
 
-        function tick() {
-            var now = new Date().getTime();
-            var remaining = targetTime - now;
+    class CountDownClock {
+        constructor(config) {
+            this.targetTime = null;
+            // Either countdown until a specific time ...
+            if (config.until) {
+                this.targetTime = config.until;
+                // ... or for a quantity of time.
+            } else if (config.for) {
+                this.targetTime = new Date().getTime() + config.for;
+            }
+            this.tickInterval = config.tick || 1000;
+            this.onTick = config.onTick;
+            this.onExpired = config.onExpired;
+            this.timer = null;
+        }
+
+        tick() {
+            const now = new Date().getTime();
+            const remaining = this.targetTime - now;
 
             try {
-                onTick(remaining);
+                this.onTick(remaining);
             } catch (ex) {
                 console.error('clock onRun: ' + ex.message);
             }
             if (remaining > 0) {
-                tock();
+                this.tock();
             } else {
-                onExpired();
+                this.onExpired();
             }
         }
 
-        function tock() {
-            timer = window.setTimeout(function () {
-                if (!timer) {
+        tock() {
+            this.timer = window.setTimeout(() => {
+                if (!this.timer) {
                     return;
                 }
-                tick();
-            }, tickInterval);
+                this.tick();
+            }, this.tickInterval);
         }
 
-        function start() {
-            tick();
+        start() {
+            this.tick();
         }
 
-        function stop() {
-            timer = null;
+        stop() {
+            if (this.timer) {
+                window.clearTimeout(this.timer);
+                this.timer = null;
+            }
         }
-
-        return {
-            start: start,
-            stop: stop
-        };
     }
     return CountDownClock;
 });

@@ -1,16 +1,10 @@
 define([
-    'bluebird',
-    'kb_common/html',
-    'kb_common/domEvent',
-    'kb_common/bootstrapUtils',
+    'kb_lib/html',
     'kb_common_ts/Auth2Error',
     'kb_plugin_auth2-client',
     'bootstrap'
 ], function (
-    Promise,
     html,
-    DomEvents,
-    BS,
     Auth2Error,
     Plugin
 ) {
@@ -40,9 +34,9 @@ define([
                 .finally(function () {
                     //  don 't care whether it succeeded or failed.
                     return runtime.service('session').loginStart({
-                        // TODO: this should be either the redirect url passed in 
+                        // TODO: this should be either the redirect url passed in
                         // or the dashboard.
-                        // We just let the login page do this. When the login page is 
+                        // We just let the login page do this. When the login page is
                         // entered with a valid token, redirect to the nextrequest,
                         // and if that is empty, the dashboard.
                         state: state,
@@ -254,8 +248,8 @@ define([
 
         function bindVmNode(vmNode) {
             if (!vmNode.disabled &&
-                (vmNode.node === null || vmNode.node === undefined) &&
-                vmNode.id) {
+                    (vmNode.node === null || vmNode.node === undefined) &&
+                    vmNode.id) {
                 var node = document.getElementById(vmNode.id);
                 if (node === null) {
                     throw new Error('bind failed, node not found with id: ' + vmNode.id);

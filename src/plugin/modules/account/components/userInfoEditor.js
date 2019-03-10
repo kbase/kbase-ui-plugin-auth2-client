@@ -1,17 +1,17 @@
 define([
-    'knockout-plus',
-    'kb_common/html',
-    'kb_common/bootstrapUtils',
+    'knockout',
+    'kb_knockout/registry',
+    'kb_lib/html',
     'kb_common/format'
 ], function (
     ko,
+    reg,
     html,
-    BS,
     Format
 ) {
     'use strict';
 
-    var t = html.tag,
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         label = t('label'),
@@ -19,8 +19,7 @@ define([
         input = t('input'),
         button = t('button');
 
-
-    var fields = {
+    const fields = {
         username: {
             name: 'username',
             label: 'Username',
@@ -71,76 +70,69 @@ define([
         }
     };
 
-    function viewModel (params) {
-        var doSave = params.doSave;
+    class UserInfoEditor {
+        constructor({ doSave, email, username, created, lastLogin }) {
+            this.doSave = doSave;
 
-        var email = ko.observable(params.email)
-            .extend({
-                required: true,
-                email: true
+            this.email = ko.observable(email)
+                .extend({
+                    required: true,
+                    email: true
+                });
+
+            this.username = ko.observable(username);
+            this.created = ko.observable(created);
+            this.lastLogin = ko.observable(lastLogin);
+
+            this.createdAt = ko.pureComputed(() => {
+                return Format.niceTime(this.created());
+            });
+            this.lastLoginAt = ko.pureComputed(() => {
+                return Format.niceElapsedTime(this.lastLogin()) +
+                        ' (' +
+                        Format.niceTime(this.lastLogin()) +
+                        ')';
             });
 
-        var username = ko.observable(params.username);
-        var created = ko.observable(params.created);
-        var lastLogin = ko.observable(params.lastLogin);
+            this.more = {};
+            Object.keys(fields).forEach((key) => {
+                this.more[key] = ko.observable(true);
+            });
 
-        var createdAt = ko.pureComputed(function () {
-            return Format.niceTime(created());
-        });
-        var lastLoginAt = ko.pureComputed(function () {
-            return Format.niceElapsedTime(lastLogin()) +
-                ' (' +
-                Format.niceTime(lastLogin()) +
-                ')';
-        });
+            this.message = ko.observable();
+            this.messageType = ko.observable();
+        }
 
-        var more = {};
-        Object.keys(fields).forEach(function (key) {
-            more[key] = ko.observable(true);
-        });
-
-        function showMore(name) {
-            if (more[name]()) {
-                more[name](false);
+        showMore(name) {
+            if (this.more[name]()) {
+                this.more[name](false);
             } else {
-                more[name](true);
+                this.more[name](true);
             }
         }
 
-        function save() {
-            doSave({
-                email: email()
+        save() {
+            this.doSave({
+                email: this.email()
             })
-                .then(function () {
-                    message('Successfully Saved');
-                    messageType({
+                .then(() => {
+                    this.message('Successfully Saved');
+                    this.messageType({
                         'alert-success': true,
                         hidden: false
                     });
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('boo', err);
+                    this.message('Error Saving! ' + err.message);
+                    this.messageType({
+                        'alert-danger': true,
+                        hidden: false
+                    });
                 });
         }
-
-        var message = ko.observable();
-        var messageType = ko.observable();
-
-        return {
-            email: email,
-            username: username,
-            created: created,
-            lastLogin: lastLogin,
-            createdAt: createdAt,
-            lastLoginAt: lastLoginAt,
-            showMore: showMore,
-            more: more,
-            save: save,
-            message: message,
-            messageType: messageType
-        };
     }
-    
+
     function fieldDoc(description, content, name) {
         return div({
             dataElement: 'more'
@@ -316,9 +308,11 @@ define([
 
     function component() {
         return {
-            viewModel: viewModel,
+            viewModel: UserInfoEditor,
             template: buildForm()
         };
     }
-    return ko.kb.registerComponent(component);
+    // return ko.kb.registerComponent(component);
+
+    return reg.registerComponent(component);
 });
