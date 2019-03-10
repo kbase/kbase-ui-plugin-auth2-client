@@ -1,9 +1,5 @@
 define([
     'bluebird',
-    'jquery',
-    'kb_common_ts/Html',
-    'kb_common/html',
-    'kb_common/bootstrapUtils',
     './personalInfoEditor',
     './linksManager',
     './developerTokenManager',
@@ -12,12 +8,8 @@ define([
     './signinManager',
     './profileManager',
     '../widgets/tabsWidget'
-], function (
+], (
     Promise,
-    $,
-    Html,
-    html,
-    BS,
     PersonalInfoEditor,
     LinksManager,
     DeveloperTokenManager,
@@ -26,29 +18,32 @@ define([
     SigninManager,
     ProfileManager,
     TabsWidget
-) {
+) => {
     'use strict';
-    function factory(config) {
-        var hostNode, container,
-            runtime = config.runtime,
-            tabs;
 
-        var vm = {
-            developerTokens: {
-                enabled: null,
-                value: null
-            },
-            serviceTokens: {
-                enabled: null,
-                value: null
-            }
-        };
+    class AccountPanel {
+        constructor({ runtime }) {
+            this.runtime = runtime;
+            this.hostNode = null;
+            this.tabs = null;
+
+            this.vm = {
+                developerTokens: {
+                    enabled: null,
+                    value: null
+                },
+                serviceTokens: {
+                    enabled: null,
+                    value: null
+                }
+            };
+        }
 
         // RENDERING
 
-        function renderLayout(node, params) {
-            var tabDef = {
-                runtime: runtime,
+        renderLayout(node, params) {
+            const tabDef = {
+                runtime: this.runtime,
                 style: {
                     padding: '0 10px'
                 },
@@ -71,8 +66,8 @@ define([
                     panel: {
                         class: LinksManager
                     }
-                }, (function () {
-                    if (vm.developerTokens.enabled) {
+                }, (() => {
+                    if (this.vm.developerTokens.enabled) {
                         return {
                             name: 'developer-tokens',
                             label: 'Developer Tokens',
@@ -81,8 +76,8 @@ define([
                             }
                         };
                     }
-                }()), (function () {
-                    if (vm.serviceTokens.enabled) {
+                })(), (() => {
+                    if (this.vm.serviceTokens.enabled) {
                         return {
                             name: 'service-tokens',
                             label: 'Service Tokens',
@@ -91,7 +86,7 @@ define([
                             }
                         };
                     }
-                }()), {
+                })(), {
                     name: 'signins',
                     label: 'Sign-Ins',
                     panel: {
@@ -104,81 +99,71 @@ define([
                         class: AgreementsManager
                     }
                 }
-                ].filter(function (tab) {
+                ].filter((tab) => {
                     return tab ? true : false;
                 })
             };
 
-            tabs = TabsWidget.make(tabDef);
-            return tabs.attach(node)
-                .then(function () {
-                    return tabs.start();
+            this.tabs = TabsWidget.make(tabDef);
+            return this.tabs.attach(node)
+                .then(() => {
+                    return this.tabs.start();
                 });
         }
 
         // API
 
-        function attach(node) {
-            return Promise.try(function () {
-                hostNode = node;
-                container = hostNode;
+        attach(node) {
+            return Promise.try(() => {
+                this.hostNode = node;
             });
         }
 
-        function start(params) {
-            return runtime.service('session').getClient().getMe()
-                .then(function (account) {
+        start(params) {
+            return this.runtime.service('session').getClient().getMe()
+                .then((account) => {
                     // vm.roles.value = account.roles;
-                    account.roles.forEach(function (role) {
+                    account.roles.forEach((role) => {
                         switch (role.id) {
                         case 'ServToken':
-                            vm.serviceTokens.enabled = true;
+                            this.vm.serviceTokens.enabled = true;
                             break;
                         case 'DevToken':
-                            vm.developerTokens.enabled = true;
+                            this.vm.developerTokens.enabled = true;
                             break;
                         }
                     });
 
-                    runtime.send('ui', 'setTitle', 'Account Manager');
-                    try {
-                        return renderLayout(container, params);
-                    } catch (ex) {
-                        console.error('ERROR', ex);
-                        // renderError(ex);
-                        throw (ex);
-                    }
+                    this.runtime.send('ui', 'setTitle', 'Account Manager');
+                    return this.renderLayout(this.hostNode, params);
                 });
         }
 
-        function stop() {
-            return Promise.try(function () {
-                return tabs.stop();
+        stop() {
+            return Promise.try(() => {
+                if (!this.tabs) {
+                    return null;
+                }
+                return this.tabs.stop();
             });
         }
 
-        function detach() {
-            return Promise.try(function () {
-                return tabs.detach()
-                    .then(function () {
-                        if (hostNode) {
-                            hostNode.innerHTML = '';
-                        }
+        detach() {
+            return Promise.try(() => {
+                if (!this.tabs) {
+                    return null;
+                }
+                return this.tabs.detach()
+                    .then(() => {
                     });
-            });
+            })
+                .finally(() => {
+                    if (this.hostNode) {
+                        this.hostNode.innerHTML = '';
+                    }
+                });
         }
-
-        return Object.freeze({
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
-        });
     }
 
-    return {
-        make: function (config) {
-            return factory(config);
-        }
-    };
+    return AccountPanel;
 });

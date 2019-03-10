@@ -171,17 +171,26 @@ define([
 
         function stop() {
             return Promise.try(function () {
-                return null;
+                if (!currentTabWidget) {
+                    return null;
+                }
+                return currentTabWidget.stop();
             });
         }
 
         function detach() {
             return Promise.try(function () {
-                if (hostNode) {
-                    hostNode.innerHTML = '';
+                if (!currentTabWidget) {
+                    return null;
                 }
-                return null;
-            });
+                return currentTabWidget.detach();
+            })
+                .then(() => {
+                    if (hostNode) {
+                        hostNode.innerHTML = '';
+                    }
+                    return null;
+                });
         }
 
         return {
