@@ -8,13 +8,9 @@ package:
 source:
   modules:
   styles:
-    # - file: main.css
+    - file: main.css
 install:
   widgets:
-    - module: panel
-      id: auth2_client_panel
-      type: es6
-      css: true
     # - module: login
     #   id: auth2_login
     #   css: true
@@ -28,9 +24,9 @@ install:
     # - module: test
     #   id: auth2Test
     #   type: factory
-    # - module: account/panel
-    #   id: auth2Account
-    #   type: es6
+    - module: account/panel
+      id: auth2Account
+      type: es6
     # - module: widgets/signinWidget
     #   id: auth2_signin
     #   css: true
@@ -73,7 +69,7 @@ install:
     #       in-process-login-token: {}
     #       test: {}
     - path: [auth2, account]
-      widget: auth2_client_panel
+      widget: auth2Account
       authorization: true
       queryParams:
         tab: {}
