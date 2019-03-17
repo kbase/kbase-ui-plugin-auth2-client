@@ -1,10 +1,12 @@
-define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager'], (
+define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager', './Session'], (
     Promise,
     props,
     Messenger,
-    WidgetManager
+    WidgetManager,
+    Session
 ) => {
     'use strict';
+
     class Runtime {
         constructor({ token, username, config }) {
             this.token = token;
@@ -23,6 +25,10 @@ define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager'], (
             this.messenger = new Messenger();
 
             this.heartbeatTimer = null;
+
+            this.services = {
+                session: new Session({ runtime: this })
+            };
         }
 
         config(path, defaultValue) {
@@ -36,17 +42,7 @@ define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager'], (
         service(name) {
             switch (name) {
             case 'session':
-                return {
-                    getAuthToken: () => {
-                        return this.token;
-                    },
-                    getUsername: () => {
-                        return this.username;
-                    },
-                    isLoggedIn: () => {
-                        return this.token ? true : false;
-                    }
-                };
+                return this.services.session;
             }
         }
 
@@ -67,7 +63,7 @@ define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager'], (
         }
 
         drop(subscription) {
-            this.messenger.drop(subscription);
+            this.messenger.unreceive(subscription);
         }
 
         start() {
@@ -75,12 +71,15 @@ define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager'], (
                 this.heartbeatTimer = window.setInterval(() => {
                     this.send('app', 'heartbeat', { time: new Date().getTime() });
                 }, 1000);
+                return this.services.session.start();
             });
         }
 
         stop() {
             return Promise.try(() => {
                 window.clearInterval(this.heartbeatTimer);
+
+                return this.services.session.stop();
             });
         }
     }

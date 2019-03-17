@@ -2,13 +2,14 @@ define([
     'knockout-plus',
     'kb_common/html',
     'kb_common_ts/Auth2Error',
+    'kb_common_ts/Auth2',
     'yaml!../config.yml',
     '../lib/provider',
     './signinButton',
 
     // for effect
     'bootstrap'
-], function (ko, html, Auth2Error, config, provider, SigninButtonComponent) {
+], function (ko, html, Auth2Error, auth2, config, provider, SigninButtonComponent) {
     'use strict';
 
     var t = html.tag,
@@ -478,10 +479,12 @@ define([
 
         var providers = new provider.Providers({ runtime: runtime }).get();
 
+        const auth2Client = new auth2.Auth2({
+            baseUrl: runtime.config('services.auth.url')
+        });
+
         function doSignup() {
-            runtime
-                .service('session')
-                .getClient()
+            auth2Client
                 .loginCancel()
                 .catch(Auth2Error.AuthError, function (err) {
                     // ignore this specific error...

@@ -2,17 +2,12 @@ define([
     'knockout-plus',
     'kb_common/html',
     'kb_common_ts/Auth2Error',
+    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Session',
     'kb_common/bootstrapUtils',
     './policyResolver',
     '../lib/provider'
-], function (
-    ko,
-    html,
-    Auth2Error,
-    BS,
-    PolicyResolverComponent,
-    provider
-) {
+], function (ko, html, Auth2Error, auth2, MAuth2Session, BS, PolicyResolverComponent, provider) {
     'use strict';
 
     var t = html.tag,
@@ -38,40 +33,52 @@ define([
                         }
                     }
                 }),
-                div({
-                    dataBind: {
-                        with: 'choice.login[0]'
-                    }
-                }, div({
-                    style: {
-                        margin: '4px',
-                        padding: '4px'
-                    }
-                }, form({
-                    dataBind: {
-                        submit: '$parent.doSigninSubmit'
-                    }
-                }, [
-                    div([
-                        button({
-                            class: 'btn btn-primary',
-                            type: 'submit',
-                            dataBind: {
-                                disable: '!$parent.canSignin()'
+                div(
+                    {
+                        dataBind: {
+                            with: 'choice.login[0]'
+                        }
+                    },
+                    div(
+                        {
+                            style: {
+                                margin: '4px',
+                                padding: '4px'
                             }
-                        }, [
-                            'Sign In to KBase account ',
-                            span({
+                        },
+                        form(
+                            {
                                 dataBind: {
-                                    text: 'user'
-                                },
-                                style: {
-                                    textWeight: 'bold'
+                                    submit: '$parent.doSigninSubmit'
                                 }
-                            })
-                        ])
-                    ])
-                ])))
+                            },
+                            [
+                                div([
+                                    button(
+                                        {
+                                            class: 'btn btn-primary',
+                                            type: 'submit',
+                                            dataBind: {
+                                                disable: '!$parent.canSignin()'
+                                            }
+                                        },
+                                        [
+                                            'Sign In to KBase account ',
+                                            span({
+                                                dataBind: {
+                                                    text: 'user'
+                                                },
+                                                style: {
+                                                    textWeight: 'bold'
+                                                }
+                                            })
+                                        ]
+                                    )
+                                ])
+                            ]
+                        )
+                    )
+                )
             ])
         });
     }
@@ -83,76 +90,86 @@ define([
             collapsed: true,
             classes: ['kb-panel-help'],
             body: div([
-                div({
-                    dataBind: {
-                        if: '$component.source === "signin"'
-                    }
-                }, [
-                    p([
-                        'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
-                        'to Globus and back again without any warning.'
-                    ]),
-                    p([
-                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
-                        'to log out of Globus, and then try agin.'
-                    ])
-                ]),
-                div({
-                    dataBind: {
-                        if: '$component.source === "signup"'
-                    }
-                }, [
-                    p([
-                        'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
-                        'to Globus and back again without any warning.'
-                    ]),
-                    p([
-                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
-                        'to log out of Globus, and then try agin.'
-                    ]),
-                    p([
-                        'If you have signed in with a Globus account already linked to a KBase account, you will be unable ',
-                        'to create a new KBase account using that Globus account. '
-                    ]),
-                ]),
+                div(
+                    {
+                        dataBind: {
+                            if: '$component.source === "signin"'
+                        }
+                    },
+                    [
+                        p([
+                            'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+                            'to Globus and back again without any warning.'
+                        ]),
+                        p([
+                            'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                            'to log out of Globus, and then try agin.'
+                        ])
+                    ]
+                ),
+                div(
+                    {
+                        dataBind: {
+                            if: '$component.source === "signup"'
+                        }
+                    },
+                    [
+                        p([
+                            'If this browser is already signed in to Globus, a sign-in attempt from KBase will route you ',
+                            'to Globus and back again without any warning.'
+                        ]),
+                        p([
+                            'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                            'to log out of Globus, and then try agin.'
+                        ]),
+                        p([
+                            'If you have signed in with a Globus account already linked to a KBase account, you will be unable ',
+                            'to create a new KBase account using that Globus account. '
+                        ])
+                    ]
+                ),
                 // p([
                 //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
                 //     'to do so.'
                 // ]),
-                div({
-                    style: {
-                        marginBottom: '5px'
-                    },
-                    dataBind: {
-                        with: 'providersMap.Globus'
-                    }
-                }, [
-                    span({
-                        class: 'fa fa-external-link',
+                div(
+                    {
                         style: {
-                            marginLeft: '10px',
-                            marginRight: '5px'
-                        }
-                    }),
-                    a({
-                        dataBind: {
-                            attr: {
-                                href: 'logoutUrl'
-                            }
+                            marginBottom: '5px'
                         },
-                        target: '_blank'
-                    }, [
-                        'Log out from ',
+                        dataBind: {
+                            with: 'providersMap.Globus'
+                        }
+                    },
+                    [
                         span({
-                            dataBind: {
-                                text: 'label'
+                            class: 'fa fa-external-link',
+                            style: {
+                                marginLeft: '10px',
+                                marginRight: '5px'
                             }
-                        })
-                    ])
-                ]),
-                p([
-                    'After signing out you will need to '
-                ]),
+                        }),
+                        a(
+                            {
+                                dataBind: {
+                                    attr: {
+                                        href: 'logoutUrl'
+                                    }
+                                },
+                                target: '_blank'
+                            },
+                            [
+                                'Log out from ',
+                                span({
+                                    dataBind: {
+                                        text: 'label'
+                                    }
+                                })
+                            ]
+                        )
+                    ]
+                ),
+                p(['After signing out you will need to ']),
                 p([
                     span({
                         class: 'fa fa-link',
@@ -161,9 +178,12 @@ define([
                             marginRight: '5px'
                         }
                     }),
-                    a({
-                        href: '#login'
-                    }, 'Sign in to KBase again')
+                    a(
+                        {
+                            href: '#login'
+                        },
+                        'Sign in to KBase again'
+                    )
                 ])
             ])
         });
@@ -176,76 +196,86 @@ define([
             collapsed: true,
             classes: ['kb-panel-help'],
             body: div([
-                div({
-                    dataBind: {
-                        if: '$component.source === "signin"'
-                    }
-                }, [
-                    p([
-                        'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
-                        'to ORCiD and back again without any warning.'
-                    ]),
-                    p([
-                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
-                        'to log out of ORCiD, and then try agin.'
-                    ])
-                ]),
-                div({
-                    dataBind: {
-                        if: '$component.source === "signup"'
-                    }
-                }, [
-                    p([
-                        'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
-                        'to ORCiD and back again without any warning.'
-                    ]),
-                    p([
-                        'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
-                        'to log out of ORCiD, and then try agin.'
-                    ]),
-                    p([
-                        'If you have signed in with a ORCiD account already linked to a KBase account, you will be unable ',
-                        'to create a new KBase account using that ORCiD account. '
-                    ]),
-                ]),
+                div(
+                    {
+                        dataBind: {
+                            if: '$component.source === "signin"'
+                        }
+                    },
+                    [
+                        p([
+                            'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
+                            'to ORCiD and back again without any warning.'
+                        ]),
+                        p([
+                            'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                            'to log out of ORCiD, and then try agin.'
+                        ])
+                    ]
+                ),
+                div(
+                    {
+                        dataBind: {
+                            if: '$component.source === "signup"'
+                        }
+                    },
+                    [
+                        p([
+                            'If this browser is already signed in to ORCiD, a sign-in attempt from KBase will route you ',
+                            'to ORCiD and back again without any warning.'
+                        ]),
+                        p([
+                            'If this just happened to you, and the account you see above is not the one you want, you should use the logout link below ',
+                            'to log out of ORCiD, and then try agin.'
+                        ]),
+                        p([
+                            'If you have signed in with a ORCiD account already linked to a KBase account, you will be unable ',
+                            'to create a new KBase account using that ORCiD account. '
+                        ])
+                    ]
+                ),
                 // p([
                 //     'KBase cannot sign you out of an identity provider, but the links below will allow you ',
                 //     'to do so.'
                 // ]),
-                div({
-                    style: {
-                        marginBottom: '5px'
-                    },
-                    dataBind: {
-                        with: 'providersMap.OrcID'
-                    }
-                }, [
-                    span({
-                        class: 'fa fa-external-link',
+                div(
+                    {
                         style: {
-                            marginLeft: '10px',
-                            marginRight: '5px'
-                        }
-                    }),
-                    a({
-                        dataBind: {
-                            attr: {
-                                href: 'logoutUrl'
-                            }
+                            marginBottom: '5px'
                         },
-                        target: '_blank'
-                    }, [
-                        'Log out from ',
+                        dataBind: {
+                            with: 'providersMap.OrcID'
+                        }
+                    },
+                    [
                         span({
-                            dataBind: {
-                                text: 'label'
+                            class: 'fa fa-external-link',
+                            style: {
+                                marginLeft: '10px',
+                                marginRight: '5px'
                             }
-                        })
-                    ])
-                ]),
-                p([
-                    'After signing out you will need to '
-                ]),
+                        }),
+                        a(
+                            {
+                                dataBind: {
+                                    attr: {
+                                        href: 'logoutUrl'
+                                    }
+                                },
+                                target: '_blank'
+                            },
+                            [
+                                'Log out from ',
+                                span({
+                                    dataBind: {
+                                        text: 'label'
+                                    }
+                                })
+                            ]
+                        )
+                    ]
+                ),
+                p(['After signing out you will need to ']),
                 p([
                     span({
                         class: 'fa fa-link',
@@ -254,9 +284,12 @@ define([
                             marginRight: '5px'
                         }
                     }),
-                    a({
-                        href: '#login'
-                    }, 'Sign in to KBase again')
+                    a(
+                        {
+                            href: '#login'
+                        },
+                        'Sign in to KBase again'
+                    )
                 ])
             ])
         });
@@ -279,40 +312,44 @@ define([
                     'or sign up for a new one. Upon returning to KBase, you will be able to create a new KBase account.'
                 ]),
 
-                div({
-                    style: {
-                        marginBottom: '5px'
-                    },
-                    dataBind: {
-                        with: 'providersMap.Google'
-                    }
-                }, [
-                    span({
-                        class: 'fa fa-external-link',
+                div(
+                    {
                         style: {
-                            marginLeft: '10px',
-                            marginRight: '5px'
-                        }
-                    }),
-                    a({
-                        dataBind: {
-                            attr: {
-                                href: 'logoutUrl'
-                            }
+                            marginBottom: '5px'
                         },
-                        target: '_blank'
-                    }, [
-                        'Log out from ',
+                        dataBind: {
+                            with: 'providersMap.Google'
+                        }
+                    },
+                    [
                         span({
-                            dataBind: {
-                                text: 'label'
+                            class: 'fa fa-external-link',
+                            style: {
+                                marginLeft: '10px',
+                                marginRight: '5px'
                             }
-                        })
-                    ])
-                ]),
-                p([
-                    'After signing out you will need to '
-                ]),
+                        }),
+                        a(
+                            {
+                                dataBind: {
+                                    attr: {
+                                        href: 'logoutUrl'
+                                    }
+                                },
+                                target: '_blank'
+                            },
+                            [
+                                'Log out from ',
+                                span({
+                                    dataBind: {
+                                        text: 'label'
+                                    }
+                                })
+                            ]
+                        )
+                    ]
+                ),
+                p(['After signing out you will need to ']),
                 p([
                     span({
                         class: 'fa fa-link',
@@ -321,45 +358,56 @@ define([
                             marginRight: '5px'
                         }
                     }),
-                    a({
-                        href: '#login'
-                    }, 'Sign in to KBase again')
+                    a(
+                        {
+                            href: '#login'
+                        },
+                        'Sign in to KBase again'
+                    )
                 ])
             ])
         });
     }
 
     function buildOops() {
-        return div({
-
-        }, [
-            div({
-                dataBind: {
-                    if: '$component.choice.provider === "Globus"'
-                }
-            }, buildGlobusOops()),
-            div({
-                dataBind: {
-                    if: '$component.choice.provider === "OrcID"'
-                }
-            }, buildOrcIDOops()),
-            div({
-                dataBind: {
-                    if: '$component.choice.provider === "Google"'
-                }
-            }, buildGoogleOops())
+        return div({}, [
+            div(
+                {
+                    dataBind: {
+                        if: '$component.choice.provider === "Globus"'
+                    }
+                },
+                buildGlobusOops()
+            ),
+            div(
+                {
+                    dataBind: {
+                        if: '$component.choice.provider === "OrcID"'
+                    }
+                },
+                buildOrcIDOops()
+            ),
+            div(
+                {
+                    dataBind: {
+                        if: '$component.choice.provider === "Google"'
+                    }
+                },
+                buildGoogleOops()
+            )
         ]);
     }
 
     function template() {
         return div([
-            p({
-                style: {
-                    fontWeight: 'bold'
-                }
-            }, [
-                'Ready to sign in.'
-            ]),
+            p(
+                {
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                },
+                ['Ready to sign in.']
+            ),
             p([
                 'This ',
                 span({
@@ -427,6 +475,10 @@ define([
         var nextRequest = params.nextRequest;
         var source = params.source;
 
+        const auth2Client = new auth2.Auth2({
+            baseUrl: runtime.config('services.auth.url')
+        });
+
         var policiesToResolve = {
             missing: params.policiesToResolve.missing.map(function (item) {
                 return {
@@ -450,11 +502,14 @@ define([
         };
 
         var canSignin = ko.pureComputed(function () {
-            if (policiesToResolve.missing.some(function (item) {
-                return !item.agreed();
-            }) || policiesToResolve.outdated.some(function (item) {
+            if (
+                policiesToResolve.missing.some(function (item) {
                     return !item.agreed();
-                })) {
+                }) ||
+                policiesToResolve.outdated.some(function (item) {
+                    return !item.agreed();
+                })
+            ) {
                 return false;
             }
             return true;
@@ -462,13 +517,27 @@ define([
 
         function doSigninSubmit() {
             // just get the first, since we only have one now.
+            // TODO: get extra cookies from plugin config.
+            var extraCookies = [];
+            // if (config.cookie.backup.enabled) {
+            //     extraCookies.push({
+            //         name: config.cookie.backup.name,
+            //         domain: config.cookie.backup.domain
+            //     });
+            // }
+            var auth2Session = new MAuth2Session.Auth2Session({
+                cookieName: runtime.config('services.auth2.cookieName'),
+                extraCookies: extraCookies,
+                baseUrl: runtime.config('services.auth2.url'),
+                providers: runtime.config('services.auth2.providers')
+            });
             var agreements = getAgreements(policiesToResolve);
-
-            runtime.service('session').getClient().loginPick({
-                identityId: login.id,
-                linkAll: false,
-                agreements: agreements
-            })
+            auth2Session
+                .loginPick({
+                    identityId: login.id,
+                    linkAll: false,
+                    agreements: agreements
+                })
                 .then(function () {
                     doSigninSuccess();
                 })
@@ -488,7 +557,8 @@ define([
         }
 
         function doRetrySignup() {
-            runtime.service('session').getClient().loginCancel()
+            auth2Client
+                .loginCancel()
                 .then(function () {
                     runtime.send('app', 'navigate', {
                         path: 'signup',
@@ -499,9 +569,9 @@ define([
                 })
                 .catch(Auth2Error.AuthError, function (err) {
                     console.error('ERROR1', err);
-                    // Setting the error triggers the error component to be 
+                    // Setting the error triggers the error component to be
                     // displayed and populated.
-                    // TODO: I think the error object needs to be fully observable and 
+                    // TODO: I think the error object needs to be fully observable and
                     // updated here in order to propogate the values into the component....
                     // Otherwise those properties will be stuck at the original value.
                     // error({
@@ -522,7 +592,7 @@ define([
                 });
         }
 
-        var providers = new provider.Providers({runtime: runtime}).get();
+        var providers = new provider.Providers({ runtime: runtime }).get();
 
         var providersMap = {};
         providers.forEach(function (provider) {

@@ -4,6 +4,8 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common/domEvent2',
     'kb_common_ts/Auth2Error',
+    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Session',
     'kb_service/client/userProfile',
     '../lib/format',
     '../lib/dataSource',
@@ -16,6 +18,8 @@ define([
     BS,
     DomEvent,
     Auth2Error,
+    auth2,
+    MAuth2Session,
     UserProfileService,
     format,
     DataSource,
@@ -62,6 +66,18 @@ define([
         var create = choice.create[0];
         var runtime = params.runtime;
         var nextRequest = params.nextRequest;
+
+        const auth2Client = new auth2.Auth2({
+            baseUrl: runtime.config('services.auth.url')
+        });
+
+        // TODO: extra cookies!
+        var auth2Session = new MAuth2Session.Auth2Session({
+            cookieName: runtime.config('services.auth2.cookieName'),
+            extraCookies: [],
+            baseUrl: runtime.config('services.auth2.url'),
+            providers: runtime.config('services.auth2.providers')
+        });
 
         var dataSource = DataSource({
             path: runtime.pluginResourcePath + '/dataSources/',
@@ -175,9 +191,7 @@ define([
         ko.validation.rules['usernameMustBeUnique'] = {
             async: true,
             validator: function (val, params, callback) {
-                runtime
-                    .service('session')
-                    .getClient()
+                auth2Client
                     .loginUsernameSuggest(username())
                     .then(function (results) {
                         if (results.availablename !== username()) {
@@ -491,49 +505,44 @@ define([
         signupState('incomplete');
 
         function createProfile(response) {
-            return runtime
-                .service('session')
-                .getClient()
-                .getClient()
-                .getMe(response.token.token)
-                .then(function (accountInfo) {
-                    var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
-                        token: response.token.token
-                    });
-                    var newProfile = {
-                        user: {
-                            username: accountInfo.user,
-                            realname: realname()
-                        },
-                        profile: {
-                            metadata: {
-                                createdBy: 'userprofile_ui_service',
-                                created: new Date().toISOString()
-                            },
-                            // was globus info, no longer used
-                            account: {},
-                            preferences: {},
-                            // when auto-creating a profile, there is nothing to put here het.
-                            userdata: {
-                                // title: role(),
-                                organization: organization(),
-                                department: department()
-                            }
-                        }
-                    };
-                    return userProfileClient
-                        .set_user_profile({
-                            profile: newProfile
-                        })
-                        .catch(function (err) {
-                            if (err.status === 500) {
-                                // TODO: return fancy error.
-                                throw new Error('Profile creation failed: ' + err.error.message);
-                            } else {
-                                throw err;
-                            }
-                        });
+            return auth2Client.getMe(response.token.token).then(function (accountInfo) {
+                var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
+                    token: response.token.token
                 });
+                var newProfile = {
+                    user: {
+                        username: accountInfo.user,
+                        realname: realname()
+                    },
+                    profile: {
+                        metadata: {
+                            createdBy: 'userprofile_ui_service',
+                            created: new Date().toISOString()
+                        },
+                        // was globus info, no longer used
+                        account: {},
+                        preferences: {},
+                        // when auto-creating a profile, there is nothing to put here het.
+                        userdata: {
+                            // title: role(),
+                            organization: organization(),
+                            department: department()
+                        }
+                    }
+                };
+                return userProfileClient
+                    .set_user_profile({
+                        profile: newProfile
+                    })
+                    .catch(function (err) {
+                        if (err.status === 500) {
+                            // TODO: return fancy error.
+                            throw new Error('Profile creation failed: ' + err.error.message);
+                        } else {
+                            throw err;
+                        }
+                    });
+            });
         }
 
         function submitSignup() {
@@ -571,16 +580,11 @@ define([
                 })
             };
 
-            return runtime
-                .service('session')
-                .getClient()
+            return auth2Client
                 .loginCreate(data)
                 .then(function (result) {
                     return createProfile(result).then(function () {
-                        return runtime
-                            .service('session')
-                            .getClient()
-                            .initializeSession(result.token);
+                        return auth2Session.initializeSession(result.token);
                     });
                 })
                 .then(function () {
@@ -637,10 +641,7 @@ define([
 
         // EXPIRATION
 
-        var timeOffset = runtime
-            .service('session')
-            .getClient()
-            .serverTimeOffset();
+        var timeOffset = runtime.service('session').serverTimeOffset();
 
         var now = ko.observable(new Date().getTime());
 
@@ -668,9 +669,7 @@ define([
         );
 
         function doCancelChoiceSession() {
-            runtime
-                .service('session')
-                .getClient()
+            auth2Client
                 .loginCancel()
                 .then(function () {
                     runtime.send('app', 'navigate', {

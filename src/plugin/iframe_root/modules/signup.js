@@ -3,6 +3,7 @@ define([
     'knockout-plus',
     'kb_common/html',
     'kb_common_ts/Auth2Error',
+    'kb_common_ts/Auth2',
     './lib/policies',
     './lib/countdownClock',
     './lib/format',
@@ -16,6 +17,7 @@ define([
     ko,
     html,
     Auth2Error,
+    auth2,
     Policies,
     CountDownClock,
     Format,
@@ -29,7 +31,8 @@ define([
         span = t('span');
 
     function factory(config) {
-        var hostNode, container,
+        var hostNode,
+            container,
             runtime = config.runtime,
             vm = {
                 clock: {
@@ -46,33 +49,42 @@ define([
                 }
             };
 
+        const auth2Client = new auth2.Auth2({
+            baseUrl: runtime.config('services.auth.url')
+        });
+
         var koSubscriptions = ko.kb.SubscriptionManager.make();
 
         function renderLayout() {
-            container.innerHTML = div({
-                class: 'container-fluid',
-                dataKBTesthookWidget: 'signup'
-            }, [
-
-                div({ class: 'row' }, [
-                    div({
-                        class: 'col-sm-10 col-sm-offset-1',
-                        style: {
-                            backgroundColor: 'white',
-                        }
-                    }, [
-                        div({
-                            id: vm.clock.id
-                        }),
-                        div({
-                            id: vm.main.id
-                        }),
-                        div({
-                            id: vm.error.id
-                        })
+            container.innerHTML = div(
+                {
+                    class: 'container-fluid',
+                    dataKBTesthookWidget: 'signup'
+                },
+                [
+                    div({ class: 'row' }, [
+                        div(
+                            {
+                                class: 'col-sm-10 col-sm-offset-1',
+                                style: {
+                                    backgroundColor: 'white'
+                                }
+                            },
+                            [
+                                div({
+                                    id: vm.clock.id
+                                }),
+                                div({
+                                    id: vm.main.id
+                                }),
+                                div({
+                                    id: vm.error.id
+                                })
+                            ]
+                        )
                     ])
-                ])
-            ]);
+                ]
+            );
             vm.clock.node = document.getElementById(vm.clock.id);
             vm.main.node = document.getElementById(vm.main.id);
             vm.error.node = document.getElementById(vm.error.id);
@@ -101,15 +113,15 @@ define([
             ko.applyBindings(viewModel, node);
         }
 
-
         function cancelLogin() {
-            return runtime.service('session').getClient().loginCancel()
+            return auth2Client
+                .loginCancel()
                 .catch(Auth2Error.AuthError, function (err) {
                     // just continue...
                     if (err.code === '10010') {
                         // simply continue
                     } else {
-                        throw (err);
+                        throw err;
                     }
                 })
                 .then(function () {
@@ -128,27 +140,29 @@ define([
         var clock;
 
         function createClock(container, response) {
-            var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+            var timeOffset = runtime.service('session').serverTimeOffset();
             var clockId = html.genId();
-            container.innerHTML = div({
-                style: {
-                    textAlign: 'right'
-                }
-            }, div({
-                style: {
-                    display: 'inline-block',
-                    padding: '6px',
-                    backgroundColor: '#999',
-                    color: '#FFF'
-                }
-            }, [
-                div([
-                    'You have ',
-                    span({ id: clockId }),
-                    ' until this signup session expires.'
-                ]),
-                div('After this, you will be returned to the sign-in page.')
-            ]));
+            container.innerHTML = div(
+                {
+                    style: {
+                        textAlign: 'right'
+                    }
+                },
+                div(
+                    {
+                        style: {
+                            display: 'inline-block',
+                            padding: '6px',
+                            backgroundColor: '#999',
+                            color: '#FFF'
+                        }
+                    },
+                    [
+                        div(['You have ', span({ id: clockId }), ' until this signup session expires.']),
+                        div('After this, you will be returned to the sign-in page.')
+                    ]
+                )
+            );
             var clockNode = document.getElementById(clockId);
 
             function updateTimer(remainingTime) {
@@ -163,13 +177,12 @@ define([
                     updateTimer(remaining);
                 },
                 onExpired: function () {
-                    cancelLogin()
-                        .then(function () {
-                            runtime.send('notification', 'notify', {
-                                type: 'warning',
-                                message: 'Your sign-in session has expired.'
-                            });
+                    cancelLogin().then(function () {
+                        runtime.send('notification', 'notify', {
+                            type: 'warning',
+                            message: 'Your sign-in session has expired.'
                         });
+                    });
                 }
             });
             clock.start();
@@ -194,13 +207,15 @@ define([
             }
 
             runtime.send('ui', 'setTitle', 'Sign Up for KBase');
-            return runtime.service('session').getClient().getClient().getLoginChoice()
+            return auth2Client
+                .getLoginChoice()
                 .then(function (choice) {
                     createClock(vm.clock.node, choice);
                     var policies = Policies.make({
                         runtime: runtime
                     });
-                    return policies.start()
+                    return policies
+                        .start()
                         .then(function () {
                             if (choice.login && choice.login.length === 1) {
                                 return policies.evaluatePolicies(choice.login[0].policyids);
@@ -256,16 +271,18 @@ define([
                     // signals that someone things the choice session is done...
                     var done = ko.observable(false);
 
-                    koSubscriptions.add(done.subscribe(function (newDone) {
-                        if (newDone) {
-                            if (clock) {
-                                clock.stop();
+                    koSubscriptions.add(
+                        done.subscribe(function (newDone) {
+                            if (newDone) {
+                                if (clock) {
+                                    clock.stop();
+                                }
+                                if (vm.clock.node) {
+                                    vm.clock.node.innerHTML = '';
+                                }
                             }
-                            if (vm.clock.node) {
-                                vm.clock.node.innerHTML = '';
-                            }
-                        }
-                    }));
+                        })
+                    );
 
                     var viewModel = {
                         runtime: config.runtime,

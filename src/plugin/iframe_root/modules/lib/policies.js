@@ -1,7 +1,7 @@
 define(['bluebird', 'marked', 'kb_common_ts/HttpClient'], function (Promise, marked, M_HttpClient) {
     'use strict';
 
-    function factory() {
+    function factory({ runtime }) {
         var policies = null;
 
         function getPolicyFile(arg) {

@@ -1,4 +1,8 @@
-define(['kb_lib/html', 'kb_common_ts/Auth2Error', 'bootstrap'], function (html, Auth2Error) {
+define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstrap'], function (
+    html,
+    auth2,
+    Auth2Error
+) {
     'use strict';
 
     var t = html.tag,
@@ -10,10 +14,13 @@ define(['kb_lib/html', 'kb_common_ts/Auth2Error', 'bootstrap'], function (html, 
     function factory(config) {
         var runtime = config.runtime;
 
+        var auth2Client = new auth2.Auth2({
+            baseUrl: runtime.config('services.auth.url')
+        });
+        var currentUserToken = runtime.service('session').getAuthToken();
+
         function doLogin(providerId, state) {
-            runtime
-                .service('session')
-                .getClient()
+            auth2Client
                 .loginCancel()
                 .catch(Auth2Error.AuthError, function (err) {
                     // ignore this specific error...
@@ -196,16 +203,11 @@ define(['kb_lib/html', 'kb_common_ts/Auth2Error', 'bootstrap'], function (html, 
 
         function getTimeBias() {
             var then = new Date().getTime();
-            return runtime
-                .service('session')
-                .getClient()
-                .getClient()
-                .root()
-                .then(function (root) {
-                    var now = new Date().getTime();
-                    var serverBias = root.servertime - (now + then) / 2;
-                    return serverBias;
-                });
+            return auth2Client.root().then(function (root) {
+                var now = new Date().getTime();
+                var serverBias = root.servertime - (now + then) / 2;
+                return serverBias;
+            });
         }
 
         return {

@@ -4,11 +4,12 @@ define([
     'kb_common/domEvent2',
     'kb_common/ui',
     'kb_common_ts/Auth2Error',
+    'kb_common_ts/Auth2',
     'kb_common/bootstrapUtils',
     './widgets/errorWidget',
     './lib/format',
     './lib/countdownClock'
-], function (Promise, html, DomEvent, UI, Auth2Error, BS, ErrorWidget, Format, CountDownClock) {
+], function (Promise, html, DomEvent, UI, Auth2Error, auth2, BS, ErrorWidget, Format, CountDownClock) {
     'use strict';
 
     var t = html.tag,
@@ -27,6 +28,11 @@ define([
 
         // When we have a valid linking session, the linkId will be populated.
         var linkId;
+
+        const auth2Client = new auth2.Auth2({
+            baseUrl: runtime.config('services.auth.url')
+        });
+        const currentUserToken = runtime.service('session').getAuthToken();
 
         // API
 
@@ -52,10 +58,7 @@ define([
         var clock;
 
         function createTimer(container, response) {
-            var timeOffset = runtime
-                .service('session')
-                .getClient()
-                .serverTimeOffset();
+            var timeOffset = runtime.service('session').serverTimeOffset();
             var clockId = html.genId();
             container.innerHTML = p([
                 'You have ',
@@ -130,10 +133,8 @@ define([
         }
 
         function doLink(accountId) {
-            return runtime
-                .service('session')
-                .getClient()
-                .linkPick(accountId)
+            return auth2Client
+                .linkPick(currentUserToken, accountId)
                 .then(function () {
                     clock.stop();
                     runtime.send('app', 'navigate', {
@@ -149,9 +150,7 @@ define([
         }
 
         function cancelLink(id) {
-            return runtime
-                .service('session')
-                .getClient()
+            return auth2Client
                 .linkCancel(id)
                 .catch(Auth2Error.AuthError, function (err) {
                     // just continue...
@@ -269,10 +268,8 @@ define([
             return Promise.try(function () {
                 runtime.send('ui', 'setTitle', 'Link to Sign-In Account');
                 renderLayout();
-                runtime
-                    .service('session')
-                    .getClient()
-                    .getLinkChoice()
+                auth2Client
+                    .getLinkChoice(currentUserToken)
                     .then(function (result) {
                         createTimer(ui.getElement('timer'), result);
                         linkId = result.id;
@@ -376,7 +373,7 @@ define([
                                             'You may ',
                                             a(
                                                 {
-                                                    href: '#auth2/account?tab=links'
+                                                    href: window.location.origin + '/#auth2/account?tab=links'
                                                 },
                                                 'return to the linking tab'
                                             ),
@@ -400,7 +397,7 @@ define([
                                         'You may ',
                                         a(
                                             {
-                                                href: '#auth2/account?tab=links'
+                                                href: window.location.origin + '/#auth2/account?tab=links'
                                             },
                                             'return to the linking tab'
                                         ),
@@ -429,18 +426,14 @@ define([
                 clock.stop();
             }
             if (linkId) {
-                return runtime
-                    .service('session')
-                    .getClient()
-                    .linkCancel(linkId)
-                    .catch(Auth2Error.AuthError, function (err) {
-                        // just continue...
-                        if (err.code === '10010') {
-                            // simply continue
-                        } else {
-                            console.error('Error canceling link session', err);
-                        }
-                    });
+                return auth2Client.linkCancel(linkId).catch(Auth2Error.AuthError, function (err) {
+                    // just continue...
+                    if (err.code === '10010') {
+                        // simply continue
+                    } else {
+                        console.error('Error canceling link session', err);
+                    }
+                });
             }
             return null;
         }

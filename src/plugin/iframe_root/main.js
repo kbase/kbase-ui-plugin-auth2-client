@@ -42,45 +42,42 @@ require.config({
 require([
     'bluebird',
     // 'kbaseUI/runtime',
-    'lib/auth2ClientRuntime',
+    // 'lib/auth2ClientRuntime',
     'kbaseUI/integration',
+    'kbaseUI/dispatcher',
     'kb_knockout/load',
     'yaml!./config.yml',
-    'account/panel',
     'bootstrap',
     'css!font_awesome'
-], (Promise, Runtime, Integration, knockoutLoader, pluginConfig, PanelWidget) => {
+], (Promise, Integration, Dispatcher, knockoutLoader, pluginConfig) => {
+    'use strict';
     Promise.try(() => {
         const integration = new Integration({
             rootWindow: window
         });
+
+        // Add custom event hooks into the integration.
+        // integration.channel.on('run', (message) => {
+        //     console.log('RUN', message);
+        // });
+
         // try {
         //     integration.start();
         // } catch (ex) {
         //     console.error('Error starting main: ', ex.message);
         // }
 
-        const {
-            params: { config, token, username, routeParams }
-        } = integration.getParamsFromIFrame();
+        // const {
+        //     params: { config, token, username, routeParams }
+        // } = integration.getParamsFromIFrame();
 
-        const runtime = new Runtime({
-            config,
-            token,
-            username
-        });
-
-        const widgets = pluginConfig.install.widgets;
-        widgets.forEach((widgetDef) => {
-            runtime.widgetManager.addWidget(widgetDef);
-        });
-
-        // Now start the one and only panel.
         const rootNode = document.getElementById('root');
 
-        const panel = new PanelWidget({ runtime });
+        // NOW -- we need to implement widget dispatch here
+        // based on the navigation received from the parent context.
+        let dispatcher = null;
 
-        knockoutLoader
+        return knockoutLoader
             .load()
             .then((ko) => {
                 // For more efficient ui updates.
@@ -88,14 +85,59 @@ require([
                 // and in the past introduced problems which were resolved
                 // in knockout 3.5.0.
                 ko.options.deferUpdates = true;
-
-                return runtime.start();
             })
             .then(() => {
-                return panel.attach(rootNode);
+                return integration.start();
             })
             .then(() => {
-                panel.start({ tab: routeParams.tab });
+                // // This installs all widgets from the config file.
+                const widgets = pluginConfig.install.widgets;
+                widgets.forEach((widgetDef) => {
+                    integration.runtime.widgetManager.addWidget(widgetDef);
+                });
+            })
+            .then(() => {
+                const panels = [
+                    {
+                        module: 'account/panel',
+                        view: 'account'
+                    },
+                    {
+                        module: 'signedout',
+                        view: 'signedout'
+                    },
+                    {
+                        module: 'login',
+                        view: 'login',
+                        type: 'factory'
+                    },
+                    {
+                        module: 'loginContinue',
+                        view: 'loginContinue',
+                        type: 'factory'
+                    },
+                    {
+                        module: 'linkContinue',
+                        view: 'linkContinue',
+                        type: 'factory'
+                    },
+                    {
+                        module: 'signup',
+                        view: 'signup',
+                        type: 'factory'
+                    }
+                ];
+                dispatcher = new Dispatcher({ runtime: integration.runtime, node: rootNode, panels });
+                return dispatcher.start();
+            })
+            .then((dispatcher) => {
+                integration.onNavigate(({ path, params }) => {
+                    // TODO: ever
+                    const view = path[0];
+                    dispatcher.dispatch({ view, path, params });
+                });
+                integration.started();
+                // TODO: more channel listeners.
             });
     }).catch((err) => {
         console.error('ERROR', err);

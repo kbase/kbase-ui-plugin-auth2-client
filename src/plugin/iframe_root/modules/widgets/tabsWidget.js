@@ -1,10 +1,4 @@
-define([
-    'bluebird',
-    'kb_common/html'
-], function (
-    Promise,
-    html
-) {
+define(['bluebird', 'kb_common/html'], function (Promise, html) {
     'use strict';
 
     var t = html.tag,
@@ -45,30 +39,45 @@ define([
             if (config.style) {
                 style = config.style;
             }
-            hostNode.innerHTML = div({
-                class: 'flex-tabs',
-                id: tabsId,
-                style: style
-            }, [
-                div({
-                    class: '-tabs'
-                }, config.tabs.map(function (tab) {
-                    return div({
-                        class: '-tab',
-                        dataTab: tab.name
-                    }, div({
-                        class: '-label',
-                    }, tab.label));
-                })),
-                div({
-                    class: '-panels'
-                }, config.tabs.map(function (tab) {
-                    return div({
-                        class: '-panel',
-                        dataTabPanel: tab.name
-                    });
-                }))
-            ]);
+            hostNode.innerHTML = div(
+                {
+                    class: 'flex-tabs',
+                    id: tabsId,
+                    style: style
+                },
+                [
+                    div(
+                        {
+                            class: '-tabs'
+                        },
+                        config.tabs.map(function (tab) {
+                            return div(
+                                {
+                                    class: '-tab',
+                                    dataTab: tab.name
+                                },
+                                div(
+                                    {
+                                        class: '-label'
+                                    },
+                                    tab.label
+                                )
+                            );
+                        })
+                    ),
+                    div(
+                        {
+                            class: '-panels'
+                        },
+                        config.tabs.map(function (tab) {
+                            return div({
+                                class: '-panel',
+                                dataTabPanel: tab.name
+                            });
+                        })
+                    )
+                ]
+            );
             tabSet = hostNode.querySelector('.-tabs');
         }
 
@@ -91,10 +100,9 @@ define([
                 if (!currentTabWidget) {
                     return null;
                 }
-                return currentTabWidget.stop()
-                    .then(function () {
-                        return currentTabWidget.detach();
-                    });
+                return currentTabWidget.stop().then(function () {
+                    return currentTabWidget.detach();
+                });
             });
         }
 
@@ -113,10 +121,9 @@ define([
             }
 
             var tabNode = hostNode.querySelector('[data-tab-panel="' + tabName + '"]');
-            return currentTabWidget.attach(tabNode)
-                .then(function () {
-                    return currentTabWidget.start();
-                });
+            return currentTabWidget.attach(tabNode).then(function () {
+                return currentTabWidget.start();
+            });
         }
 
         function activateTab(tabName) {
@@ -136,7 +143,6 @@ define([
                 .catch(function (err) {
                     console.error('ERROR', err);
                 });
-
         }
 
         // Service API
@@ -169,6 +175,11 @@ define([
             });
         }
 
+        function run({ tab }) {
+            deactivateCurrentTab();
+            return activateTab(tab);
+        }
+
         function stop() {
             return Promise.try(function () {
                 if (!currentTabWidget) {
@@ -184,24 +195,22 @@ define([
                     return null;
                 }
                 return currentTabWidget.detach();
-            })
-                .then(() => {
-                    if (hostNode) {
-                        hostNode.innerHTML = '';
-                    }
-                    return null;
-                });
+            }).then(() => {
+                if (hostNode) {
+                    hostNode.innerHTML = '';
+                }
+                return null;
+            });
         }
 
         return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
+            attach,
+            start,
+            run,
+            stop,
+            detach
         };
     }
-
-
 
     return {
         make: function (config) {

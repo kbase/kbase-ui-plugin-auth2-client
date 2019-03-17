@@ -55,8 +55,8 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
                             flexDirection: 'column'
                         },
                         frameborder: '0',
-                        scrolling: 'no'
-                        // src: url
+                        scrolling: 'no',
+                        src: this.url
                     })
                 ]
             );
@@ -69,25 +69,6 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             this.node.innerHTML = this.content;
             this.iframe = document.getElementById(this.id);
             this.window = this.iframe.contentWindow;
-        }
-
-        start() {
-            // this.channel = new WindowChannel.Channel({
-            //     window: this.window,
-            //     host: document.location.origin,
-            //     // recieveFor: [this.id],
-            //     // clientId: this.iframe.id,
-            //     // hostId: this.id
-            // });
-            return new Promise((resolve, reject) => {
-                const listener = () => {
-                    this.iframe.removeEventListener('load', listener, false);
-                    this.window = this.iframe.contentWindow;
-                    resolve();
-                };
-                this.iframe.addEventListener('load', listener, false);
-                this.iframe.src = this.url;
-            });
         }
     }
 
@@ -111,7 +92,21 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             //     // hostId: this.id
             // });
 
-            this.channel = new WindowChannel.Channel({
+            // This is the channel for talking to the iframe app.
+
+            // We do a dance here. Creating the channel also creates a unique channel id.
+            // The channel will only process messages which contain the message
+            // envelope property "to" set to the channel id.
+            // So we need to tell the iframe about this through the data-params
+            // property.
+            // But the channel needs the iframe window reference in order to set up a
+            // postMessage listener.
+            // Fortunately, the attach method is synchronous, and thus the window object
+            // is available immediately after attach().
+            // TODO: could instead use a one-time uuid which would be sent in the 'ready'
+            // message and matched. Would allow a cleaner logic I suppose.
+
+            this.channel = new WindowChannel.BidirectionalWindowChannel({
                 host: document.location.origin
             });
 
@@ -126,13 +121,6 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             this.iframe.attach(this.container);
 
             this.channel.setWindow(this.iframe.window);
-
-            // this.iframeMessages = new WindowMessages({
-            //     // window: window,
-            //     host: document.location.origin,
-            //     clientId: this.iframe.id,
-            //     hostId: this.id
-            // });
         }
 
         // Lifecycle
@@ -154,7 +142,7 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             some interval in which to finish this work before it is just axed.
         */
 
-        setupChannel() {
+        setupAndStartChannel() {
             this.channel.on('get-auth-status', () => {
                 this.channel.send('auth-status', {
                     token: this.runtime.service('session').getAuthToken(),
@@ -214,42 +202,105 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
                 this.runtime.service('instrumentation').send(instrumentation);
             });
 
-            this.channel.on('ready', ({ channelId }) => {
-                console.log('READY!');
-                this.channel.partnerId = channelId;
-                this.channel.send('start', {
-                    token: this.runtime.service('session').getAuthToken(),
-                    username: this.runtime.service('session').getUsername(),
-                    realname: this.runtime.service('session').getRealname(),
-                    email: this.runtime.service('session').getEmail(),
-                    config: this.runtime.rawConfig()
-                });
-                this.runtime.receive('session', 'loggedin', () => {
-                    this.channel.send('loggedin', {
-                        token: this.runtime.service('session').getAuthToken(),
-                        username: this.runtime.service('session').getUsername(),
-                        realname: this.runtime.service('session').getRealname(),
-                        email: this.runtime.service('session').getEmail()
-                    });
-                });
-                this.runtime.receive('session', 'loggedout', () => {
-                    this.channel.send('loggedout', {});
-                });
+            this.channel.on('ui-navigate', (to) => {
+                this.runtime.send('app', 'navigate', to);
+            });
+
+            this.channel.on('post-form', (config) => {
+                this.formPost(config);
+            });
+
+            this.channel.on('clicked', () => {
+                // console.log('lugin clicked?');
+                window.document.body.click();
             });
 
             this.channel.start();
         }
 
-        start() {
-            return Promise.resolve()
-                .then(() => {
-                    console.log('setting up channel');
-                    this.setupChannel();
-                    return this.iframe.start();
-                })
-                .then(() => {
-                    this.channel.setWindow(this.iframe.window);
+        formPost({ action, params }) {
+            // var state = JSON.stringify(config.state);
+            // let query = {
+            //     provider: config.provider,
+            //     redirecturl: url,
+            //     stayloggedin: config.stayLoggedIn ? 'true' : 'false'
+            // };
+            // let search = new HttpQuery({
+            //     state: JSON.stringify(config.state)
+            // }).toString();
+            // action = this.makePath(endpoints.loginStart)
+
+            // Punt over to the auth service
+            const t = html.tag;
+            const form = t('form');
+            const input = t('input');
+            // const url = document.location.origin + '?' + search;
+            const formId = html.genId();
+            const paramsInputs = Array.from(Object.entries(params)).map(([name, value]) => {
+                return input({
+                    type: 'hidden',
+                    name: name,
+                    value: value
                 });
+            });
+            const content = form(
+                {
+                    method: 'post',
+                    id: formId,
+                    action,
+                    style: {
+                        display: 'hidden'
+                    }
+                },
+                paramsInputs
+            );
+            const donorNode = document.createElement('div');
+            donorNode.innerHTML = content;
+            document.body.appendChild(donorNode);
+
+            document.getElementById(formId).submit();
+        }
+
+        setupChannelSends() {
+            this.runtime.receive('session', 'loggedin', () => {
+                this.channel.send('loggedin', {
+                    token: this.runtime.service('session').getAuthToken(),
+                    username: this.runtime.service('session').getUsername(),
+                    realname: this.runtime.service('session').getRealname(),
+                    email: this.runtime.service('session').getEmail()
+                });
+            });
+            this.runtime.receive('session', 'loggedout', () => {
+                this.channel.send('loggedout', {});
+            });
+        }
+
+        start() {
+            return new Promise((resolve, reject) => {
+                this.setupAndStartChannel();
+                this.channel.setWindow(this.iframe.window);
+                this.channel.on('ready', ({ channelId }) => {
+                    this.channel.partnerId = channelId;
+                    this.channel.send('start', {
+                        token: this.runtime.service('session').getAuthToken(),
+                        username: this.runtime.service('session').getUsername(),
+                        realname: this.runtime.service('session').getRealname(),
+                        email: this.runtime.service('session').getEmail(),
+                        config: this.runtime.rawConfig()
+                    });
+                    // Any sends to the channel should only be enabled after the
+                    // start message is received.
+                    // TODO: reorganize this.
+                    this.setupChannelSends();
+                    // resolve();
+                });
+                // forward clicks to the parent, to enable closing dropdowns,
+                // etc.
+
+                this.channel.on('started', () => {
+                    resolve();
+                });
+            });
         }
 
         stop() {

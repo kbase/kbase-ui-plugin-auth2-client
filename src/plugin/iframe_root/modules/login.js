@@ -6,28 +6,28 @@ define([
 
     // for effect
     'bootstrap'
-], function (
-    Promise,
-    ko,
-    html,
-    LoginViewComponent
-) {
+], function (Promise, ko, html, LoginViewComponent) {
     'use strict';
 
     var t = html.tag,
         div = t('div');
 
     function factory(config) {
-        var hostNode, container,
+        var hostNode,
+            container,
             runtime = config.runtime,
-            nextRequest, source;
+            nextRequest,
+            source;
 
         var listeners = [];
 
         function showErrorMessage(message) {
-            container.innerHTML = div({
-                class: 'alert alert-danger'
-            }, message);
+            container.innerHTML = div(
+                {
+                    class: 'alert alert-danger'
+                },
+                message
+            );
         }
 
         function render() {
@@ -47,11 +47,14 @@ define([
                         }
                     }
                 });
-                ko.applyBindings({
-                    runtime: runtime,
-                    nextRequest: nextRequest,
-                    source: source
-                }, container);
+                ko.applyBindings(
+                    {
+                        runtime: runtime,
+                        nextRequest: nextRequest,
+                        source: source
+                    },
+                    container
+                );
             } catch (ex) {
                 console.error('ERROR rendering login stuff', ex);
                 showErrorMessage(ex);
@@ -94,9 +97,11 @@ define([
                 doRedirect(params);
                 return null;
             }
-            listeners.push(runtime.recv('session', 'loggedin', function () {
-                doRedirect(params);
-            }));
+            listeners.push(
+                runtime.recv('session', 'loggedin', function () {
+                    doRedirect(params);
+                })
+            );
             runtime.send('ui', 'setTitle', 'KBase Sign In');
             return render(params);
         }

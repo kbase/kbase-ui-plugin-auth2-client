@@ -150,6 +150,17 @@ define([
             });
         }
 
+        run(params) {
+            let tab;
+            if (params) {
+                tab = params.tab || 'profile';
+            } else {
+                tab = 'profile';
+            }
+            this.tabs.run({ tab });
+            // this.tabs.activeTab(para)
+        }
+
         stop() {
             return Promise.try(() => {
                 if (!this.tabs) {

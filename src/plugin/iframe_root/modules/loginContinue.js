@@ -9,7 +9,7 @@ define([
     './lib/provider',
     './components/errorView',
     './components/signinView',
-
+    'kb_common_ts/Auth2',
     // loaded for effect
     'bootstrap'
 ], function (
@@ -22,7 +22,8 @@ define([
     CountDownClock,
     provider,
     ErrorViewComponent,
-    SigninViewComponent
+    SigninViewComponent,
+    auth2
 ) {
     'use strict';
 
@@ -45,7 +46,7 @@ define([
 
     function URL(url) {
         if (typeof url !== 'string') {
-            throw new TypeError('Incoming url must be a string, is ' + (typeof url));
+            throw new TypeError('Incoming url must be a string, is ' + typeof url);
         }
         var scheme, host, path, search, hash, query;
         // get scheme
@@ -101,18 +102,25 @@ define([
     }
 
     function factory(config) {
-        var hostNode, container,
+        var hostNode,
+            container,
             mounts = {
                 main: null,
                 clock: null,
                 error: null
             },
-            runtime = config.runtime;
+            runtime = config.runtime,
+            serverTimeOffset;
         var clock;
         var koSubscriptions = ko.kb.SubscriptionManager.make();
 
+        const auth2Client = new auth2.Auth2({
+            baseUrl: runtime.config('services.auth.url')
+        });
+        // const currentUserToken = runtime.service('session').getAuthToken();
+
         function createClock(clockNode, expires) {
-            var timeOffset = runtime.service('session').getClient().serverTimeOffset();
+            // var timeOffset = auth2Client.serverTimeOffset();
 
             function updateTimer(remainingTime) {
                 clockNode.innerHTML = Format.niceDuration(remainingTime);
@@ -120,19 +128,18 @@ define([
 
             var clock = new CountDownClock({
                 tick: 1000,
-                until: expires - timeOffset,
+                until: expires - serverTimeOffset,
                 // for: 600000,
                 onTick: function (remaining) {
                     updateTimer(remaining);
                 },
                 onExpired: function () {
-                    cancelLogin()
-                        .then(function () {
-                            runtime.send('notification', 'notify', {
-                                type: 'warning',
-                                message: 'Your sign-in session has expired.'
-                            });
+                    cancelLogin().then(function () {
+                        runtime.send('notification', 'notify', {
+                            type: 'warning',
+                            message: 'Your sign-in session has expired.'
                         });
+                    });
                 }
             });
             clock.start();
@@ -140,13 +147,14 @@ define([
         }
 
         function cancelLogin() {
-            return runtime.service('session').getClient().loginCancel()
+            return auth2Client
+                .loginCancel()
                 .catch(Auth2Error.AuthError, function (err) {
                     // just continue...
                     if (err.code === '10010') {
                         // simply continue
                     } else {
-                        throw (err);
+                        throw err;
                     }
                 })
                 .then(function () {
@@ -167,30 +175,39 @@ define([
                 var id = html.genId();
                 var errorId = html.genId();
                 var clockId = html.genId();
-                var layout = div({
-                    class: 'container-fluid'
-                }, [
-                    div({
-                        class: 'row'
-                    }, [
-                        div({
-                            class: 'col-sm-10 col-sm-offset-1'
-                        }, [
-                            div({
-                                id: clockId,
-                                style: {
-                                    marginBottom: '10px'
-                                }
-                            }),
-                            div({
-                                id: id
-                            }),
-                            div({
-                                id: errorId
-                            })
-                        ])
-                    ])
-                ]);
+                var layout = div(
+                    {
+                        class: 'container-fluid'
+                    },
+                    [
+                        div(
+                            {
+                                class: 'row'
+                            },
+                            [
+                                div(
+                                    {
+                                        class: 'col-sm-10 col-sm-offset-1'
+                                    },
+                                    [
+                                        div({
+                                            id: clockId,
+                                            style: {
+                                                marginBottom: '10px'
+                                            }
+                                        }),
+                                        div({
+                                            id: id
+                                        }),
+                                        div({
+                                            id: errorId
+                                        })
+                                    ]
+                                )
+                            ]
+                        )
+                    ]
+                );
                 container = hostNode.appendChild(document.createElement('div'));
                 container.innerHTML = layout;
                 mounts.main = document.getElementById(id);
@@ -201,11 +218,12 @@ define([
         }
 
         function doSignIn(choice, nextRequest) {
-            return runtime.service('session').getClient().loginPick({
-                identityId: choice.login[0].id,
-                linkAll: false,
-                agreements: []
-            })
+            return auth2Client
+                .loginPick({
+                    identityId: choice.login[0].id,
+                    linkAll: false,
+                    agreements: []
+                })
                 .then(function () {
                     if (nextRequest !== null) {
                         try {
@@ -240,9 +258,13 @@ define([
                 return providersMap;
             }, {});
 
-
             runtime.send('ui', 'setTitle', 'KBase Sign-In');
-            return runtime.service('session').getClient().getClient().getLoginChoice()
+            return auth2Client
+                .root()
+                .then((root) => {
+                    serverTimeOffset = new Date().getTime() - root.servertime;
+                    return auth2Client.getLoginChoice();
+                })
                 .then(function (choice) {
                     var stateParams = getStateParam(choice);
 
@@ -257,7 +279,8 @@ define([
                         runtime: runtime
                     });
 
-                    return policies.start()
+                    return policies
+                        .start()
                         .then(function () {
                             if (choice.login && choice.login.length === 1) {
                                 return policies.evaluatePolicies(choice.login[0].policyids);
@@ -276,56 +299,66 @@ define([
 
                             // If no policies to resolve and auth provider does not require signin
                             // confirmation, then just auto-signin.
-                            if (policiesToResolve.missing.length === 0 &&
-                                    policiesToResolve.outdated.length === 0 &&
-                                    !provider.confirmSignin) {
+                            if (
+                                policiesToResolve.missing.length === 0 &&
+                                policiesToResolve.outdated.length === 0 &&
+                                !provider.confirmSignin
+                            ) {
                                 return doSignIn(choice, stateParams.nextrequest);
                             }
-
                             clock = (function (container, expires) {
                                 var clockId = html.genId();
-                                container.innerHTML = div({
-                                    dataBind: {
-                                        if: 'clockTime'
+                                container.innerHTML = div(
+                                    {
+                                        dataBind: {
+                                            if: 'clockTime'
+                                        },
+                                        style: {
+                                            textAlign: 'right'
+                                        }
                                     },
-                                    style: {
-                                        textAlign: 'right',
-                                    }
-                                }, div({
-                                    style: {
-                                        display: 'inline-block',
-                                        padding: '6px',
-                                        backgroundColor: '#999',
-                                        color: '#FFF'
-                                    }
-                                }, [
-                                    div(['You have ',
-                                        span({
-                                            id: clockId,
+                                    div(
+                                        {
                                             style: {
-                                                fontWeight: 'bold'
+                                                display: 'inline-block',
+                                                padding: '6px',
+                                                backgroundColor: '#999',
+                                                color: '#FFF'
                                             }
-                                        }),
-                                        ' to complete the signin process.'
-                                    ]),
-                                    div('After this you will be returned to the sign-in page.')
-                                ]));
+                                        },
+                                        [
+                                            div([
+                                                'You have ',
+                                                span({
+                                                    id: clockId,
+                                                    style: {
+                                                        fontWeight: 'bold'
+                                                    }
+                                                }),
+                                                ' to complete the signin process.'
+                                            ]),
+                                            div('After this you will be returned to the sign-in page.')
+                                        ]
+                                    )
+                                );
                                 return createClock(document.getElementById(clockId), expires);
-                            }(mounts.clock, choice.expires));
+                            })(mounts.clock, choice.expires);
 
                             // Called by child components if they have either finished or cancelled
                             // the login choice session.
 
                             var done = ko.observable(false);
 
-                            koSubscriptions.add(done.subscribe(function (newDone) {
-                                if (newDone) {
-                                    if (clock) {
-                                        clock.stop();
-                                        mounts.clock.innerHTML = '';
+                            koSubscriptions.add(
+                                done.subscribe(function (newDone) {
+                                    if (newDone) {
+                                        if (clock) {
+                                            clock.stop();
+                                            mounts.clock.innerHTML = '';
+                                        }
                                     }
-                                }
-                            }));
+                                })
+                            );
 
                             mounts.main.innerHTML = div({
                                 dataBind: {
@@ -372,9 +405,12 @@ define([
                                 ]),
                                 p([
                                     'If you wish to sign-in or sign-up, please revisit the ',
-                                    a({
-                                        href: '#login'
-                                    }, 'sign in page'),
+                                    a(
+                                        {
+                                            href: '#login'
+                                        },
+                                        'sign in page'
+                                    ),
                                     '.'
                                 ])
                             ]),

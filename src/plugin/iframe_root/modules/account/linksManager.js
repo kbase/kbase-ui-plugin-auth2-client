@@ -7,8 +7,7 @@ define([
     '../lib/provider'
 ], (Promise, html, DomEvents, BS, auth2, provider) => {
     'use strict';
-    const // t = html.tagMaker(),
-        t = html.tag,
+    const t = html.tag,
         p = t('p'),
         div = t('div'),
         span = t('span'),
@@ -122,10 +121,21 @@ define([
 
             try {
                 // TODO: routing back into here.
-                this.auth2.linkStart(this.currentUserToken, {
+                const params = {
                     provider: providerId,
-                    node: this.container
+                    token: this.currentUserToken
+                };
+                const action = this.runtime.config('services.auth.url') + '/link/start';
+
+                this.runtime.send('app', 'post-form', {
+                    action: action,
+                    params: params
                 });
+
+                // this.auth2.linkStart(this.currentUserToken, {
+                //     provider: providerId,
+                //     node: this.container
+                // });
             } catch (ex) {
                 this.showError({
                     name: 'LinkError',
