@@ -1,4 +1,4 @@
-define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager', './Session'], (
+define(['bluebird', 'kb_lib/props', 'kb_lib/messenger', './widget/manager', './session'], (
     Promise,
     props,
     Messenger,
