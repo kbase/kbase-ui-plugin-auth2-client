@@ -1,111 +1,126 @@
 ## YAML Template.
 ---
 package:
-    author: Erik Pearson
-    name: auth2-client
-    description: Auth2 client plugin
-    date: Feb 14, 2017
+  author: Erik Pearson
+  name: auth2-client
+  description: Auth2 client plugin
+  date: Feb 14, 2017
 source:
-    modules:
-    styles:
-        - file: main.css
+  modules:
+  styles:
+    # - file: main.css
 install:
-    widgets:
-        - module: login
-          id: auth2_login
-          css: true
-          type: factory
-        - module: loginSuccess
-          id: auth2LoginSuccess
-          type: factory
-        - module: loginContinue
-          id: auth2LoginContinue
-          type: factory
-        - module: test
-          id: auth2Test
-          type: factory
-        - module: account/panel
-          id: auth2Account
-          type: es6
-        - module: widgets/signinWidget
-          id: auth2_signin
-          css: true
-          type: factory
-        - module: linkContinue
-          id: auth2_linkContinue
-          type: factory
-        - module: signup
-          id: auth2_signup
-          type: factory
-        - module: signedout
-          id: auth2_signedout
-          type: factory
-        - module: interrupted
-          id: auth2_interrupted
-          type: factory
-        - module: logout
-          id: auth2_logout
-          type: factory
-        - module: dev/sendToken
-          id: auth2_dev_sendToken
-          type: factory
-        - module: dev/receiveToken
-          id: auth2_dev_receiveToken
-          type: factory
-    routes:
-        - path: [login]
-          widget: auth2_login
-          queryParams:
-              nextrequest: {}
-              source: {}
-        - path: [logout]
-          widget: auth2Logout
-          queryParams:
-              nextrequest: {}
-        - path: [auth2, login, continue]
-          widget: auth2LoginContinue
-          queryParams:
-              nextrequest: {}
-              in-process-login-token: {}
-              test: {}
-        - path: [auth2, account]
-          widget: auth2Account
-          authorization: true
-          queryParams:
-              tab: {}
-        - path: [auth2, link, continue]
-          widget: auth2_linkContinue
-          queryParams:
-              in-process-link-token: {}
-        - path: [signup, { type: param, name: step }]
-          widget: auth2_signup
-          queryParams:
-              nextrequest: {}
-        - path: [auth2, dev, sendToken]
-          widget: auth2_dev_sendToken
-          authorization: true
-        - path: [auth2, dev, receiveToken]
-          widget: auth2_dev_receiveToken
-          authorization: false
-          queryParams:
-              msg: {}
-        - path: [auth2, signedout]
-          widget: auth2_signedout
-          authorization: false
-        - path: [auth2, interrupted]
-          widget: auth2_interrupted
-          authorization: false
-    menu:
-        - name: account
-          path: [auth2, account]
-          label: Account
-          icon: user-circle-o
-    coreServices:
-        dependencies:
-            auth2:
-                version:
-                    minimum: 0.2.5
-                providers: ["Google", "Globus", "OrcID"]
-            userProfile:
-                version:
-                    minimum: 0.2.0
+  widgets:
+    - module: panel
+      id: auth2_client_panel
+      type: es6
+      css: true
+    # - module: login
+    #   id: auth2_login
+    #   css: true
+    #   type: factory
+    # - module: loginSuccess
+    #   id: auth2LoginSuccess
+    #   type: factory
+    # - module: loginContinue
+    #   id: auth2LoginContinue
+    #   type: factory
+    # - module: test
+    #   id: auth2Test
+    #   type: factory
+    # - module: account/panel
+    #   id: auth2Account
+    #   type: es6
+    # - module: widgets/signinWidget
+    #   id: auth2_signin
+    #   css: true
+    #   type: factory
+    # - module: linkContinue
+    #   id: auth2_linkContinue
+    #   type: factory
+    # - module: signup
+    #   id: auth2_signup
+    #   type: factory
+    # - module: signedout
+    #   id: auth2_signedout
+    #   type: factory
+    # - module: interrupted
+    #   id: auth2_interrupted
+    #   type: factory
+    # - module: logout
+    #   id: auth2_logout
+    #   type: factory
+    # - module: dev/sendToken
+    #   id: auth2_dev_sendToken
+    #   type: factory
+    # - module: dev/receiveToken
+    #   id: auth2_dev_receiveToken
+    #   type: factory
+  routes:
+    # - path: [login]
+    #   widget: auth2_login
+    #   queryParams:
+    #       nextrequest: {}
+    #       source: {}
+    # - path: [logout]
+    #   widget: auth2Logout
+    #   queryParams:
+    #       nextrequest: {}
+    - path: [auth2, signedout]
+      widget: auth2_client_panel
+      authorization: false
+      reentrant: false
+      queryParams:
+        path: { literal: ["signedout"] }
+    - path: [auth2, login, continue]
+      widget: auth2_client_panel
+      authorization: false
+      queryParams:
+        path: { literal: [loginContinue] }
+        nextrequest: {}
+        in-process-login-token: {}
+    - path: [login]
+      widget: auth2_client_panel
+      authorization: false
+      reentrant: false
+      queryParams:
+        path: { literal: [login] }
+        nextrequest: {}
+        source: {}
+    - path: [auth2, link, continue]
+      widget: auth2_client_panel
+      authorization: false
+      queryParams:
+        path: { literal: [linkContinue] }
+        in-process-link-token: {}
+    - path: [auth2, { type: "rest", name: "path" }]
+      widget: auth2_client_panel
+      authorization: true
+      reentrant: true
+      queryParams:
+        tab: {}
+    - path: [signup, { type: param, name: step }]
+      widget: auth2_client_panel
+      authorization: false
+      reentrant: false
+      queryParams:
+        path: { literal: ["signup"] }
+        nextrequest: {}
+
+    # - path: [auth2, interrupted]
+    #   widget: auth2_interrupted
+    #   authorization: false
+  menu:
+    - name: account
+      path: [auth2, account]
+      label: Account
+      icon: user-circle-o
+  coreServices:
+    dependencies:
+      auth2:
+        version:
+          minimum: 0.2.5
+        providers: ["Google", "Globus", "OrcID"]
+      userProfile:
+        version:
+          minimum: 0.2.0
