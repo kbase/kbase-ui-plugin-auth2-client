@@ -41,8 +41,6 @@ require.config({
 
 require([
     'bluebird',
-    // 'kbaseUI/runtime',
-    // 'lib/auth2ClientRuntime',
     'kbaseUI/integration',
     'kbaseUI/dispatcher',
     'kb_knockout/load',
@@ -55,21 +53,6 @@ require([
         const integration = new Integration({
             rootWindow: window
         });
-
-        // Add custom event hooks into the integration.
-        // integration.channel.on('run', (message) => {
-        //     console.log('RUN', message);
-        // });
-
-        // try {
-        //     integration.start();
-        // } catch (ex) {
-        //     console.error('Error starting main: ', ex.message);
-        // }
-
-        // const {
-        //     params: { config, token, username, routeParams }
-        // } = integration.getParamsFromIFrame();
 
         const rootNode = document.getElementById('root');
 

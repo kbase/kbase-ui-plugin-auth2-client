@@ -111,8 +111,11 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             this.runtime.messenger.receive({
                 channel: 'app',
                 message: 'navigate',
-                handler: (to) => {
-                    this.channel.send('ui-navigate', to);
+                handler: ({ nextRequest, tokenInfo }) => {
+                    this.channel.send('ui-navigate', {
+                        nextRequest,
+                        tokenInfo
+                    });
                 }
             });
             this.runtime.messenger.receive({

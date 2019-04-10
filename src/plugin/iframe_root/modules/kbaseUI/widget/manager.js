@@ -119,7 +119,6 @@ define(['bluebird', './objectWidgetAdapter', 'kb_lib/merge'], function (Promise,
             let widgetPromise;
 
             // const configCopy = new merge.DeepMerger({}).mergeIn(config).value();
-            // console.log('continuing...', configCopy, this.baseWidgetConfig);
             // const widgetConfig = new merge.DeepMerger(configCopy).mergeIn(this.baseWidgetConfig).value();
 
             const widgetConfig = Object.assign({}, config, this.baseWidgetConfig);
