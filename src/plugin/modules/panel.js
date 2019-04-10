@@ -53,7 +53,7 @@ define(['module', './iframer', 'css!./panel.css'], function (module, Iframer) {
                 }
             });
 
-            this.runtime.send('ui', 'setTitle', 'Account');
+            this.runtime.send('ui', 'setTitle', '');
 
             return this.iframer.start();
         }
