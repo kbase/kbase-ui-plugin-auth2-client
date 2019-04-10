@@ -211,7 +211,6 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             });
 
             this.channel.on('clicked', () => {
-                // console.log('lugin clicked?');
                 window.document.body.click();
             });
 
