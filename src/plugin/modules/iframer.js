@@ -202,8 +202,16 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
                 this.runtime.service('instrumentation').send(instrumentation);
             });
 
-            this.channel.on('ui-navigate', (to) => {
-                this.runtime.send('app', 'navigate', to);
+            this.channel.on('ui-navigate', ({ nextRequest, tokenInfo }) => {
+                const authSession = this.runtime.service('session').getClient();
+                authSession.setSessionCookie(tokenInfo.token, tokenInfo.expires);
+                return authSession.evaluateSession().then(() => {
+                    this.runtime.send('app', 'navigate', nextRequest);
+                });
+            });
+
+            this.channel.on('ui-token', (token, routeAfter) => {
+                this.runtime.service('session').onAuth(token, routeAfter);
             });
 
             this.channel.on('post-form', (config) => {

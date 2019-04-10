@@ -224,16 +224,27 @@ define([
                     linkAll: false,
                     agreements: []
                 })
-                .then(function () {
+                .then(function (pickResult) {
+                    // runtime.send('app', 'auth', runtime.service('session').getAuthToken(), nextRequest);
                     if (nextRequest !== null) {
                         try {
-                            runtime.send('app', 'navigate', nextRequest);
+                            // since the plugin is operating inside of the iframe, it needs
+                            // to send the token with the navigation path so the parent
+                            // window can also set the cookie.
+                            runtime.send('app', 'navigate', {
+                                nextRequest,
+                                tokenInfo: pickResult.token
+                            });
                         } catch (ex) {
-                            console.error('ERROR parsing next request', nextRequest, ex);
+                            console.error('[doSignIn] ERROR parsing next request', nextRequest, ex);
                             runtime.send('app', 'navigate', '');
                         }
                     } else {
-                        runtime.send('app', 'navigate', runtime.config('ui.defaults.loginPath', 'dashboard'));
+                        const defaultPath = runtime.config('ui.defaults.loginPath', 'dashboard');
+                        runtime.send('app', 'navigate', {
+                            nextRequest: defaultPath,
+                            tokenInfo: pickResult.token
+                        });
                     }
                 })
                 .catch(function (err) {

@@ -538,8 +538,8 @@ define([
                     linkAll: false,
                     agreements: agreements
                 })
-                .then(function () {
-                    doSigninSuccess();
+                .then(function (pickResult) {
+                    doSigninSuccess(pickResult.token);
                 })
                 .catch(function (err) {
                     console.error('Error', err);
@@ -548,11 +548,18 @@ define([
             return false;
         }
 
-        function doSigninSuccess() {
+        function doSigninSuccess(tokenInfo) {
             if (nextRequest !== null) {
-                runtime.send('app', 'navigate', nextRequest);
+                runtime.send('app', 'navigate', {
+                    nextRequest,
+                    tokenInfo
+                });
             } else {
-                runtime.send('app', 'navigate', { path: 'dashboard' });
+                const defaultPath = runtime.config('ui.defaults.loginPath', 'dashboard');
+                runtime.send('app', 'navigate', {
+                    nextRequest: { path: defaultPath },
+                    tokenInfo
+                });
             }
         }
 
