@@ -93,6 +93,7 @@ define([
             }
             source = params.source;
 
+            console.log('hmm', nextRequest, runtime.service('session').isLoggedIn());
             if (runtime.service('session').isLoggedIn()) {
                 doRedirect(params);
                 return null;
