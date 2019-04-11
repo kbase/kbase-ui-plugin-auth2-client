@@ -20,7 +20,7 @@ define(['module', './iframer', 'css!./panel.css'], function (module, Iframer) {
         attach(node) {
             this.hostNode = node;
             this.container = node.appendChild(document.createElement('div'));
-            this.container.classList.add('plugin_dashboard_panel');
+            this.container.classList.add('plugin_auth2-client_panel');
             this.container.style.flex = '1 1 0px';
             this.container.style.display = 'flex';
             this.container.style['flex-direction'] = 'column';

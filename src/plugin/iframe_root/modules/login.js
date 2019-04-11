@@ -33,7 +33,6 @@ define([
         function render() {
             try {
                 container.innerHTML = div({
-                    class: 'navbar-right',
                     dataKBTesthookPlugin: 'auth2-client',
                     dataWidget: 'auth2_signin',
                     dataBind: {
