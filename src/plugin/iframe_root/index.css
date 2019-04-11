@@ -23,7 +23,7 @@ body {
     min-height: 0;
 }
 
-.Dashboard {
+.Auth2Client {
     flex: 1 1 0px;
     display: flex;
     flex-direction: column;
