@@ -729,7 +729,8 @@ define([
                                         a(
                                             {
                                                 class: 'btn btn-link',
-                                                href: '#people',
+                                                href: '/#people',
+                                                target: '_parent',
                                                 style: {
                                                     marginLeft: '10px'
                                                 }
