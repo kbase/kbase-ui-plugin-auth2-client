@@ -7,11 +7,12 @@
         "specs": [
             {
                 "description": "Login widget should show username",
-                "baseSelector": [   
+
+                "baseSelector": [
                     {
                         "type": "widget",
                         "value": "auth2_signin"
-                    }                 
+                    }
                 ],
                 "tasks": [
                     {
