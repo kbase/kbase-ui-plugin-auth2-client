@@ -1,6 +1,7 @@
 define([
-    'knockout-plus',
-    'kb_common/html',
+    'knockout',
+    'kb_knockout/registry',
+    'kb_lib/html',
     'kb_common_ts/Auth2Error',
     'kb_common_ts/Auth2',
     'yaml!../config.yml',
@@ -9,7 +10,7 @@ define([
 
     // for effect
     'bootstrap'
-], function (ko, html, Auth2Error, auth2, config, provider, SigninButtonComponent) {
+], function (ko, reg, html, Auth2Error, auth2, config, provider, SigninButtonComponent) {
     'use strict';
 
     var t = html.tag,
@@ -593,5 +594,5 @@ define([
             viewModel: viewModel
         };
     }
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

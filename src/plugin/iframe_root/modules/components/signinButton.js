@@ -1,5 +1,6 @@
-define(['knockout-plus', 'kb_common/html', 'kb_common_ts/Auth2Error', 'kb_common_ts/Auth2'], function (
+define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_common_ts/Auth2Error', 'kb_common_ts/Auth2'], function (
     ko,
+    reg,
     html,
     Auth2Error,
     auth2
@@ -204,5 +205,5 @@ define(['knockout-plus', 'kb_common/html', 'kb_common_ts/Auth2Error', 'kb_common
             template: template()
         };
     }
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

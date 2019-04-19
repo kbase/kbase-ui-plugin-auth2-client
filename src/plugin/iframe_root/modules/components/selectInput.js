@@ -1,12 +1,6 @@
-define([
-    'knockout-plus',
-    'kb_common/html'
-], function (
-    ko,
-    html
-) {
+define(['knockout', 'kb_knockout/registry', 'kb_lib/html'], function (ko, reg, html) {
     'use strict';
-    
+
     var t = html.tag,
         div = t('div'),
         select = t('select');
@@ -23,21 +17,24 @@ define([
             optionsValue: '"value"',
             optionsCaption: 'emptyLabel'
         };
-        return div({
-            if: 'ready'
-        }, select({
-            class: 'form-control',
-            // id: id,
-            dataBind: binding
-        }));
+        return div(
+            {
+                if: 'ready'
+            },
+            select({
+                class: 'form-control',
+                // id: id,
+                dataBind: binding
+            })
+        );
     }
 
     function viewModel(params) {
         // incoming is an observable array of strings ...
         var field = params.field;
 
-        // HACK - the options binding seems to take effect 
-        // even when protected by the if binding,  AFAIK the 
+        // HACK - the options binding seems to take effect
+        // even when protected by the if binding,  AFAIK the
         // bindings should not be applied until ready is true.
         var originalValue = field();
 
@@ -50,19 +47,18 @@ define([
 
         var values = ko.observableArray();
 
-        dataSource.getAll()
-            .then(function (data) {
-                // for now we use labels as values...
-                // var transformed = data.map(function (item) {
-                //     return {
-                //         value: item.label,
-                //         label: item.label
-                //     };
-                // });
-                values(data);
-                field(originalValue);
-                ready(true);
-            });
+        dataSource.getAll().then(function (data) {
+            // for now we use labels as values...
+            // var transformed = data.map(function (item) {
+            //     return {
+            //         value: item.label,
+            //         label: item.label
+            //     };
+            // });
+            values(data);
+            field(originalValue);
+            ready(true);
+        });
 
         return {
             ready: ready,
@@ -78,5 +74,5 @@ define([
             viewModel: viewModel
         };
     }
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

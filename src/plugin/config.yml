@@ -12,25 +12,31 @@ source:
 install:
     widgets:
         - module: panel
-          id: auth2_client_panel
+          id: kb_plugin_auth2-client_panel
           type: es6
           css: true
     routes:
+        - path: [auth2, account]
+          params:
+              view: account
+          widget: kb_plugin_auth2-client_panel
+          authorization: true
+          reentrant: false
         - path: [auth2, signedout]
-          widget: auth2_client_panel
+          widget: kb_plugin_auth2-client_panel
           authorization: false
           reentrant: false
           queryParams:
               path: { literal: ['signedout'] }
         - path: [auth2, login, continue]
-          widget: auth2_client_panel
+          widget: kb_plugin_auth2-client_panel
           authorization: false
           queryParams:
               path: { literal: [loginContinue] }
               nextrequest: {}
               in-process-login-token: {}
         - path: [login]
-          widget: auth2_client_panel
+          widget: kb_plugin_auth2-client_panel
           authorization: false
           reentrant: false
           queryParams:
@@ -38,19 +44,19 @@ install:
               nextrequest: {}
               source: {}
         - path: [auth2, link, continue]
-          widget: auth2_client_panel
+          widget: kb_plugin_auth2-client_panel
           authorization: false
           queryParams:
               path: { literal: [linkContinue] }
               in-process-link-token: {}
         - path: [auth2, { type: 'rest', name: 'path' }]
-          widget: auth2_client_panel
+          widget: kb_plugin_auth2-client_panel
           authorization: true
           reentrant: true
           queryParams:
               tab: {}
         - path: [signup, { type: param, name: step }]
-          widget: auth2_client_panel
+          widget: kb_plugin_auth2-client_panel
           authorization: false
           reentrant: false
           queryParams:

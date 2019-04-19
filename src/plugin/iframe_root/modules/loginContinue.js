@@ -1,7 +1,8 @@
 define([
     'bluebird',
-    'knockout-plus',
-    'kb_common/html',
+    'knockout',
+    'kb_knockout/lib/subscriptionManager',
+    'kb_lib/html',
     'kb_common_ts/Auth2Error',
     './lib/policies',
     './lib/format',
@@ -15,6 +16,7 @@ define([
 ], function (
     Promise,
     ko,
+    SubscriptionManager,
     html,
     Auth2Error,
     Policies,
@@ -112,7 +114,7 @@ define([
             runtime = config.runtime,
             serverTimeOffset;
         var clock;
-        var koSubscriptions = ko.kb.SubscriptionManager.make();
+        var koSubscriptions = new SubscriptionManager();
 
         const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
@@ -231,7 +233,7 @@ define([
                             // since the plugin is operating inside of the iframe, it needs
                             // to send the token with the navigation path so the parent
                             // window can also set the cookie.
-                            runtime.send('app', 'navigate', {
+                            runtime.send('app', 'auth-navigate', {
                                 nextRequest,
                                 tokenInfo: pickResult.token
                             });
@@ -241,7 +243,8 @@ define([
                         }
                     } else {
                         const defaultPath = runtime.config('ui.defaults.loginPath', 'dashboard');
-                        runtime.send('app', 'navigate', {
+                        console.log('navigating...', defaultPath);
+                        runtime.send('app', 'auth-navigate', {
                             nextRequest: defaultPath,
                             tokenInfo: pickResult.token
                         });

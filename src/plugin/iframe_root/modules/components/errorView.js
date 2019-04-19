@@ -1,9 +1,6 @@
-define([
-    'knockout-plus',
-    'kb_common/html',
-    'kb_common/bootstrapUtils'
-], function (
+define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrapBuilders'], function (
     ko,
+    reg,
     html,
     BS
 ) {
@@ -57,15 +54,18 @@ define([
                     type: 'danger',
                     collapsed: true,
                     hidden: false,
-                    body: div({
-                        dataBind: {
-                            if: 'data'
-                        }
-                    }, div({
-                        dataBind: {
-                            html: 'data'
-                        }
-                    }))
+                    body: div(
+                        {
+                            dataBind: {
+                                if: 'data'
+                            }
+                        },
+                        div({
+                            dataBind: {
+                                html: 'data'
+                            }
+                        })
+                    )
                 })
             ])
         });
@@ -87,5 +87,5 @@ define([
         };
     }
 
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

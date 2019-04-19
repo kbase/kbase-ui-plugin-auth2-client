@@ -1,4 +1,9 @@
-define(['knockout-plus', 'kb_lib/html'], function (ko, html) {
+define(['knockout', 'kb_knockout/registry', 'kb_knockout/lib/subscriptionManager', 'kb_lib/html'], function (
+    ko,
+    reg,
+    SubscriptionManager,
+    html
+) {
     'use strict';
 
     var t = html.tag,
@@ -49,7 +54,7 @@ define(['knockout-plus', 'kb_lib/html'], function (ko, html) {
     }
 
     function viewModel(params) {
-        var subscriptions = ko.kb.SubscriptionManager.make();
+        var subscriptions = new SubscriptionManager();
         // incoming is an observable array of strings ...
         var upstreamValue = params.value;
         // ... and a data source definition for the set of values.
@@ -116,5 +121,5 @@ define(['knockout-plus', 'kb_lib/html'], function (ko, html) {
         };
     }
 
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

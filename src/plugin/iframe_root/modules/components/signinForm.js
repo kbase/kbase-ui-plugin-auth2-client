@@ -1,13 +1,14 @@
 define([
-    'knockout-plus',
-    'kb_common/html',
+    'knockout',
+    'kb_knockout/registry',
+    'kb_lib/html',
+    'kb_lib/htmlBootstrapBuilders',
     'kb_common_ts/Auth2Error',
     'kb_common_ts/Auth2',
     'kb_common_ts/Auth2Session',
-    'kb_common/bootstrapUtils',
     './policyResolver',
     '../lib/provider'
-], function (ko, html, Auth2Error, auth2, MAuth2Session, BS, PolicyResolverComponent, provider) {
+], function (ko, reg, html, BS, Auth2Error, auth2, MAuth2Session, PolicyResolverComponent, provider) {
     'use strict';
 
     var t = html.tag,
@@ -550,13 +551,13 @@ define([
 
         function doSigninSuccess(tokenInfo) {
             if (nextRequest !== null) {
-                runtime.send('app', 'navigate', {
+                runtime.send('app', 'auth-navigate', {
                     nextRequest,
                     tokenInfo
                 });
             } else {
                 const defaultPath = runtime.config('ui.defaults.loginPath', 'dashboard');
-                runtime.send('app', 'navigate', {
+                runtime.send('app', 'auth-navigate', {
                     nextRequest: { path: defaultPath },
                     tokenInfo
                 });
@@ -626,5 +627,5 @@ define([
             template: template()
         };
     }
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

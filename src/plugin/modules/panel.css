@@ -1,3 +1,6 @@
-.plugin_auth2-client_panel {
+.plugin_example_panel {
+    flex: 1 1 0px;
+    display: flex;
+    flex-direction: column;
     padding: 0 10px 10px 0;
 }
