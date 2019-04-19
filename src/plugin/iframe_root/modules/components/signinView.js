@@ -1,7 +1,8 @@
 define([
-    'knockout-plus',
-    'kb_common/html',
-    'kb_common/bootstrapUtils',
+    'knockout',
+    'kb_knockout/registry',
+    'kb_lib/html',
+    'kb_lib/htmlBootstrapBuilders',
     'yaml!../config.yml',
     './signinForm',
     './signupForm',
@@ -9,7 +10,7 @@ define([
 
     // loaded for effect
     'bootstrap'
-], function (ko, html, BS, config, SigninFormComponent, SignupFormComponent, provider) {
+], function (ko, reg, html, BS, config, SigninFormComponent, SignupFormComponent, provider) {
     'use strict';
 
     var t = html.tag,
@@ -705,5 +706,5 @@ define([
         };
     }
 
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

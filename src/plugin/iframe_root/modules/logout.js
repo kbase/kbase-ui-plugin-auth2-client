@@ -1,9 +1,4 @@
-define([
-    'bluebird',
-    'knockout-plus',
-    'kb_common/html',
-    './components/interruptedView'
-], function (
+define(['bluebird', 'knockout', 'kb_lib/html', './components/interruptedView'], function (
     Promise,
     ko,
     html,
@@ -19,7 +14,6 @@ define([
 
         // UI
 
-
         // VIEW
 
         function render() {
@@ -27,9 +21,7 @@ define([
                 dataBind: {
                     component: {
                         name: InterruptedViewComponent.quotedName(),
-                        params: {
-
-                        }
+                        params: {}
                     }
                 }
             });

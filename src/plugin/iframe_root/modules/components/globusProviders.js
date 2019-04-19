@@ -1,33 +1,15 @@
-define(['knockout-plus', 'kb_common/html', 'kb_common_ts/HttpClient'], function (ko, html, HttpClient) {
+define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBuilders', 'kb_common_ts/HttpClient'], function (
+    ko,
+    reg,
+    html,
+    build,
+    HttpClient
+) {
     'use strict';
 
     var t = html.tag,
         div = t('div'),
         input = t('input');
-
-    function getGlobusProviders() {
-        var http = new HttpClient.HttpClient();
-
-        var path = [runtime.pluginResourcePath, 'data', 'globus-providers.json'].join('/');
-        var url = window.location.origin + '/' + path;
-
-        return http
-            .request({
-                method: 'GET',
-                url: url
-            })
-            .then(function (result) {
-                if (result.status === 200) {
-                    try {
-                        return JSON.parse(result.response);
-                    } catch (ex) {
-                        throw new Error('Error fetching file: ' + ex.message);
-                    }
-                } else {
-                    throw new Error('Error fetching file: ' + result.status);
-                }
-            });
-    }
 
     function template() {
         return div(
@@ -43,7 +25,7 @@ define(['knockout-plus', 'kb_common/html', 'kb_common_ts/HttpClient'], function 
                             if: 'loading()'
                         }
                     },
-                    html.loading()
+                    build.loading()
                 ),
                 div(
                     {
@@ -103,7 +85,8 @@ define(['knockout-plus', 'kb_common/html', 'kb_common_ts/HttpClient'], function 
         );
     }
 
-    function viewModel() {
+    function viewModel(params) {
+        var runtime = params.runtime;
         var loading = ko.observable(true);
         var globusProviders = ko.observableArray();
         var providerSearch = ko.observable();
@@ -126,6 +109,30 @@ define(['knockout-plus', 'kb_common/html', 'kb_common_ts/HttpClient'], function 
                 return false;
             }
         });
+
+        function getGlobusProviders() {
+            var http = new HttpClient.HttpClient();
+
+            var path = [runtime.pluginResourcePath, 'data', 'globus-providers.json'].join('/');
+            var url = window.location.origin + '/' + path;
+
+            return http
+                .request({
+                    method: 'GET',
+                    url: url
+                })
+                .then(function (result) {
+                    if (result.status === 200) {
+                        try {
+                            return JSON.parse(result.response);
+                        } catch (ex) {
+                            throw new Error('Error fetching file: ' + ex.message);
+                        }
+                    } else {
+                        throw new Error('Error fetching file: ' + result.status);
+                    }
+                });
+        }
 
         // populate the globus providers asynchronously.
         getGlobusProviders().then(function (providers) {
@@ -150,5 +157,5 @@ define(['knockout-plus', 'kb_common/html', 'kb_common_ts/HttpClient'], function 
             template: template()
         };
     }
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

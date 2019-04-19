@@ -82,17 +82,6 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
 
             this.id = 'host_' + html.genId();
 
-            // this.hostOrigin = document.location.origin;
-            // this.iframeOrigin = document.location.origin;
-
-            // this.channel = new WindowChannel.Channel({
-            //     window: window,
-            //     host: document.location.origin,
-            //     // recieveFor: [this.id],
-            //     // clientId: this.iframe.id,
-            //     // hostId: this.id
-            // });
-
             // This is the channel for talking to the iframe app.
 
             // We do a dance here. Creating the channel also creates a unique channel id.
@@ -166,7 +155,6 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
 
             this.channel.on('open-window', ({ url }) => {
                 window.location.href = url;
-                // window.open(url, name);
             });
 
             this.channel.on('set-plugin-params', ({ pluginParams }) => {
@@ -194,25 +182,23 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
                 const currentLocation = window.location.toString();
                 const currentURL = new URL(currentLocation);
                 currentURL.search = queryString;
-                history.pushState(null, '', currentURL.toString());
-
-                // window.location.search = queryString;
+                history.replaceState(null, '', currentURL.toString());
             });
 
             this.channel.on('send-instrumentation', (instrumentation) => {
                 this.runtime.service('instrumentation').send(instrumentation);
             });
 
-            this.channel.on('ui-navigate', ({ nextRequest, tokenInfo }) => {
+            this.channel.on('ui-navigate', (to) => {
+                this.runtime.send('app', 'navigate', to);
+            });
+
+            this.channel.on('ui-auth-navigate', ({ nextRequest, tokenInfo }) => {
                 const authSession = this.runtime.service('session').getClient();
                 authSession.setSessionCookie(tokenInfo.token, tokenInfo.expires);
                 return authSession.evaluateSession().then(() => {
                     this.runtime.send('app', 'navigate', nextRequest);
                 });
-            });
-
-            this.channel.on('ui-token', (token, routeAfter) => {
-                this.runtime.service('session').onAuth(token, routeAfter);
             });
 
             this.channel.on('post-form', (config) => {
@@ -221,6 +207,10 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
 
             this.channel.on('clicked', () => {
                 window.document.body.click();
+            });
+
+            this.channel.on('set-title', ({ title }) => {
+                this.runtime.send('ui', 'setTitle', title);
             });
 
             this.channel.start();
@@ -317,7 +307,7 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             const currentLocation = window.location.toString();
             const currentURL = new URL(currentLocation);
             currentURL.search = '';
-            history.pushState(null, '', currentURL.toString());
+            history.replaceState(null, '', currentURL.toString());
 
             if (this.channel) {
                 return this.channel.stop();

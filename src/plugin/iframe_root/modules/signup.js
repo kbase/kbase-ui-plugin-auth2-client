@@ -1,7 +1,8 @@
 define([
     'bluebird',
-    'knockout-plus',
-    'kb_common/html',
+    'knockout',
+    'kb_knockout/lib/subscriptionManager',
+    'kb_lib/html',
     'kb_common_ts/Auth2Error',
     'kb_common_ts/Auth2',
     './lib/policies',
@@ -15,6 +16,7 @@ define([
 ], function (
     Promise,
     ko,
+    SubscriptionManager,
     html,
     Auth2Error,
     auth2,
@@ -53,7 +55,7 @@ define([
             baseUrl: runtime.config('services.auth.url')
         });
 
-        var koSubscriptions = ko.kb.SubscriptionManager.make();
+        var koSubscriptions = new SubscriptionManager();
 
         function renderLayout() {
             container.innerHTML = div(

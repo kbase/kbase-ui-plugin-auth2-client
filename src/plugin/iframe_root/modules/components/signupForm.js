@@ -1,8 +1,9 @@
 define([
-    'knockout-plus',
-    'kb_common/html',
-    'kb_common/bootstrapUtils',
-    'kb_common/domEvent2',
+    'knockout',
+    'kb_knockout/registry',
+    'kb_knockout/lib/subscriptionManager',
+    'kb_lib/html',
+    'kb_lib/htmlBootstrapBuilders',
     'kb_common_ts/Auth2Error',
     'kb_common_ts/Auth2',
     'kb_common_ts/Auth2Session',
@@ -14,9 +15,10 @@ define([
     './errorView'
 ], function (
     ko,
+    reg,
+    SubscriptionManager,
     html,
     BS,
-    DomEvent,
     Auth2Error,
     auth2,
     MAuth2Session,
@@ -60,7 +62,7 @@ define([
     }
 
     function viewModel(params) {
-        var subscriptions = ko.kb.SubscriptionManager.make();
+        var subscriptions = new SubscriptionManager();
         var choice = params.choice;
         var done = params.done;
         var create = choice.create[0];
@@ -1483,5 +1485,5 @@ define([
             template: template()
         };
     }
-    return ko.kb.registerComponent(component);
+    return reg.registerComponent(component);
 });

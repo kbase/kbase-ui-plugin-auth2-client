@@ -1,12 +1,11 @@
 define([
-    'bluebird',
-    'knockout-plus',
-    'kb_common/html',
+    'knockout',
+    'kb_lib/html',
     './components/loginView',
 
     // for effect
     'bootstrap'
-], function (Promise, ko, html, LoginViewComponent) {
+], function (ko, html, LoginViewComponent) {
     'use strict';
 
     var t = html.tag,
