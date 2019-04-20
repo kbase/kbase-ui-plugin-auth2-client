@@ -1,0 +1,36 @@
+---
+- description: Signin spec
+  disable:
+    envs:
+      - appdev
+  specs:
+    - description: Click the signin button
+      baseSelector: []
+      tasks:
+        - action: navigate
+          path: login
+        - subtask: plugin
+        - wait: forElement
+          selector:
+            - type: component
+              value: login-view
+            - type: button
+              value: signin
+        - action: click
+        - wait: forElement
+          selector:
+            - type: component
+              value: login-view
+            - - type: component
+                value: signin-button
+              - type: name
+                value: google
+        - wait: forElement
+          selector:
+            - type: component
+              value: login-view
+            - - type: component
+                value: signin-button
+              - type: name
+                value: globus
+
