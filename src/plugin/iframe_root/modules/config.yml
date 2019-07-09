@@ -1,0 +1,57 @@
+## YAML Template.
+---
+package:
+  author: Erik Pearson
+  name: auth2-client
+  description: Auth2 client plugin
+  date: Feb 14, 2017
+source:
+  modules:
+  styles:
+    - file: main.css
+install:
+  widgets:
+    - module: login
+      id: auth2_login
+      css: true
+      type: factory
+    - module: loginContinue
+      id: auth2LoginContinue
+      type: factory
+    - module: account/panel
+      id: auth2Account
+      type: es6
+    - module: signedout
+      id: auth2_signedout
+      type: factory
+  coreServices:
+    dependencies:
+      auth2:
+        version:
+          minimum: 0.2.5
+        providers: ["Google", "Globus", "OrcID"]
+      userProfile:
+        version:
+          minimum: 0.2.0
+views:
+  - view: account 
+    module: account/panel
+  -
+    view: signedout
+    module: signedout
+  -
+    view: login
+    module: login
+    type: factory
+  -
+    view: loginContinue
+    module: loginContinue
+    type: factory
+  -
+    view: linkContinue 
+    module: linkContinue
+    type: factory
+  -
+    view: signup 
+    module: signup
+    type: factory
