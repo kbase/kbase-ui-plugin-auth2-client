@@ -550,7 +550,7 @@ define([
         }
 
         function doSigninSuccess(tokenInfo) {
-            if (nextRequest !== null) {
+            if (nextRequest) {
                 runtime.send('app', 'auth-navigate', {
                     nextRequest,
                     tokenInfo

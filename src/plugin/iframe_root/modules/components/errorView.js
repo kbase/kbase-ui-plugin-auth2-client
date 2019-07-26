@@ -1,9 +1,10 @@
-define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrapBuilders'], function (
-    ko,
-    reg,
-    html,
-    BS
-) {
+define([
+    'knockout',
+    'kb_knockout/registry',
+    'kb_knockout/lib/generators',
+    'kb_lib/html',
+    'kb_lib/htmlBootstrapBuilders'
+], function (ko, reg, gen, html, BS) {
     'use strict';
 
     var t = html.tag,
@@ -48,25 +49,28 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
                         }
                     })
                 }),
-                BS.buildCollapsiblePanel({
-                    name: 'data',
-                    title: 'Data',
-                    type: 'danger',
-                    collapsed: true,
-                    hidden: false,
-                    body: div(
-                        {
-                            dataBind: {
-                                if: 'data'
-                            }
-                        },
-                        div({
-                            dataBind: {
-                                html: 'data'
-                            }
-                        })
-                    )
-                })
+                gen.if(
+                    'data',
+                    BS.buildCollapsiblePanel({
+                        name: 'data',
+                        title: 'Data',
+                        type: 'danger',
+                        collapsed: true,
+                        hidden: false,
+                        body: div(
+                            {
+                                dataBind: {
+                                    if: 'data'
+                                }
+                            },
+                            div({
+                                dataBind: {
+                                    html: 'data'
+                                }
+                            })
+                        )
+                    })
+                )
             ])
         });
     }
@@ -76,7 +80,7 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
             code: params.code,
             message: params.message,
             detail: params.detail,
-            data: BS.buildPresentableJson(params.data)
+            data: params.data ? BS.buildPresentableJson(params.data) : null
         };
     }
 
