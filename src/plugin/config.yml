@@ -55,7 +55,7 @@ install:
           reentrant: true
           queryParams:
               tab: {}
-        - path: [signup, { type: param, name: step }]
+        - path: [signup, { type: param, name: step, optional: true }]
           widget: kb_plugin_auth2-client_panel
           authorization: false
           reentrant: false
