@@ -11,6 +11,7 @@ define([
     './components/errorView',
     './components/signinView',
     'kb_common_ts/Auth2',
+    'kb_common/lang',
     // loaded for effect
     'bootstrap'
 ], function (
@@ -25,7 +26,8 @@ define([
     provider,
     ErrorViewComponent,
     SigninViewComponent,
-    auth2
+    auth2,
+    lang
 ) {
     'use strict';
 
@@ -34,6 +36,15 @@ define([
         span = t('span'),
         p = t('p'),
         a = t('a');
+
+    class UIError extends Error {
+        constructor({ code, message, detail, data }) {
+            super(message);
+            this.code = code;
+            this.detail = detail;
+            this.data = data;
+        }
+    }
 
     function Query(search) {
         var query = {};
@@ -87,19 +98,75 @@ define([
 
     function getStateParam(choice) {
         if (choice.redirecturl) {
+            let url;
             try {
-                var u = URL(choice.redirecturl);
-
-                // we just expect a state param.
-                if (u.query && u.query.state) {
-                    return JSON.parse(u.query.state);
-                }
+                url = URL(choice.redirecturl);
             } catch (ex) {
-                console.warn('Error parsing state in redirect url', ex);
-                return {};
+                throw new UIError({
+                    code: 'parse-error',
+                    message: 'Error parsing redirecturl',
+                    detail: div([
+                        p('This is an error parsing the redirecturl in choice.redirecturl'),
+                        p(['The original error message is: ', ex.message])
+                    ]),
+                    data: {
+                        choice: choice
+                    }
+                });
             }
+
+            // we just expect a state param.
+            if (url.query && url.query.state) {
+                try {
+                    return JSON.parse(url.query.state);
+                } catch (ex) {
+                    console.error('Error parsing state in redirect url', ex);
+                    throw new UIError({
+                        code: 'parse-error',
+                        message: 'Error parsing state in redirect url',
+                        detail: div([
+                            p('This is an error parsing the KBase auth flow.'),
+                            p([
+                                'The choice object should have a property named "redirecturl" which ',
+                                'should be a valid url with a query param named "state", which is in JSON format.'
+                            ]),
+                            p(['The original error message is: ', ex.message])
+                        ]),
+                        data: {
+                            choice: choice
+                        }
+                    });
+                }
+            }
+            throw new UIError({
+                code: 'missing-state',
+                message: 'State query parameter missing from choice.redirecturl',
+                detail: div([
+                    p('This is an error using the KBase auth flow.'),
+                    p([
+                        'The choice object should have a property named "redirecturl" which ',
+                        'should be a valid url with a query param named "state", which is in JSON format.'
+                    ])
+                ]),
+                data: {
+                    choice: choice
+                }
+            });
         } else {
-            return {};
+            throw new UIError({
+                code: 'parse-error',
+                message: 'Redirect url is missing or falsy.',
+                // data: null,
+                detail: div([
+                    p('This is an error using the KBase auth flow.'),
+                    p(
+                        'The choice object should have a property named "redirecturl", but it is either missing or falsy.'
+                    )
+                ]),
+                data: {
+                    choice: choice
+                }
+            });
         }
     }
 
@@ -227,7 +294,6 @@ define([
                     agreements: []
                 })
                 .then(function (pickResult) {
-                    // runtime.send('app', 'auth', runtime.service('session').getAuthToken(), nextRequest);
                     if (nextRequest !== null) {
                         try {
                             // since the plugin is operating inside of the iframe, it needs
@@ -243,7 +309,6 @@ define([
                         }
                     } else {
                         const defaultPath = runtime.config('ui.defaults.loginPath', 'dashboard');
-                        console.log('navigating...', defaultPath);
                         runtime.send('app', 'auth-navigate', {
                             nextRequest: defaultPath,
                             tokenInfo: pickResult.token
@@ -464,7 +529,7 @@ define([
                         code: err.code,
                         message: err.message,
                         detail: err.detail || '',
-                        data: ko.observable(err.data || {})
+                        data: err.data || null
                     };
                     mounts.error.innerHTML = div({
                         dataBind: {

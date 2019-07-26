@@ -30,7 +30,7 @@ define([
 
         var policiesToResolve = data.policiesToResolve;
 
-        var nextRequest = data.nextRequest;
+        var nextRequest = data.nextRequest || null; // to handle requests from outside the system.
 
         var staySignedIn = ko.observable(true);
 
