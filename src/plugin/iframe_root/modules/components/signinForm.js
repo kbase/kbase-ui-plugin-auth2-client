@@ -181,7 +181,8 @@ define([
                     }),
                     a(
                         {
-                            href: '#login'
+                            href: '/#login',
+                            target: '_parent'
                         },
                         'Sign in to KBase again'
                     )
@@ -287,7 +288,8 @@ define([
                     }),
                     a(
                         {
-                            href: '#login'
+                            href: '/#login',
+                            target: '_parent'
                         },
                         'Sign in to KBase again'
                     )
@@ -361,7 +363,8 @@ define([
                     }),
                     a(
                         {
-                            href: '#login'
+                            href: '/#login',
+                            target: '_parent'
                         },
                         'Sign in to KBase again'
                     )
