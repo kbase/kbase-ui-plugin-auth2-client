@@ -1448,7 +1448,7 @@ define([
                     'You should visit the ',
                     a(
                         {
-                            href: '#login'
+                            href: '/#login'
                         },
                         'sign-in page'
                     ),

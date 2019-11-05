@@ -486,7 +486,7 @@ define([
                                     'If you wish to sign-in or sign-up, please revisit the ',
                                     a(
                                         {
-                                            href: '#login'
+                                            href: '/#login'
                                         },
                                         'sign in page'
                                     ),

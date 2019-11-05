@@ -195,7 +195,7 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
                         class: 'btn btn-primary navbar-btn kb-nav-btn',
                         dataButton: 'signin',
                         dataKBTesthookButton: 'signin',
-                        href: '#login'
+                        href: '/#login'
                     },
                     [
                         div({

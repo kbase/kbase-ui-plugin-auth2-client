@@ -203,11 +203,11 @@ define([
                     'In this case you should just try ',
                     a(
                         {
-                            href: '#login'
+                            href: '/#login'
                         },
                         'signing in'
                     ),
-                    ' again with a different acount.'
+                    ' again with a different account.'
                 ]),
                 p([
                     'If you absolutely cannot remember which account you used to sign in to KBase, ',
@@ -295,7 +295,7 @@ define([
                     'After signing out you will need to start the ',
                     a(
                         {
-                            href: '#login'
+                            href: '/#login'
                         },
                         'signin'
                     ),
