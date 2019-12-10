@@ -140,7 +140,6 @@ define(['bluebird', './adapters/objectWidget', './adapters/kbWidget', 'kb_lib/me
             let widgetPromise;
 
             // const configCopy = new merge.DeepMerger({}).mergeIn(config).value();
-            // console.log('continuing...', configCopy, this.baseWidgetConfig);
             // const widgetConfig = new merge.DeepMerger(configCopy).mergeIn(this.baseWidgetConfig).value();
 
             const widgetConfig = Object.assign({}, config, this.baseWidgetConfig);
@@ -152,20 +151,20 @@ define(['bluebird', './adapters/objectWidget', './adapters/kbWidget', 'kb_lib/me
 
             // How we create a widget depends on what type it is.
             switch (widgetDef.type) {
-            case 'factory':
-                widgetPromise = this.makeFactoryWidget(widgetDef, widgetConfig);
-                break;
-            case 'es6':
-                widgetPromise = this.makeES6Widget(widgetDef, widgetConfig);
-                break;
-            case 'object':
-                widgetPromise = this.makeObjectWidget(widgetDef, widgetConfig);
-                break;
-            case 'kbwidget':
-                widgetPromise = this.makeKBWidget(widgetDef, widgetConfig);
-                break;
-            default:
-                throw new Error('Unsupported widget type ' + widgetDef.type);
+                case 'factory':
+                    widgetPromise = this.makeFactoryWidget(widgetDef, widgetConfig);
+                    break;
+                case 'es6':
+                    widgetPromise = this.makeES6Widget(widgetDef, widgetConfig);
+                    break;
+                case 'object':
+                    widgetPromise = this.makeObjectWidget(widgetDef, widgetConfig);
+                    break;
+                case 'kbwidget':
+                    widgetPromise = this.makeKBWidget(widgetDef, widgetConfig);
+                    break;
+                default:
+                    throw new Error('Unsupported widget type ' + widgetDef.type);
             }
             return widgetPromise.then((widget) => {
                 this.validateWidget(widget, widgetName);

@@ -1,6 +1,6 @@
 /*!
 **  Pure-UUID -- Pure JavaScript Based Universally Unique Identifier (UUID)
-**  Copyright (c) 2004-2015 Ralf S. Engelschall <rse@engelschall.com>
+**  Copyright (c) 2004-2019 Ralf S. Engelschall <rse@engelschall.com>
 **
 **  Permission is hereby granted, free of charge, to any person obtaining
 **  a copy of this software and associated documentation files (the
@@ -28,22 +28,16 @@
     /* global module: false */
     if (typeof define === "function" && typeof define.amd !== "undefined")
         /*  AMD environment  */
-        define([], function () { return factory(root); });
-    else if (typeof module === "object" && typeof module.exports === "object")
+        define(function () { return factory(root); });
+    else if (typeof module === "object" && typeof module.exports === "object") {
         /*  CommonJS environment  */
         module.exports = factory(root);
+        module.exports["default"] = module.exports;
+    }
     else
         /*  Browser environment  */
         root[name] = factory(root);
 }(this, "UUID", function (/* root */) {
-
-    /*  utility function: minimal Pseudo Random Number Generator (PRNG)  */
-    var prng = function (len, radix) {
-        var bytes = [];
-        for (var i = 0; i < len; i++)
-            bytes[i] = Math.floor(Math.random() * radix + 1);
-        return bytes;
-    };
 
     /*  array to hex-string conversion  */
     var a2hs = function (bytes, begin, end, uppercase, str, pos) {
@@ -64,6 +58,71 @@
     var hs2a = function (str, begin, end, bytes, pos) {
         for (var i = begin; i <= end; i += 2)
             bytes[pos++] = parseInt(str.substr(i, 2), 16);
+    };
+
+    /*  This library provides Z85: ZeroMQ's Base-85 encoding/decoding
+        (see http://rfc.zeromq.org/spec:32 for details)  */
+
+    var z85_encoder = (
+        "0123456789" +
+         "abcdefghijklmnopqrstuvwxyz" +
+         "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+         ".-:+=^!/*?&<>()[]{}@%$#"
+    ).split("");
+    var z85_decoder = [
+        0x00, 0x44, 0x00, 0x54, 0x53, 0x52, 0x48, 0x00,
+        0x4B, 0x4C, 0x46, 0x41, 0x00, 0x3F, 0x3E, 0x45,
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x40, 0x00, 0x49, 0x42, 0x4A, 0x47,
+        0x51, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A,
+        0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32,
+        0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A,
+        0x3B, 0x3C, 0x3D, 0x4D, 0x00, 0x4E, 0x43, 0x00,
+        0x00, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+        0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+        0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20,
+        0x21, 0x22, 0x23, 0x4F, 0x00, 0x50, 0x00, 0x00
+    ];
+    var z85_encode = function (data, size) {
+        if ((size % 4) !== 0)
+            throw new Error("z85_encode: invalid input length (multiple of 4 expected)");
+        var str = "", i = 0, value = 0;
+        while (i < size) {
+            value = (value * 256) + data[i++];
+            if ((i % 4) === 0) {
+                var divisor = 85 * 85 * 85 * 85;
+                while (divisor >= 1) {
+                    var idx = Math.floor(value / divisor) % 85;
+                    str += z85_encoder[idx];
+                    divisor /= 85;
+                }
+                value = 0;
+             }
+        }
+        return str;
+    };
+    var z85_decode = function (str, dest) {
+        var l = str.length;
+        if ((l % 5) !== 0)
+            throw new Error("z85_decode: invalid input length (multiple of 5 expected)");
+        if (typeof dest === "undefined")
+            dest = new Array(l * 4 / 5);
+        var i = 0, j = 0, value = 0;
+        while (i < l) {
+            var idx = str.charCodeAt(i++) - 32;
+            if (idx < 0 || idx >= z85_decoder.length)
+                break;
+            value = (value * 85) + z85_decoder[idx];
+            if ((i % 5) === 0) {
+                var divisor = 256 * 256 * 256;
+                while (divisor >= 1) {
+                    dest[j++] = Math.trunc((value / divisor) % 256);
+                    divisor /= 256;
+                }
+                value = 0;
+            }
+        }
+        return dest;
     };
 
     /*  This library provides conversions between 8/16/32-bit character
@@ -141,7 +200,7 @@
     };
 
     /*  this is just a really minimal UI64 functionality,
-        just sufficient enough for the UUID v1 generator!  */
+        just sufficient enough for the UUID v1 generator and PCG PRNG!  */
 
     /*  UI64 constants  */
     var UI64_DIGITS     = 8;    /* number of digits */
@@ -156,6 +215,11 @@
     /*  the zero represented as an UI64  */
     var ui64_zero = function () {
         return ui64_d2i(0, 0, 0, 0, 0, 0, 0, 0);
+    };
+
+    /*  clone the UI64  */
+    var ui64_clone = function (x) {
+        return x.slice(0);
     };
 
     /*  convert between number and UI64 representation  */
@@ -200,11 +264,59 @@
         return carry;
     };
 
+    /*  multiply UI64 (y) to UI64 (x) and return overflow/carry as UI64  */
+    var ui64_mul = function (x, y) {
+        var i, j;
+
+        /*  clear temporary result buffer zx  */
+        var zx = new Array(UI64_DIGITS + UI64_DIGITS);
+        for (i = 0; i < (UI64_DIGITS + UI64_DIGITS); i++)
+            zx[i] = 0;
+
+        /*  perform multiplication operation  */
+        var carry;
+        for (i = 0; i < UI64_DIGITS; i++) {
+            /*  calculate partial product and immediately add to zx  */
+            carry = 0;
+            for (j = 0; j < UI64_DIGITS; j++) {
+                carry += (x[i] * y[j]) + zx[i + j];
+                zx[i + j] = (carry % UI64_DIGIT_BASE);
+                carry /= UI64_DIGIT_BASE;
+            }
+
+            /*  add carry to remaining digits in zx  */
+            for ( ; j < UI64_DIGITS + UI64_DIGITS - i; j++) {
+                carry += zx[i + j];
+                zx[i + j] = (carry % UI64_DIGIT_BASE);
+                carry /= UI64_DIGIT_BASE;
+            }
+        }
+
+        /*  provide result by splitting zx into x and ov  */
+        for (i = 0; i < UI64_DIGITS; i++)
+            x[i] = zx[i];
+        return zx.slice(UI64_DIGITS, UI64_DIGITS);
+    };
+
+    /*  AND operation: UI64 (x) &= UI64 (y)  */
+    var ui64_and = function (x, y) {
+        for (var i = 0; i < UI64_DIGITS; i++)
+            x[i] &= y[i];
+        return x;
+    };
+
+    /*  OR operation: UI64 (x) |= UI64 (y)  */
+    var ui64_or = function (x, y) {
+        for (var i = 0; i < UI64_DIGITS; i++)
+            x[i] |= y[i];
+        return x;
+    };
+
     /*  rotate right UI64 (x) by a "s" bits and return overflow/carry as number  */
-    var ui64_ror = function (x, s) {
+    var ui64_rorn = function (x, s) {
         var ov = ui64_zero();
         if ((s % UI64_DIGIT_BITS) !== 0)
-            throw new Error("ui64_ror: only bit rotations supported with a multiple of digit bits");
+            throw new Error("ui64_rorn: only bit rotations supported with a multiple of digit bits");
         var k = Math.floor(s / UI64_DIGIT_BITS);
         for (var i = 0; i < k; i++) {
             for (var j = UI64_DIGITS - 1 - 1; j >= 0; j--)
@@ -215,6 +327,81 @@
             x[j] = 0;
         }
         return ui64_i2n(ov);
+    };
+
+    /*  rotate right UI64 (x) by a "s" bits and return overflow/carry as number  */
+    var ui64_ror = function (x, s) {
+        /*  sanity check shifting  */
+        if (s > (UI64_DIGITS * UI64_DIGIT_BITS))
+            throw new Error("ui64_ror: invalid number of bits to shift");
+
+        /*  prepare temporary buffer zx  */
+        var zx = new Array(UI64_DIGITS + UI64_DIGITS);
+        var i;
+        for (i = 0; i < UI64_DIGITS; i++) {
+            zx[i + UI64_DIGITS] = x[i];
+            zx[i] = 0;
+        }
+
+        /*  shift bits inside zx  */
+        var k1 = Math.floor(s / UI64_DIGIT_BITS);
+        var k2 = s % UI64_DIGIT_BITS;
+        for (i = k1; i < UI64_DIGITS + UI64_DIGITS - 1; i++) {
+            zx[i - k1] =
+                ((zx[i] >>> k2) |
+                 (zx[i + 1] << (UI64_DIGIT_BITS - k2))) &
+                ((1 << UI64_DIGIT_BITS) - 1);
+        }
+        zx[UI64_DIGITS + UI64_DIGITS - 1 - k1] =
+            (zx[UI64_DIGITS + UI64_DIGITS - 1] >>> k2) &
+            ((1 << UI64_DIGIT_BITS) - 1);
+        for (i = UI64_DIGITS + UI64_DIGITS - 1 - k1 + 1; i < UI64_DIGITS + UI64_DIGITS; i++)
+            zx[i] = 0;
+
+        /*  provide result by splitting zx into x and ov  */
+        for (i = 0; i < UI64_DIGITS; i++)
+            x[i] = zx[i + UI64_DIGITS];
+        return zx.slice(0, UI64_DIGITS);
+    };
+
+    /*  rotate left UI64 (x) by a "s" bits and return overflow/carry as UI64  */
+    var ui64_rol = function (x, s) {
+        /*  sanity check shifting  */
+        if (s > (UI64_DIGITS * UI64_DIGIT_BITS))
+            throw new Error("ui64_rol: invalid number of bits to shift");
+
+        /*  prepare temporary buffer zx  */
+        var zx = new Array(UI64_DIGITS + UI64_DIGITS);
+        var i;
+        for (i = 0; i < UI64_DIGITS; i++) {
+            zx[i + UI64_DIGITS] = 0;
+            zx[i] = x[i];
+        }
+
+        /*  shift bits inside zx  */
+        var k1 = Math.floor(s / UI64_DIGIT_BITS);
+        var k2 = s % UI64_DIGIT_BITS;
+        for (i = UI64_DIGITS - 1 - k1; i > 0; i--) {
+            zx[i + k1] =
+                ((zx[i] << k2) |
+                 (zx[i - 1] >>> (UI64_DIGIT_BITS - k2))) &
+                ((1 << UI64_DIGIT_BITS) - 1);
+        }
+        zx[0 + k1] = (zx[0] << k2) & ((1 << UI64_DIGIT_BITS) - 1);
+        for (i = 0 + k1 - 1; i >= 0; i--)
+            zx[i] = 0;
+
+        /*  provide result by splitting zx into x and ov  */
+        for (i = 0; i < UI64_DIGITS; i++)
+            x[i] = zx[i];
+        return zx.slice(UI64_DIGITS, UI64_DIGITS);
+    };
+
+    /*  XOR UI64 (y) onto UI64 (x) and return x  */
+    var ui64_xor = function (x, y) {
+        for (var i = 0; i < UI64_DIGITS; i++)
+            x[i] ^= y[i];
+        return;
     };
 
     /*  this is just a really minimal UI32 functionality,
@@ -235,7 +422,7 @@
         );
     };
 
-    /* calculate the SHA-1 of an array of big-endian words, and a bit length */
+    /*  calculate the SHA-1 of an array of big-endian words, and a bit length  */
     var sha1_core = function (x, len) {
         /*  perform the appropriate triplet combination function for the current iteration  */
         function sha1_ft (t, b, c, d) {
@@ -413,13 +600,74 @@
         return [ a, b, c, d ];
     };
 
-    /* calculate the MD5 of an octet string */
+    /*  calculate the MD5 of an octet string  */
     var md5 = function (s) {
         return a2s(
             md5_core(
                 s2a(s, { ibits: 8, obits: 32, obigendian: false }),
                 s.length * 8),
             { ibits: 32, ibigendian: false });
+    };
+
+    /*  PCG Pseudo-Random-Number-Generator (PRNG)
+        http://www.pcg-random.org/pdf/hmc-cs-2014-0905.pdf
+        This is the PCG-XSH-RR variant ("xorshift high (bits), random rotation"),
+        based on 32-bit output, 64-bit internal state and the formulas:
+        state = state * MUL + INC
+        output = rotate32((state ^ (state >> 18)) >> 27, state >> 59)  */
+
+    var PCG = function (seed) {
+        /*  pre-load some "magic" constants  */
+        this.mul   = ui64_d2i(0x58, 0x51, 0xf4, 0x2d, 0x4c, 0x95, 0x7f, 0x2d);
+        this.inc   = ui64_d2i(0x14, 0x05, 0x7b, 0x7e, 0xf7, 0x67, 0x81, 0x4f);
+        this.mask  = ui64_d2i(0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff);
+
+        /*  generate an initial internal state  */
+        this.state = ui64_clone(this.inc);
+        this.next();
+        ui64_and(this.state, this.mask);
+        seed = ui64_n2i(seed !== undefined ?
+            (seed >>> 0) : ((Math.random() * 0xffffffff) >>> 0));
+        ui64_or(this.state, seed);
+        this.next();
+    };
+    PCG.prototype.next = function () {
+        /*  save current state  */
+        var state = ui64_clone(this.state);
+
+        /*  advance internal state  */
+        ui64_mul(this.state, this.mul);
+        ui64_add(this.state, this.inc);
+
+        /*  calculate: (state ^ (state >> 18)) >> 27  */
+        var output = ui64_clone(state);
+        ui64_ror(output, 18);
+        ui64_xor(output, state);
+        ui64_ror(output, 27);
+
+        /*  calculate: state >> 59  */
+        var rot = ui64_clone(state);
+        ui64_ror(rot, 59);
+
+		/*  calculate: rotate32(xorshifted, rot)  */
+        ui64_and(output, this.mask);
+        var k = ui64_i2n(rot);
+        var output2 = ui64_clone(output);
+        ui64_rol(output2, 32 - k);
+        ui64_ror(output, k);
+        ui64_xor(output, output2);
+
+        /*  return pseudo-random number  */
+        return ui64_i2n(output);
+    };
+    var pcg = new PCG();
+
+    /*  utility function: simple Pseudo Random Number Generator (PRNG)  */
+    var prng = function (len, radix) {
+        var bytes = [];
+        for (var i = 0; i < len; i++)
+            bytes[i] = (pcg.next() % radix);
+        return bytes;
     };
 
     /*  internal state  */
@@ -485,14 +733,14 @@
 
             /*  store the 60 LSB of the time in the UUID  */
             var ov;
-            ov = ui64_ror(t, 8); uuid[3] = (ov & 0xFF);
-            ov = ui64_ror(t, 8); uuid[2] = (ov & 0xFF);
-            ov = ui64_ror(t, 8); uuid[1] = (ov & 0xFF);
-            ov = ui64_ror(t, 8); uuid[0] = (ov & 0xFF);
-            ov = ui64_ror(t, 8); uuid[5] = (ov & 0xFF);
-            ov = ui64_ror(t, 8); uuid[4] = (ov & 0xFF);
-            ov = ui64_ror(t, 8); uuid[7] = (ov & 0xFF);
-            ov = ui64_ror(t, 8); uuid[6] = (ov & 0x0F);
+            ov = ui64_rorn(t, 8); uuid[3] = (ov & 0xFF);
+            ov = ui64_rorn(t, 8); uuid[2] = (ov & 0xFF);
+            ov = ui64_rorn(t, 8); uuid[1] = (ov & 0xFF);
+            ov = ui64_rorn(t, 8); uuid[0] = (ov & 0xFF);
+            ov = ui64_rorn(t, 8); uuid[5] = (ov & 0xFF);
+            ov = ui64_rorn(t, 8); uuid[4] = (ov & 0xFF);
+            ov = ui64_rorn(t, 8); uuid[7] = (ov & 0xFF);
+            ov = ui64_rorn(t, 8); uuid[6] = (ov & 0x0F);
 
             /*  generate a random clock sequence  */
             var clock = prng(2, 255);
@@ -541,36 +789,59 @@
     };
 
     /*  API method: format UUID into usual textual representation  */
-    UUID.prototype.format = function () {
-        var str = Array(32);
-        a2hs(this,  0,  3, false, str,  0);
-        str[ 8] = "-";
-        a2hs(this,  4,  5, false, str,  9);
-        str[13] = "-";
-        a2hs(this,  6,  7, false, str, 14);
-        str[18] = "-";
-        a2hs(this,  8,  9, false, str, 19);
-        str[23] = "-";
-        a2hs(this, 10, 15, false, str, 24);
-        return str.join("");
+    UUID.prototype.format = function (type) {
+        var str, arr;
+        if (type === "z85")
+            str = z85_encode(this, 16);
+        else if (type === "b16") {
+            arr = Array(32);
+            a2hs(this, 0, 15, true, arr, 0);
+            str = arr.join("");
+        }
+        else if (type === undefined || type === "std") {
+            arr = new Array(36);
+            a2hs(this,  0,  3, false, arr,  0); arr[ 8] = "-";
+            a2hs(this,  4,  5, false, arr,  9); arr[13] = "-";
+            a2hs(this,  6,  7, false, arr, 14); arr[18] = "-";
+            a2hs(this,  8,  9, false, arr, 19); arr[23] = "-";
+            a2hs(this, 10, 15, false, arr, 24);
+            str = arr.join("");
+        }
+        return str;
+    };
+
+    /*  API method: format UUID into usual textual representation  */
+    UUID.prototype.toString = function (type) {
+        return this.format(type);
     };
 
     /*  API method: parse UUID from usual textual representation  */
-    UUID.prototype.parse = function (str) {
-        var map = {
-            "nil":     "00000000-0000-0000-0000-000000000000",
-            "ns:DNS":  "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-            "ns:URL":  "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
-            "ns:OID":  "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
-            "ns:X500": "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
-        };
-        if (map[str] !== undefined)
-            str = map[str];
-        hs2a(str,  0,  7, this,  0);
-        hs2a(str,  9, 12, this,  4);
-        hs2a(str, 14, 17, this,  6);
-        hs2a(str, 19, 22, this,  8);
-        hs2a(str, 24, 35, this, 10);
+    UUID.prototype.parse = function (str, type) {
+        if (typeof str !== "string")
+            throw new Error("UUID: parse: invalid argument (type string expected)");
+        if (type === "z85")
+            z85_decode(str, this);
+        else if (type === "b16")
+            hs2a(str, 0, 35, this, 0);
+        else if (type === undefined || type === "std") {
+            var map = {
+                "nil":     "00000000-0000-0000-0000-000000000000",
+                "ns:DNS":  "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+                "ns:URL":  "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
+                "ns:OID":  "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
+                "ns:X500": "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
+            };
+            if (map[str] !== undefined)
+                str = map[str];
+            else if (!str.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/))
+                throw new Error("UUID: parse: invalid string representation " +
+                    "(expected \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\")");
+            hs2a(str,  0,  7, this,  0);
+            hs2a(str,  9, 12, this,  4);
+            hs2a(str, 14, 17, this,  6);
+            hs2a(str, 19, 22, this,  8);
+            hs2a(str, 24, 35, this, 10);
+        }
         return this;
     };
 
@@ -602,6 +873,40 @@
         }
         return this;
     };
+
+    /*  API method: compare UUID against another one  */
+    UUID.prototype.compare = function (other) {
+        if (typeof other !== "object")
+            throw new Error("UUID: compare: invalid argument (type UUID expected)");
+        if (!(other instanceof UUID))
+            throw new Error("UUID: compare: invalid argument (type UUID expected)");
+        for (var i = 0; i < 16; i++) {
+            if (this[i] < other[i])
+                return -1;
+            else if (this[i] > other[i])
+                return +1;
+        }
+        return 0;
+    };
+
+    /*  API method: hash UUID by XOR-folding it k times  */
+    UUID.prototype.fold = function (k) {
+        if (typeof k === "undefined")
+            throw new Error("UUID: fold: invalid argument (number of fold operations expected)");
+        if (k < 1 || k > 4)
+            throw new Error("UUID: fold: invalid argument (1-4 fold operations expected)");
+        var n = 16 / Math.pow(2, k);
+        var hash = new Array(n);
+        for (var i = 0; i < n; i++) {
+            var h = 0;
+            for (var j = 0; i + j < 16; j += n)
+                h ^= this[i + j];
+            hash[i] = h;
+        }
+        return hash;
+    };
+
+    UUID.PCG = PCG;
 
     /*  export API  */
     return UUID;

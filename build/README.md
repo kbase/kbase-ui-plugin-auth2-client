@@ -8,7 +8,11 @@ By hand:
 
 ```
 cd build
-npm install
-./node_modules/.bin/bower-installer
-./node_modules/.bin/grunt copy
+yarn clean
+yarn install
+yarn install-bower
+yarn install-npm
+yarn remove-source-maps
 ```
+
+> Only use yarn clean if you want to clean out the stuff installed in vendor, as well as the node and bower packages installed in build.

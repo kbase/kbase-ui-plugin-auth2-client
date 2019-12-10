@@ -72,20 +72,20 @@ define([
 
         buildAvatarUrl() {
             switch (this.userProfile.profile.userdata.avatarOption || 'gravatar') {
-            case 'gravatar':
-                var gravatarDefault = this.userProfile.profile.userdata.gravatarDefault || 'identicon';
-                var gravatarHash = this.userProfile.profile.synced.gravatarHash;
-                if (gravatarHash) {
-                    return (
-                        'https://www.gravatar.com/avatar/' + gravatarHash + '?s=500&amp;r=pg&d=' + gravatarDefault
-                    );
-                } else {
+                case 'gravatar':
+                    var gravatarDefault = this.userProfile.profile.userdata.gravatarDefault || 'identicon';
+                    var gravatarHash = this.userProfile.profile.synced.gravatarHash;
+                    if (gravatarHash) {
+                        return (
+                            'https://www.gravatar.com/avatar/' + gravatarHash + '?s=500&amp;r=pg&d=' + gravatarDefault
+                        );
+                    } else {
+                        return this.pluginResourcePath + '/images/nouserpic.png';
+                    }
+                case 'silhouette':
+                case 'mysteryman':
+                default:
                     return this.pluginResourcePath + '/images/nouserpic.png';
-                }
-            case 'silhouette':
-            case 'mysteryman':
-            default:
-                return this.pluginResourcePath + '/images/nouserpic.png';
             }
         }
     }
@@ -419,28 +419,6 @@ define([
                             )
                         ]
                     )
-                    // div(
-                    //     {
-                    //         class: 'col-md-5'
-                    //     },
-                    //     [
-                    //         h3('Oraganizations'),
-                    //         ul(
-                    //             {
-                    //                 dataBind: {
-                    //                     foreach: 'orgs'
-                    //                 }
-                    //             },
-                    //             [
-                    //                 li({
-                    //                     dataBind: {
-                    //                         text: '$data'
-                    //                     }
-                    //                 })
-                    //             ]
-                    //         )
-                    //     ]
-                    // )
                 ]
             )
         });

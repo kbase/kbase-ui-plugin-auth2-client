@@ -5,6 +5,7 @@ define([
     'kb_knockout/lib/generators',
     'kb_knockout/registry',
     'kb_service/client/userProfile',
+    'kb_common_ts/Auth2',
     '../../lib/fieldBuilders',
     '../../lib/geoNames',
     '../../lib/dataSource',
@@ -19,6 +20,7 @@ define([
     gen,
     reg,
     UserProfileService,
+    auth2,
     FieldBuilders,
     GeoNames,
     DataSource,
@@ -192,13 +194,25 @@ define([
                                 {
                                     class: 'col-sm-4'
                                 },
-                                input({
-                                    class: 'form-control',
-                                    placeholder: 'Year started',
-                                    dataBind: {
-                                        textInput: 'field'
-                                    }
-                                })
+                                [
+                                    input({
+                                        class: 'form-control',
+                                        placeholder: 'Year started',
+                                        dataBind: {
+                                            textInput: 'field'
+                                        }
+                                    }),
+                                    div({
+                                        dataBind: {
+                                            if: '!field.constraint.isValid()'
+                                        }
+                                    }, div({
+                                        class: 'alert alert-danger',
+                                        dataBind: {
+                                            html: 'field.constraint.message'
+                                        }
+                                    }))
+                                ]
                             )
                         ]),
                         gen.with('ended', [
@@ -212,13 +226,25 @@ define([
                                 {
                                     class: 'col-sm-4'
                                 },
-                                input({
-                                    class: 'form-control',
-                                    placeholder: 'Year ended',
-                                    dataBind: {
-                                        textInput: 'field'
-                                    }
-                                })
+                                [
+                                    input({
+                                        class: 'form-control',
+                                        placeholder: 'Year ended',
+                                        dataBind: {
+                                            textInput: 'field'
+                                        }
+                                    }),
+                                    div({
+                                        dataBind: {
+                                            if: '!field.constraint.isValid()'
+                                        }
+                                    }, div({
+                                        class: 'alert alert-danger',
+                                        dataBind: {
+                                            html: 'field.constraint.message'
+                                        }
+                                    }))
+                                ]
                             )
                         ])
                     ]
@@ -273,7 +299,7 @@ define([
     }
 
     function buildAffiliations(vmPath) {
-        var id = html.genId();
+        const id = html.genId();
         return div(
             {
                 class: 'form-group form-row',
@@ -360,7 +386,7 @@ define([
     // }
 
     function buildForm() {
-        var content = div(
+        const content = div(
             {
                 style: {
                     marginBottom: '12px'
@@ -819,7 +845,7 @@ define([
                         required: false,
                         validate: (value) => {
                             if (!/^[0-9][0-9][0-9][0-9]$/.test(value)) {
-                                return 'Invalid year format, expecting ####';
+                                return 'Invalid year format, expecting #### or empty';
                             }
                         }
                     },
@@ -1407,7 +1433,7 @@ define([
             };
 
             this.researchStatementDisplay = ko.pureComputed(() => {
-                var text = this.researchStatement.field();
+                const text = this.researchStatement.field();
                 if (!text) {
                     return '';
                 }
@@ -1454,7 +1480,7 @@ define([
                         return false;
                     }
                 });
-                var newStyle = vmFields.some((field) => {
+                const newStyle = vmFields.some((field) => {
                     if (field.constraint) {
                         return !field.constraint.isValid();
                     }
@@ -1462,7 +1488,7 @@ define([
                 });
                 // container
                 // var someContainerFieldInvalid = false;
-                var affiliationErrors = ko.unwrap(this.affiliations.field).some((affiliation) => {
+                const affiliationErrors = ko.unwrap(this.affiliations.field).some((affiliation) => {
                     return [affiliation.title, affiliation.organization, affiliation.started, affiliation.ended].some(
                         (field) => {
                             if (field.field && field.field.constraint) {
@@ -1475,8 +1501,8 @@ define([
             });
 
             this.formCanSave = ko.pureComputed(() => {
-                var d = this.someDirty();
-                var iv = this.someInvalid();
+                const d = this.someDirty();
+                const iv = this.someInvalid();
                 return d && !iv;
             });
 
@@ -1525,14 +1551,18 @@ define([
         }
 
         saveProfile() {
-            var client = new UserProfileService(this.runtime.config('services.user_profile.url'), {
+            const userProfileClient = new UserProfileService(this.runtime.config('services.user_profile.url'), {
                 token: this.runtime.service('session').getAuthToken()
+            });
+
+            const authClient = new auth2.Auth2({
+                baseUrl: this.runtime.config('services.auth.url')
             });
 
             // get the profile, then update it, then save it.
             // TODO profile service should accept just change set.
 
-            return client.get_user_profile([this.username]).then((result) => {
+            return userProfileClient.get_user_profile([this.username]).then((result) => {
                 const profile = result[0];
                 const account = {};
                 let profileChanges = false;
@@ -1604,7 +1634,7 @@ define([
 
                 if (this.affiliations.field.isDirty()) {
                     // just bundle the whole thing up...
-                    var newAffiliations = this.affiliations.field().map((af) => {
+                    const newAffiliations = this.affiliations.field().map((af) => {
                         return {
                             title: af.title.field(),
                             organization: af.organization.field(),
@@ -1646,20 +1676,19 @@ define([
                     profileChanges = true;
                 }
 
-                var changes = [];
+                const changes = [];
                 if (profileChanges) {
                     changes.push(
-                        client.set_user_profile({
+                        userProfileClient.set_user_profile({
                             profile: profile
                         })
                     );
                 }
                 if (accountChanges) {
+                    var token = this.runtime.service('session').getAuthToken();
                     changes.push(
-                        this.runtime
-                            .service('session')
-                            .getClient()
-                            .putMe(account)
+                        authClient
+                            .putMe(token, account)
                     );
                 }
 
@@ -1677,7 +1706,7 @@ define([
                     this.runtime.send('notification', 'notify', {
                         type: 'success',
                         icon: 'thumbs-up',
-                        message: 'Successfuly saved your profile',
+                        message: 'Successfully saved your profile',
                         autodismiss: 3000
                     });
                 })

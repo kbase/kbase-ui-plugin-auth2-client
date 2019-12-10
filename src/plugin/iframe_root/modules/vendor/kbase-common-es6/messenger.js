@@ -53,6 +53,10 @@ define(['bluebird', './asyncQueue', './lang'], (Promise, AsyncQueue, lang) => {
             };
         }
 
+        drop(sub) {
+            return this.unreceive(sub);
+        }
+
         unreceive(sub) {
             const channel = this.channels[sub.chan];
             if (!channel) {

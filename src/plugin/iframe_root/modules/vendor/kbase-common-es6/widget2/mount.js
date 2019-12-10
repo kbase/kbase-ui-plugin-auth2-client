@@ -24,6 +24,7 @@ define(['bluebird'], function (Promise) {
             // allows us to interrupt it if the route changes and we need
             // to unmount before it is finished.
             this.mountedWidget = {
+                widgetId: null,
                 widget: null,
                 container: null,
                 promise: null
@@ -38,6 +39,7 @@ define(['bluebird'], function (Promise) {
                         throw new Error('Widget could not be created: ' + widgetId);
                     }
                     this.mountedWidget.widget = widget;
+                    this.mountedWidget.widgetId = widgetId;
                     return Promise.all([widget, widget.init && widget.init()]);
                 })
                 .spread((widget) => {
