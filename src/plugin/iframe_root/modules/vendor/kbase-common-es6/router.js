@@ -1,4 +1,4 @@
-define([], function () {
+define([], () => {
     'use strict';
 
     function NotFoundException(request) {
@@ -26,9 +26,11 @@ define([], function () {
     }
 
     function paramsToQuery(params) {
-        return Object.keys(params).map((key) => {
-            return key + '=' + encodeURIComponent(params[key]);
-        }).join('&');
+        return Object.keys(params)
+            .map((key) => {
+                return key + '=' + encodeURIComponent(params[key]);
+            })
+            .join('&');
     }
 
     function getQuery() {
@@ -67,12 +69,17 @@ define([], function () {
                 path = [path];
             }
             pathSpec.path = path.map((pathElement) => {
+                // The default path element, represented by a simple string,
+                // is a literal, matched by its value.
                 if (typeof pathElement === 'string') {
                     return {
                         type: 'literal',
                         value: pathElement
                     };
                 }
+                // Otherwise, the path element is represented as a simple
+                // object, with property 'type' one of: _____
+                // TODO: complete this doc
                 if (typeof pathElement === 'object') {
                     if (pathElement instanceof Array) {
                         return {
@@ -110,9 +117,10 @@ define([], function () {
                         query[key] = query2[key];
                     });
                 }
-                path = pathQuery[0].split('/')
+                path = pathQuery[0]
+                    .split('/')
                     .filter((pathComponent) => {
-                        return (pathComponent.length > 0);
+                        return pathComponent.length > 0;
                     })
                     .map((pathComponent) => {
                         return decodeURIComponent(pathComponent);
@@ -127,58 +135,120 @@ define([], function () {
         }
 
         findRoute(req) {
-            let foundRoute, j, route, params,
-                requestPathElement, routePathElement,
-                allowableParams;
+            let foundRoute, j, route, params, requestPathElement, routePathElement;
 
             // No route at all? Return the default route.
-            if ((req.path.length === 0) && (Object.keys(req.query).length === 0)) {
+            if (req.path.length === 0 && Object.keys(req.query).length === 0) {
                 return {
                     request: req,
                     params: {},
                     route: this.defaultRoute
                 };
             }
-            routeloop:
-            for (let i = 0; i < this.routes.length; i += 1) {
+
+            routeloop: for (let i = 0; i < this.routes.length; i += 1) {
                 route = this.routes[i];
                 params = {};
 
-                // We can use a route which is longer than the path if it has
+                const captureExtraPath = route.captureExtraPath;
+
+                // We can use a route which is longer than the path if the route has
                 // optional params at the end.
+
                 if (route.path.length > req.path.length) {
-                    if (!req.path.slice(route.path.length).every(function (routePathElement) {
+                    const isAllOptional = route.path.slice(req.path.length).every((routePathElement) => {
                         return routePathElement.optional;
-                    })) {
+                    });
+                    const isCaptureExtraPath = captureExtraPath;
+                    const isRest = route.path[route.path.length - 1].type === 'rest';
+                    if (!(isAllOptional || isCaptureExtraPath || isRest)) {
                         continue routeloop;
                     }
                 } else if (route.path.length < req.path.length) {
-                    continue routeloop;
+                    // A longer path may match if either the route can automatically
+                    // capture the rest of the path or the last component is of type 'rest'
+                    // TODO: use one or the other, not both!
+                    if (!(captureExtraPath || route.path[route.path.length - 1].type === 'rest')) {
+                        continue routeloop;
+                    }
                 }
 
-                for (j = 0; j < req.path.length; j += 1) {
+                reqloop: for (j = 0; j < req.path.length; j += 1) {
                     routePathElement = route.path[j];
                     requestPathElement = req.path[j];
+                    if (!routePathElement) {
+                        // end of the route path.
+                        if (captureExtraPath) {
+                            params['rest'] = req.path.slice(j - 1);
+                            break;
+                        }
+                    }
                     switch (routePathElement.type) {
                     case 'literal':
+                        // current path element must match current route element
                         if (routePathElement.value !== requestPathElement) {
                             continue routeloop;
                         }
                         break;
                     case 'options':
-                        if (!routePathElement.value.some(function (option) {
-                            if (requestPathElement === option) {
-                                return true;
-                            }
-                        })) {
+                        // current path element must match at least one of the
+                        // route elements in the "value" property (array).
+                        if (
+                            !routePathElement.value.some((option) => {
+                                if (requestPathElement === option) {
+                                    return true;
+                                }
+                            })
+                        ) {
                             continue routeloop;
                         }
                         break;
                     case 'param':
+                        // current path element is not compared, it is considered
+                        // a positive match, and is stored in the params  map
+                        // under the name of the route elements 'name' property.
                         params[routePathElement.name] = requestPathElement;
                         break;
+                    case 'regexp':
+                        // current path element is matched against a regular expression
+                        // defined by the current route element.
+                        try {
+                            const regexp = new RegExp(routePathElement.regexp);
+                            if (!regexp.test(requestPathElement)) {
+                                continue routeloop;
+                            }
+                        } catch (ex) {
+                            console.warn('invalid route with regexp element', ex);
+                            continue routeloop;
+                        }
+                        break;
+                    case 'rest':
+                        // unconditionally matches the rest of the request path, storing it
+                        // as an array in a parameter named  by the 'name' property, or
+                        // if this is missing or falsy, 'rest'.
+                        const name = routePathElement.name || 'rest';
+                        if (j < route.path.length - 1) {
+                            console.warn('rest parameter used before final route element');
+                            console.warn('  being treated as regular param');
+                            params[name] = requestPathElement;
+                            continue;
+                        }
+
+                        if (routePathElement.joinWith) {
+                            params[name] = req.path.slice(j).join(routePathElement.joinWith)
+                        } else {
+                            params[name] = req.path.slice(j);
+                        }
+                        
+                        break reqloop;
+                    default:
+                        // If the path element is not well formed (not a recognized type)
+                        // just skip it with a warning.
+                        console.warn('invalid route: type not recognized', routePathElement);
+                        continue routeloop;
                     }
                 }
+
                 // First found route wins
                 // TODO: fix this?
                 foundRoute = {
@@ -190,14 +260,42 @@ define([], function () {
             }
             // The total params is the path params and query params
             if (foundRoute) {
-                allowableParams = foundRoute.route.queryParams || {};
-                Object.keys(req.query).forEach(function (key) {
-                    var paramDef = allowableParams[key];
-                    /* TODO: implement the param def for conversion, validation, etc. */
-                    if (paramDef) {
+                const searchParamKeys = Object.keys(req.query);
+
+                const queryParamsSpec = foundRoute.route.queryParams || {};
+
+                // Use the query params spec in the route first. This picks up
+                // literals, and also enables the strict query param protocol in
+                // which only defined query params are recognized.
+                // The captureExtraSearch route flag disables the latter behavior.
+                // All undefined query params are simply copied to the req.query.
+                Object.keys(queryParamsSpec).forEach((key) => {
+                    const param = queryParamsSpec[key];
+                    // This allows for supplying a param
+                    // from the config.
+                    if (param === true) {
                         foundRoute.params[key] = req.query[key];
+                    } else if (param.literal) {
+                        foundRoute.params[key] = param.literal;
+                    } else if (req.query[key] !== undefined) {
+                        foundRoute.params[key] = req.query[key];
+                    } else {
+                        return;
                     }
+                    delete searchParamKeys[key];
                 });
+                if (foundRoute.route.captureExtraSearch) {
+                    searchParamKeys.forEach((key) => {
+                        foundRoute.params[key] = req.query[key];
+                    });
+                }
+                // Now we handle fixed params; this operate a bit like props. They are specified
+                // in the route config, and simply ammend the props passed to the widget.
+                // This provides a mechanism for the plugin to directly pass params to the route's
+                // widget.
+                if (foundRoute.route.params) {
+                    Object.assign(foundRoute.params, foundRoute.route.params);
+                }
             } else {
                 throw new NotFoundException({
                     request: req,
@@ -225,16 +323,21 @@ define([], function () {
             let providedPath, queryString, finalPath;
             if (typeof location.path === 'string') {
                 providedPath = location.path.split('/');
-            } else if (location.path instanceof Array) {
+            } else if (typeof location.path === 'object' && typeof location.path.push === 'function') {
                 providedPath = location.path;
             } else {
-                console.error('Invalid path in location', location);
+                console.error(
+                    'Invalid path in location',
+                    typeof location.path,
+                    location.path instanceof Array,
+                    JSON.parse(JSON.stringify(location))
+                );
                 throw new Error('Invalid path in location');
             }
             // we eliminate empty path components, like extra slashes, or an initial slash.
             const normalizedPath = providedPath
                 .filter((element) => {
-                    if (!element || (typeof element !== 'string')) {
+                    if (!element || typeof element !== 'string') {
                         return false;
                     }
                     return true;
@@ -301,16 +404,6 @@ define([], function () {
                 window.location.replace(location);
             }
         }
-
-        // return {
-        //     addRoute: addRoute,
-        //     listRoutes: listRoutes,
-        //     findCurrentRoute: findCurrentRoute,
-        //     getCurrentRequest: getCurrentRequest,
-        //     findRoute: findRoute,
-        //     navigateTo: navigateTo,
-        //     redirectTo: redirectTo
-        // };
     }
 
     return {

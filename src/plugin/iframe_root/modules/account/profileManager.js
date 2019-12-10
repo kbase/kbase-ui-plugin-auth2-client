@@ -38,7 +38,7 @@ define([
                     component: {
                         name: ProfileEditorComponent.quotedName(),
                         params: (() => {
-                            var params = {};
+                            const params = {};
                             Object.keys(this.vm).forEach((k) => {
                                 params[k] = k;
                             });
@@ -52,7 +52,7 @@ define([
         }
 
         getProfile() {
-            var userProfileClient = new UserProfileService(this.runtime.config('services.user_profile.url'), {
+            const userProfileClient = new UserProfileService(this.runtime.config('services.user_profile.url'), {
                 token: this.runtime.service('session').getAuthToken()
             });
             return userProfileClient

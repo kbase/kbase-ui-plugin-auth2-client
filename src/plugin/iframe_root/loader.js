@@ -7,12 +7,7 @@ define([], function () {
             bootstrap: 'vendor/bootstrap/bootstrap',
             bootstrap_css: 'vendor/bootstrap/css/bootstrap',
             css: 'vendor/require-css/css',
-            datatables: 'vendor/datatables/jquery.dataTables',
-            datatables_css: 'vendor/datatables/jquery.dataTables',
-            datatables_bootstrap_css: 'vendor/datatables-bootstrap3-plugin/datatables-bootstrap3',
-            datatables_bootstrap: 'vendor/datatables-bootstrap3-plugin/datatables-bootstrap3',
             font_awesome: 'vendor/font-awesome/css/font-awesome',
-            handlebars: 'vendor/handlebars/handlebars',
             highlight_css: 'vendor/highlightjs/default',
             highlight: 'vendor/highlightjs/highlight.pack',
             jquery: 'vendor/jquery/jquery',
@@ -34,12 +29,8 @@ define([], function () {
             md5: 'vendor/spark-md5/spark-md5',
             text: 'vendor/requirejs-text/text',
             yaml: 'vendor/requirejs-yaml/yaml',
-            uuid: 'vendor/pure-uuid/uuid',
-            underscore: 'vendor/underscore/underscore',
-            d3: 'vendor/d3/d3',
-            d3_sankey: 'vendor/d3-plugins-sankey/sankey',
-            d3_sankey_css: 'vendor/d3-plugins-sankey/sankey',
-            dagre: 'vendor/dagre/dagre'
+            uuid: 'vendor/pure-uuid/uuid'
+
         },
         shim: {
             bootstrap: {
