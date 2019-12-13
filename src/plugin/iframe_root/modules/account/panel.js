@@ -53,15 +53,15 @@ define([
                 style: {
                     padding: '0 10px'
                 },
-                initialTab: params.tab || 'profile',
+                initialTab: params.tab || 'account',
                 tabs: [
-                    {
-                        name: 'profile',
-                        label: 'Your Profile',
-                        panel: {
-                            class: ProfileManager
-                        }
-                    },
+                    // {
+                    //     name: 'profile',
+                    //     label: 'Your Profile',
+                    //     panel: {
+                    //         class: ProfileManager
+                    //     }
+                    // },
                     {
                         name: 'account',
                         label: 'Account',
@@ -136,12 +136,12 @@ define([
                 // vm.roles.value = account.roles;
                 account.roles.forEach((role) => {
                     switch (role.id) {
-                    case 'ServToken':
-                        this.vm.serviceTokens.enabled = true;
-                        break;
-                    case 'DevToken':
-                        this.vm.developerTokens.enabled = true;
-                        break;
+                        case 'ServToken':
+                            this.vm.serviceTokens.enabled = true;
+                            break;
+                        case 'DevToken':
+                            this.vm.developerTokens.enabled = true;
+                            break;
                     }
                 });
 
@@ -175,7 +175,7 @@ define([
                 if (!this.tabs) {
                     return null;
                 }
-                return this.tabs.detach().then(() => {});
+                return this.tabs.detach().then(() => { });
             }).finally(() => {
                 if (this.hostNode) {
                     this.hostNode.innerHTML = '';
