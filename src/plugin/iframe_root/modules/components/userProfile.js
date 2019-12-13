@@ -82,6 +82,7 @@ define([
                     } else {
                         return this.pluginResourcePath + '/images/nouserpic.png';
                     }
+                case 'silhoutte':
                 case 'silhouette':
                 case 'mysteryman':
                 default:
