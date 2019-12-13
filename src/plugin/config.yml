@@ -19,6 +19,16 @@ install:
         - path: [auth2, account]
           params:
               view: account
+          queryParams:
+              tab: {}
+          widget: kb_plugin_auth2-client_panel
+          authorization: true
+          reentrant: false
+        - path: [account]
+          params:
+              view: account
+          queryParams:
+              tab: {}
           widget: kb_plugin_auth2-client_panel
           authorization: true
           reentrant: false
@@ -27,7 +37,7 @@ install:
           authorization: false
           reentrant: false
           queryParams:
-              path: { literal: ['signedout'] }
+              path: { literal: ["signedout"] }
         - path: [auth2, login, continue]
           widget: kb_plugin_auth2-client_panel
           authorization: false
@@ -49,7 +59,7 @@ install:
           queryParams:
               path: { literal: [linkContinue] }
               in-process-link-token: {}
-        - path: [auth2, { type: 'rest', name: 'path' }]
+        - path: [auth2, { type: "rest", name: "path" }]
           widget: kb_plugin_auth2-client_panel
           authorization: true
           reentrant: true
@@ -60,7 +70,7 @@ install:
           authorization: false
           reentrant: false
           queryParams:
-              path: { literal: ['signup'] }
+              path: { literal: ["signup"] }
               nextrequest: {}
 
         # - path: [auth2, interrupted]
@@ -76,7 +86,7 @@ install:
             auth2:
                 version:
                     minimum: 0.2.5
-                providers: ['Google', 'Globus', 'OrcID']
+                providers: ["Google", "Globus", "OrcID"]
             userProfile:
                 version:
                     minimum: 0.2.0
