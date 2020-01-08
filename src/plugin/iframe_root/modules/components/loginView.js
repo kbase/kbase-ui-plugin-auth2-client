@@ -114,7 +114,7 @@ define([
             [
                 div(
                     {
-                        class: 'btn-group-vertical',
+                        class: 'xbtn-group-vertical',
                         style: {
                             width: '100%'
                         },
@@ -124,9 +124,10 @@ define([
                         button(
                             {
                                 dataKBTesthookButton: 'signin',
-                                class: 'btn btn-default',
+                                class: 'btn btn-primary',
                                 style: {
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    width: '100%'
                                 },
                                 dataBind: {
                                     click: 'doSetSigninMode',
@@ -238,7 +239,8 @@ define([
                                 class: 'btn btn-default',
                                 style: {
                                     textAlign: 'center',
-                                    marginTop: '10px'
+                                    marginTop: '10px',
+                                    width: '100%'
                                 },
                                 dataBind: {
                                     click: 'doSignup',
