@@ -6,7 +6,6 @@ const glob = bluebird.promisify(require('glob').Glob);
 const fs = bluebird.promisifyAll(require('fs-extra'));
 const Terser = require('terser');
 const path = require('path');
-const JSZip = require('jszip');
 const tar = require('tar');
 
 async function copyFiles(rootDir) {
@@ -64,17 +63,6 @@ async function minify(rootDir) {
             }
         })
     );
-}
-
-async function zipitup(rootDir) {
-    const dir = rootDir.concat(['dist']).join('/');
-    const zip = new JSZip();
-    zip.folder(dir);
-    return zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
-        .pipe(fs.createWriteStream('dist.zip'))
-        .on('finish', () => {
-            return 'dist.zip written';
-        });
 }
 
 async function taritup(rootDir) {
