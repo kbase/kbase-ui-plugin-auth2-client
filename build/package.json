@@ -4,7 +4,8 @@
         "clean": "grunt clean",
         "install-bower": "bower-installer",
         "install-npm": "grunt copy",
-        "remove-source-maps": "node scripts/remove-source-maps.js"
+        "remove-source-maps": "node scripts/remove-source-maps.js",
+        "install-dist": "node scripts/install-dist.js"
     },
     "author": "KBase Developers",
     "license": "SEE LICENSE IN LICENSE",
@@ -21,6 +22,9 @@
         "grunt-contrib-copy": "1.0.0",
         "js-yaml": "3.13.1",
         "numeral": "2.0.6",
-        "pure-uuid": "1.5.7"
+        "pure-uuid": "1.5.8",
+        "terser": "4.6.0",
+        "jszip": "3.2.2",
+        "tar": "5.0.5"
     }
 }

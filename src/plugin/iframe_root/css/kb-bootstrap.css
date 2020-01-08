@@ -168,7 +168,7 @@
     border: none;
 }
 
-.kbase-ui .panel.kb-panel-help .panel-title>[data-toggle="collapse"]::before {
+/* .kbase-ui .panel.kb-panel-help .panel-title>[data-toggle="collapse"]::before {
     font-size: 120%;
     width: 18px;
     content: "\f138";
@@ -178,24 +178,26 @@
     font-size: 120%;
     width: 18px;
     content: "\f13a";
-}
+} */
 
 .kbase-ui .panel.kb-panel-help .panel-title>[data-toggle="collapse"]::before {
-    font-size: 130%;
-    width: 30px;
+    font-size: 90%;
+    width: 20px;
     /*content: "\f13a";*/
     /*content: "\f0a7";*/
-    content: "\25BD";
+    content: "\25BC";
     vertical-align: middle;
+    opacity: 40%;
 }
 
 .kbase-ui .panel.kb-panel-help .panel-title>[data-toggle="collapse"].collapsed::before {
-    font-size: 130%;
-    width: 30px;
+    font-size: 90%;
+    width: 20px;
     /*content: "\f138";*/
     /*content: "\f0a4";*/
-    content: "\25B7";
+    content: "\25BA";
     vertical-align: middle;
+    opacity: 40%;
 }
 
 

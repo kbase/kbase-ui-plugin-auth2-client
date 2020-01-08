@@ -36,8 +36,8 @@ define([
 
         function parseMethodId(id) {
             var parts = id.split(/\//).filter(function (part) {
-                    return (part.length > 0);
-                }),
+                return (part.length > 0);
+            }),
                 method;
             if (parts.length === 1) {
                 // legacy method
@@ -154,25 +154,25 @@ define([
                             Object.keys(object.metadata).forEach(function (key) {
                                 var keyParts = key.split('.');
                                 switch (keyParts[0]) {
-                                case 'method':
-                                    // New style app cells have the metadata prefix set to
-                                    // "method." !!
-                                    apps.push(parseMethodId(keyParts[1]));
-                                    cellTypes['app'] += 1;
-                                    break;
-                                case 'app':
-                                    // Old style kbase (markdown-app) cells used "app." as the
-                                    // metadata key prefix. We just treat them as regular apps
-                                    // now.
-                                    apps.push(parseMethodId(keyParts[1]));
-                                    cellTypes['app'] += 1;
-                                    break;
-                                case 'ipython':
-                                case 'jupyter':
-                                    var cellType = keyParts[1];
-                                    cellTypes[cellType] += parseInt(object.metadata[key]);
-                                    break;
-                                default:
+                                    case 'method':
+                                        // New style app cells have the metadata prefix set to
+                                        // "method." !!
+                                        apps.push(parseMethodId(keyParts[1]));
+                                        cellTypes['app'] += 1;
+                                        break;
+                                    case 'app':
+                                        // Old style kbase (markdown-app) cells used "app." as the
+                                        // metadata key prefix. We just treat them as regular apps
+                                        // now.
+                                        apps.push(parseMethodId(keyParts[1]));
+                                        cellTypes['app'] += 1;
+                                        break;
+                                    case 'ipython':
+                                    case 'jupyter':
+                                        var cellType = keyParts[1];
+                                        cellTypes[cellType] += parseInt(object.metadata[key]);
+                                        break;
+                                    default:
                                     // console.log('REALLY?', object.metadata);
                                 }
                             });
@@ -192,40 +192,56 @@ define([
         }
 
         function getPermissions(narratives) {
+            const BATCH_SIZE = 1000;
             return Promise.try(function () {
                 if (narratives.length === 0) {
                     return [];
                 }
-                var permParams = narratives.map(function (narrative) {
-                        return {
-                            id: narrative.workspace.id
-                        };
-                    }),
+                var workspacesToFetch = narratives.map(function (narrative) {
+                    return {
+                        id: narrative.workspace.id
+                    };
+                }),
                     username = runtime.service('session').getUsername();
-                return workspaceClient.get_permissions_mass({
-                        workspaces: permParams
+
+                const batchCount = Math.ceil(workspacesToFetch.length / BATCH_SIZE);
+
+                const batches = [];
+                for (let batchID = 0; batchID < batchCount; batchID += 1) {
+                    const batchWorkspaces = workspacesToFetch.slice(batchID * BATCH_SIZE, batchID * BATCH_SIZE + BATCH_SIZE);
+                    const batch = workspaceClient.get_permissions_mass({
+                        workspaces: batchWorkspaces
                     })
-                    .then(function (result) {
-                        var permissions = result.perms;
-                        for (var i = 0; i < permissions.length; i++) {
-                            var narrative = narratives[i];
-                            narrative.permissions = Utils.object_to_array(permissions[i], 'username', 'permission')
-                                .filter(function (x) {
-                                    return !(x.username === username ||
-                                        x.username === '*' ||
-                                        x.username === narrative.workspace.owner);
-                                })
-                                .sort(function (a, b) {
-                                    if (a.username < b.username) {
-                                        return -1;
-                                    } else if (a.username > b.username) {
-                                        return 1;
-                                    }
-                                    return 0;
-                                });
-                        }
+                        .then((result) => {
+                            const permissions = result.perms;
+                            for (let i = 0; i < permissions.length; i++) {
+                                const narrativeIndex = batchID * BATCH_SIZE + i;
+                                const narrative = narratives[narrativeIndex];
+                                narrative.permissions = Utils.object_to_array(permissions[i], 'username', 'permission')
+                                    .filter((x) => {
+                                        return !(x.username === username ||
+                                            x.username === '*' ||
+                                            x.username === narrative.workspace.owner);
+                                    })
+                                    .sort((a, b) => {
+                                        if (a.username < b.username) {
+                                            return -1;
+                                        } else if (a.username > b.username) {
+                                            return 1;
+                                        }
+                                        return 0;
+                                    });
+                            }
+                            return narratives;
+                        });
+                    batches.push(batch);
+                }
+
+                return Promise.all(batches)
+                    .then(() => {
                         return narratives;
                     });
+
             });
         }
 
@@ -241,9 +257,9 @@ define([
             var users = (options && options.users) ? options.users : [];
             users.push(runtime.getService('session').getUsername());
             return Promise.all([
-                    narrativeClient.callFunc('list_narratives', [{ type: 'mine' }]),
-                    narrativeClient.callFunc('list_narratives', [{ type: 'shared' }])
-                ])
+                narrativeClient.callFunc('list_narratives', [{ type: 'mine' }]),
+                narrativeClient.callFunc('list_narratives', [{ type: 'shared' }])
+            ])
                 .then(function (results) {
                     return results
                         .reduce(function (accum, result) {
@@ -270,13 +286,13 @@ define([
 
                         // make sure all users are either owner or in the permissions list.
                         if (users.some(function (user) {
-                                return !(
-                                    narratives[i].workspace.owner === user ||
-                                    perms.some(function (x) {
-                                        return x.username === user;
-                                    })
-                                );
-                            })) {
+                            return !(
+                                narratives[i].workspace.owner === user ||
+                                perms.some(function (x) {
+                                    return x.username === user;
+                                })
+                            );
+                        })) {
                             continue;
                         }
 
