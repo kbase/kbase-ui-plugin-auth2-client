@@ -418,7 +418,7 @@ define([
     function buildAuthorizationRequired() {
         return div([
             p([
-                'Authorization is required to access the path: ',
+                'Sign In is required to access the path: ',
                 span({
                     style: {
                         fontWeight: 'bold'
@@ -524,7 +524,7 @@ define([
         var tabs = ko.observableArray([
             {
                 name: 'authorization',
-                label: 'Authorization Required',
+                label: 'Sign In Required',
                 show: ko.computed(function () {
                     return source === 'authorization';
                 }),
