@@ -1,7 +1,7 @@
-define(['bluebird', 'kb_common/html'], function (Promise, html) {
+define(['bluebird', 'kb_lib/html'], function (Promise, html) {
     'use strict';
 
-    var t = html.tag,
+    const t = html.tag,
         div = t('div');
 
     function factory(config) {
@@ -63,7 +63,11 @@ define(['bluebird', 'kb_common/html'], function (Promise, html) {
                                     tab.label
                                 )
                             );
-                        })
+                        }).concat([div(
+                            {
+                                class: '-tab-rest'
+                            }
+                        )])
                     ),
                     div(
                         {
