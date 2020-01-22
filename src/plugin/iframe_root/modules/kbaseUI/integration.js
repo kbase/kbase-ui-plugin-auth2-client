@@ -254,7 +254,7 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             });
         }
 
-        stop() {}
+        stop() { }
     }
 
     return Integration;

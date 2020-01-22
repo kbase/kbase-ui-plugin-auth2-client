@@ -1,34 +1,5 @@
 /*global define*/
 /*jslint browser:true,white:true*/
-/*
- control to tack on arbitrary command groups to any container element.
- This lets you mouse over and display buttons (with icons) in the upper right.
-
- $('#some_div').kbaseSearchControls(
- {
- //list of controls to populate buttons on the right end of the title bar. Give it an icon
- //and a callback function.
- onMouseover : true,
- id: some_id, //arbitrary value to associate with these controls. Each button gets a copy in .data('id')
- controls : [
- {
- icon : 'fa fa-search',
- 'icon-alt' : 'fa fa-search-o', //optional. Toggle icon between icon and icon-alt when clicked.
- callback : function(e) {
- console.log("clicked on search");
- },
- id : 'search' //optional. Keys the button to be available via $('#some_div').controls('search')
- },
- {
- icon : 'fa fa-minus',
- callback : function(e) {
- console.log("clicked on delete");
- }
- },
- ],
- }
- );
- */
 
 define(['jquery', 'bootstrap', 'css!font_awesome', './widget'], function ($) {
     'use strict';
