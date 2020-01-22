@@ -496,7 +496,10 @@ define([
                 .finally(function () {
                     // don't care whether it succeeded or failed.
                     runtime.send('app', 'navigate', {
-                        path: 'signup'
+                        path: 'signup',
+                        params: {
+                            nextrequest: JSON.stringify(nextRequest)
+                        }
                     });
                 });
         }

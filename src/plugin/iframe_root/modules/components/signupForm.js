@@ -633,10 +633,7 @@ define([
                 runtime.send('app', 'navigate', nextRequest);
             } else {
                 runtime.send('app', 'navigate', {
-                    path: 'dashboard',
-                    params: {
-                        tab: 'profile'
-                    }
+                    path: 'dashboard'
                 });
             }
         }

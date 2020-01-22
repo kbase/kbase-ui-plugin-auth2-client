@@ -206,6 +206,7 @@ define([
                 runtime.send('app', 'navigate', {
                     path: 'dashboard'
                 });
+                return;
             }
 
             runtime.send('ui', 'setTitle', 'Sign Up for KBase');

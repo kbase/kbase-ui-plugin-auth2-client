@@ -11,7 +11,6 @@ define([
     './components/errorView',
     './components/signinView',
     'kb_common_ts/Auth2',
-    'kb_common/lang',
     // loaded for effect
     'bootstrap'
 ], function (
@@ -26,8 +25,7 @@ define([
     provider,
     ErrorViewComponent,
     SigninViewComponent,
-    auth2,
-    lang
+    auth2
 ) {
     'use strict';
 
@@ -348,8 +346,16 @@ define([
                     var stateParams = getStateParam(choice);
 
                     if (stateParams.origin === 'signup') {
+                        let params = {};
+                        // The next request is pulled out of the state param.
+                        // It needs to be turned back into a JSON string in order to 
+                        // pass it as a query param value.
+                        if (stateParams.nextrequest) {
+                            params.nextrequest = JSON.stringify(stateParams.nextrequest)
+                        }
                         runtime.send('app', 'navigate', {
-                            path: ['signup']
+                            path: ['signup'],
+                            params
                         });
                         return null;
                     }
@@ -470,34 +476,34 @@ define([
                     // transform error message
                     var nextErr;
                     switch (err.code) {
-                    case '10010':
-                        nextErr = {
-                            code: 'no-signin-session',
-                            message: 'No sign-in session present',
-                            detail: div([
-                                p([
-                                    'A sign-in session was not found. ',
-                                    'This may be due to the expiration of the sign-in or sign-up session, ',
-                                    'which is valid for 30 minutes. ',
-                                    'Or it may be because you have visited this path from your browser ',
-                                    'history.'
+                        case '10010':
+                            nextErr = {
+                                code: 'no-signin-session',
+                                message: 'No sign-in session present',
+                                detail: div([
+                                    p([
+                                        'A sign-in session was not found. ',
+                                        'This may be due to the expiration of the sign-in or sign-up session, ',
+                                        'which is valid for 30 minutes. ',
+                                        'Or it may be because you have visited this path from your browser ',
+                                        'history.'
+                                    ]),
+                                    p([
+                                        'If you wish to sign-in or sign-up, please revisit the ',
+                                        a(
+                                            {
+                                                href: '/#login'
+                                            },
+                                            'sign in page'
+                                        ),
+                                        '.'
+                                    ])
                                 ]),
-                                p([
-                                    'If you wish to sign-in or sign-up, please revisit the ',
-                                    a(
-                                        {
-                                            href: '/#login'
-                                        },
-                                        'sign in page'
-                                    ),
-                                    '.'
-                                ])
-                            ]),
-                            data: err.data
-                        };
-                        break;
-                    default:
-                        nextErr = err;
+                                data: err.data
+                            };
+                            break;
+                        default:
+                            nextErr = err;
                     }
                     console.error('Auth Error', err);
                     // This is most likely due to an expired token.
