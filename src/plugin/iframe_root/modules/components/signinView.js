@@ -56,15 +56,15 @@ define([
         if (choice) {
             uiState.auth(true);
             if (choice.login.length === 1) {
-                if (nextRequest !== null) {
-                    nextRequest.urlPath = '_track_/signin';
-                }
+                // if (nextRequest !== null) {
+                //     nextRequest.urlPath = '_track_/signin';
+                // }
                 login = choice.login[0];
                 uiState.signin(true);
             } else {
-                if (nextRequest !== null) {
-                    nextRequest.urlPath = '_track_/signup';
-                }
+                // if (nextRequest !== null) {
+                //     nextRequest.urlPath = '_track_/signup';
+                // }
                 create = choice.create[0];
                 uiState.signup(true);
             }
