@@ -1,6 +1,7 @@
 {
     "description": "Build tool for this plugin",
     "scripts": {
+        "build-plugin": "bash scripts/build.sh",
         "clean": "grunt clean",
         "install-bower": "bower-installer",
         "install-npm": "grunt copy",
