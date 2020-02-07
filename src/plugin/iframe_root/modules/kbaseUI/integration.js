@@ -140,6 +140,14 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                     this.channel.send('set-title', { title });
                 }
             });
+            // TODO: should be a way to simply forward messages to the ui...
+            this.runtime.messenger.receive({
+                channel: 'profile',
+                message: 'reload',
+                handler: () => {
+                    this.channel.send('reload-profile', {});
+                }
+            })
         }
 
         started() {

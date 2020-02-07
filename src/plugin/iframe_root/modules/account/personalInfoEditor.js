@@ -7,7 +7,16 @@ define([
     'kb_service/client/userProfile',
     './components/userInfoEditor',
     'kb_common_ts/Auth2'
-], (Promise, ko, md5, html, BS, UserProfileService, UserInfoEditorComponent, auth2) => {
+], (
+    Promise,
+    ko,
+    md5,
+    html,
+    BS,
+    UserProfileService,
+    UserInfoEditorComponent,
+    auth2
+) => {
     'use strict';
 
     const t = html.tag,
@@ -30,7 +39,7 @@ define([
                 initialTab: 0,
                 tabs: [
                     {
-                        label: 'Manage your account',
+                        label: 'Update Your Account',
                         name: 'main',
                         content: div({
                             style: {
@@ -88,18 +97,26 @@ define([
                     created: account.created,
                     lastLogin: account.lastlogin,
                     username: account.user,
-                    doSave: (data) => {
+                    doSave: ({ email, realname }) => {
                         const client = new UserProfileService(this.runtime.config('services.user_profile.url'), {
                             token: this.runtime.service('session').getAuthToken()
                         });
 
                         return client.get_user_profile([account.user]).then((result) => {
+                            // User profile params
                             const profile = result[0];
-                            const hashedEmail = md5.hash(data.email.trim().toLowerCase());
-                            const currentUserToken = this.runtime.service('session').getAuthToken();
+                            const hashedEmail = md5.hash(email.trim().toLowerCase());
                             profile.profile.synced.gravatarHash = hashedEmail;
+                            profile.user.realname = realname;
+
+                            // Auth2 params
+                            const meData = {
+                                email, display: realname
+                            };
+
+                            const currentUserToken = this.runtime.service('session').getAuthToken();
                             return Promise.all([
-                                this.auth2.putMe(currentUserToken, data),
+                                this.auth2.putMe(currentUserToken, meData),
                                 client.set_user_profile({
                                     profile: profile
                                 })

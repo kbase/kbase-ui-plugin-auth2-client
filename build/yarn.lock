@@ -1150,12 +1150,17 @@ mixin-deep@^1.2.0:
     for-in "^1.0.2"
     is-extendable "^1.0.1"
 
-mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.1:
+mkdirp@^0.5.1, mkdirp@~0.5.1:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   integrity sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
   dependencies:
     minimist "0.0.8"
+
+mkdirp@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.3.tgz#4cf2e30ad45959dddea53ad97d518b6c8205e1ea"
+  integrity sha512-6uCP4Qc0sWsgMLy1EOqqS/3rjDHOEnsStVr/4vtAIK2Y5i2kA7lFFejYrpIyiN9w0pYf4ckeCYT9f1r1P9KX5g==
 
 ms@2.0.0:
   version "2.0.0"
@@ -1376,10 +1381,10 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
 
-pure-uuid@1.5.8:
-  version "1.5.8"
-  resolved "https://registry.yarnpkg.com/pure-uuid/-/pure-uuid-1.5.8.tgz#2a1aa3afb59720bb6dca9865adf3d55671504a31"
-  integrity sha512-8i/U1m4pBBxlVHF5VRzdWQjovwqreqGYQvEf/Z4/KQUEL8Sw3fxlRUd6K9qFiyqmdrMZvyjgKWjFGB81+7YkUg==
+pure-uuid@1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/pure-uuid/-/pure-uuid-1.6.0.tgz#304da991dbd38d1efd03342d3e104f6666f6e38d"
+  integrity sha512-z+A7GMeyPu4X1NoGKraYiOOFzK0HZpnsHwbJZbt9NGGaqrfs3amyuWgRhHnfMJN4MM0IbAsLvHBqt0p1S84UQQ==
 
 read-pkg-up@^1.0.1:
   version "1.0.1"
@@ -1669,22 +1674,22 @@ supports-color@^7.1.0:
   dependencies:
     has-flag "^4.0.0"
 
-tar@5.0.5:
-  version "5.0.5"
-  resolved "https://registry.yarnpkg.com/tar/-/tar-5.0.5.tgz#03fcdb7105bc8ea3ce6c86642b9c942495b04f93"
-  integrity sha512-MNIgJddrV2TkuwChwcSNds/5E9VijOiw7kAc1y5hTNJoLDSuIyid2QtLYiCYNnICebpuvjhPQZsXwUL0O3l7OQ==
+tar@6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/tar/-/tar-6.0.1.tgz#7b3bd6c313cb6e0153770108f8d70ac298607efa"
+  integrity sha512-bKhKrrz2FJJj5s7wynxy/fyxpE0CmCjmOQ1KV4KkgXFWOgoIT/NbTMnB1n+LFNrNk0SSBVGGxcK5AGsyC+pW5Q==
   dependencies:
     chownr "^1.1.3"
     fs-minipass "^2.0.0"
     minipass "^3.0.0"
     minizlib "^2.1.0"
-    mkdirp "^0.5.0"
+    mkdirp "^1.0.3"
     yallist "^4.0.0"
 
-terser@4.6.0:
-  version "4.6.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-4.6.0.tgz#5c1f8d01897a718797958b8607ff7cc4a3d12055"
-  integrity sha512-YMJyZ/KsqA1LVS0z5m9W1//n4zo6iYqvBSAvss07e4BfHl9ZdQWUeXN/Xh1nGzMO/CwS0zjANpOzR8KibBP9Pg==
+terser@4.6.3:
+  version "4.6.3"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-4.6.3.tgz#e33aa42461ced5238d352d2df2a67f21921f8d87"
+  integrity sha512-Lw+ieAXmY69d09IIc/yqeBqXpEQIpDGZqT34ui1QWXIUpR2RjbqEkT8X7Lgex19hslSqcWM5iMN2kM11eMsESQ==
   dependencies:
     commander "^2.20.0"
     source-map "~0.6.1"

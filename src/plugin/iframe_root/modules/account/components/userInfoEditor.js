@@ -1,11 +1,13 @@
 define([
     'knockout',
     'kb_knockout/registry',
+    'kb_knockout/lib/generators',
     'kb_lib/html',
     'kb_common/format'
 ], function (
     ko,
     reg,
+    gen,
     html,
     Format
 ) {
@@ -13,6 +15,7 @@ define([
 
     const t = html.tag,
         div = t('div'),
+        h3 = t('h3'),
         span = t('span'),
         label = t('label'),
         p = t('p'),
@@ -20,6 +23,19 @@ define([
         button = t('button');
 
     const fields = {
+        realname: {
+            name: 'realname',
+            label: 'Name',
+            type: 'text',
+            placeholder: 'Your Real Name',
+            description: 'Your real name, displayed to other KBase users',
+            more: div([
+                p([
+                    'Your "real" name is free text and may be changed at any time. ',
+                    'It will be displayed in most contexts in which your username is displayed.'
+                ])
+            ])
+        },
         username: {
             name: 'username',
             label: 'Username',
@@ -49,6 +65,7 @@ define([
             description: 'The date and time you last signed in to KBase',
             more: 'You many not change this information, it is for display only'
         },
+
         email: {
             name: 'email',
             label: 'E-Mail',
@@ -71,14 +88,46 @@ define([
     };
 
     class UserInfoEditor {
-        constructor({ doSave, email, username, created, lastLogin }) {
+        constructor({ doSave, email, realname, username, created, lastLogin }) {
             this.doSave = doSave;
 
             this.email = ko.observable(email)
                 .extend({
-                    required: true,
-                    email: true
+                    // required: true,
+                    // email: true,
+                    dirty: false,
+                    constraint: {
+                        required: true,
+                        autoTrim: true,
+                        validate: (value) => {
+                            // regex from: https://www.regular-expressions.info
+                            const regex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+                            if (!regex.test(value)) {
+                                return 'Please enter a valid email address'
+                            }
+                        }
+                    }
                 });
+
+            this.realname = ko.observable(realname)
+                .extend({
+                    // required: true,
+                    dirty: false,
+                    constraint: {
+                        required: true,
+                        autoTrim: true,
+                        validate: (value) => {
+                            // if (value.length < 1) {
+                            //     return 'Your name must be at least one characters long';
+                            // }
+                            if (value.length > 50) {
+                                return 'Your name cannot be longer than 50 characters';
+                            }
+                        }
+                    }
+                });
+
+            this.editorFields = [this.email, this.realname];
 
             this.username = ko.observable(username);
             this.created = ko.observable(created);
@@ -89,9 +138,9 @@ define([
             });
             this.lastLoginAt = ko.pureComputed(() => {
                 return Format.niceElapsedTime(this.lastLogin()) +
-                        ' (' +
-                        Format.niceTime(this.lastLogin()) +
-                        ')';
+                    ' (' +
+                    Format.niceTime(this.lastLogin()) +
+                    ')';
             });
 
             this.more = {};
@@ -101,6 +150,30 @@ define([
 
             this.message = ko.observable();
             this.messageType = ko.observable();
+
+            this.canSave = ko.observable(false);
+
+            this.someDirty = ko.pureComputed(() => {
+                // some are dirty
+                return this.editorFields.some((field) => {
+                    return field.isDirty();
+                });
+            });
+
+            this.someInvalid = ko.pureComputed(() => {
+                return this.editorFields.some((field) => {
+                    if (field.constraint) {
+                        return !field.constraint.isValid();
+                    }
+                    return false;
+                });
+            });
+
+            this.canSave = ko.pureComputed(() => {
+                const d = this.someDirty();
+                const iv = this.someInvalid();
+                return d && !iv;
+            });
         }
 
         showMore(name) {
@@ -113,6 +186,7 @@ define([
 
         save() {
             this.doSave({
+                realname: this.realname(),
                 email: this.email()
             })
                 .then(() => {
@@ -120,6 +194,9 @@ define([
                     this.messageType({
                         'alert-success': true,
                         hidden: false
+                    });
+                    this.editorFields.forEach((field) => {
+                        field.markClean();
                     });
                 })
                 .catch((err) => {
@@ -215,7 +292,21 @@ define([
                         dataBind: {
                             validationMessage: field.vmId || field.name
                         }
-                    })
+                    }),
+                    gen.if(field.name + '.constraint.isValid() === false',
+                        div({
+                            class: 'alert alert-danger',
+                            dataBind: {
+                                html: field.name + '.constraint.message'
+                            }
+                        }))
+                    // gen.if(field.name + '.constraint.state() === "invalid"',
+                    //     div({
+                    //         class: 'alert alert-danger',
+                    //         dataBind: {
+                    //             html: field.name + '.constraint.message'
+                    //         }
+                    //     }))
                 ]),
                 div({
                     class: 'col-md-6'
@@ -290,18 +381,22 @@ define([
             },
             class: 'container-fluid'
         }, [
-            buildDisplay(fields.username),
+            h3('Edit Account'),
+            buildInput(fields.realname),
             buildInput(fields.email),
-            buildDisplay(fields.created),
-            buildDisplay(fields.lastLogin),
             button({
                 class: 'btn btn-primary',
                 type: 'button',
                 dataBind: {
-                    click: 'save'
+                    click: 'save',
+                    enable: 'canSave'
                 }
             }, 'Save'),
-            buildMessageDisplay()
+            buildMessageDisplay(),
+            h3('Account Info'),
+            buildDisplay(fields.username),
+            buildDisplay(fields.created),
+            buildDisplay(fields.lastLogin)
         ]);
         return content;
     }
