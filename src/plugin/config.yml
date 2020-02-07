@@ -1,92 +1,92 @@
 ## YAML Template.
 ---
 package:
-    author: Erik Pearson
-    name: auth2-client
-    description: Auth2 client plugin
-    date: Feb 14, 2017
+  author: Erik Pearson
+  name: auth2-client
+  description: Auth2 client plugin
+  date: Feb 14, 2017
 source:
-    modules:
-    styles:
-        # - file: main.css
+  modules:
+  styles:
+    # - file: main.css
 install:
-    widgets:
-        - module: panel
-          id: kb_plugin_auth2-client_panel
-          type: es6
-          css: true
-    routes:
-        - path: [auth2, account]
-          params:
-              view: account
-          queryParams:
-              tab: {}
-          widget: kb_plugin_auth2-client_panel
-          authorization: true
-          reentrant: false
-        - path: [account]
-          params:
-              view: account
-          queryParams:
-              tab: {}
-          widget: kb_plugin_auth2-client_panel
-          authorization: true
-          reentrant: false
-        - path: [auth2, signedout]
-          widget: kb_plugin_auth2-client_panel
-          authorization: false
-          reentrant: false
-          queryParams:
-              path: { literal: ["signedout"] }
-        - path: [auth2, login, continue]
-          widget: kb_plugin_auth2-client_panel
-          authorization: false
-          queryParams:
-              path: { literal: [loginContinue] }
-              nextrequest: {}
-              in-process-login-token: {}
-        - path: [login]
-          widget: kb_plugin_auth2-client_panel
-          authorization: false
-          reentrant: false
-          queryParams:
-              path: { literal: [login] }
-              nextrequest: {}
-              source: {}
-        - path: [auth2, link, continue]
-          widget: kb_plugin_auth2-client_panel
-          authorization: false
-          queryParams:
-              path: { literal: [linkContinue] }
-              in-process-link-token: {}
-        - path: [auth2, { type: "rest", name: "path" }]
-          widget: kb_plugin_auth2-client_panel
-          authorization: true
-          reentrant: true
-          queryParams:
-              tab: {}
-        - path: [signup, { type: param, name: step, optional: true }]
-          widget: kb_plugin_auth2-client_panel
-          authorization: false
-          reentrant: false
-          queryParams:
-              path: { literal: ["signup"] }
-              nextrequest: {}
+  widgets:
+    - module: panel
+      id: kb_plugin_auth2-client_panel
+      type: es6
+      css: true
+  routes:
+    - path: [auth2, account]
+      params:
+        view: account
+      queryParams:
+        tab: {}
+      widget: kb_plugin_auth2-client_panel
+      authorization: true
+      reentrant: false
+    - path: [account]
+      params:
+        view: account
+      queryParams:
+        tab: {}
+      widget: kb_plugin_auth2-client_panel
+      authorization: true
+      reentrant: false
+    - path: [auth2, signedout]
+      widget: kb_plugin_auth2-client_panel
+      authorization: false
+      reentrant: false
+      queryParams:
+        path: { literal: ["signedout"] }
+    - path: [auth2, login, continue]
+      widget: kb_plugin_auth2-client_panel
+      authorization: false
+      queryParams:
+        path: { literal: [loginContinue] }
+        nextrequest: {}
+        in-process-login-token: {}
+    - path: [login]
+      widget: kb_plugin_auth2-client_panel
+      authorization: false
+      reentrant: false
+      queryParams:
+        path: { literal: [login] }
+        nextrequest: {}
+        source: {}
+    - path: [auth2, link, continue]
+      widget: kb_plugin_auth2-client_panel
+      authorization: false
+      queryParams:
+        path: { literal: [linkContinue] }
+        in-process-link-token: {}
+    - path: [auth2, { type: "rest", name: "path" }]
+      widget: kb_plugin_auth2-client_panel
+      authorization: true
+      reentrant: true
+      queryParams:
+        tab: {}
+    - path: [signup, { type: param, name: step, optional: true }]
+      widget: kb_plugin_auth2-client_panel
+      authorization: false
+      reentrant: false
+      queryParams:
+        path: { literal: ["signup"] }
+        nextrequest: {}
 
-        # - path: [auth2, interrupted]
-        #   widget: auth2_interrupted
-        #   authorization: false
-    menu:
-        - name: account
-          path: [auth2, account]
-          label: Account
-          icon: user-circle-o
-    coreServices:
-        dependencies:
-            auth2:
-                version:
-                    minimum: 0.2.5
-                providers: ["Google", "Globus", "OrcID"]
-            userProfile:
-                version:
-                    minimum: 0.2.0
+    # - path: [auth2, interrupted]
+    #   widget: auth2_interrupted
+    #   authorization: false
+  menu:
+    - name: account
+      path: [auth2, account]
+      label: Account
+      icon: drivers-license
+  coreServices:
+    dependencies:
+      auth2:
+        version:
+          minimum: 0.2.5
+        providers: ["Google", "Globus", "OrcID"]
+      userProfile:
+        version:
+          minimum: 0.2.0

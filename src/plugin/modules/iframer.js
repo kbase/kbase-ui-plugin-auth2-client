@@ -213,6 +213,10 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
                 this.runtime.send('ui', 'setTitle', title);
             });
 
+            this.channel.on('reload-profile', () => {
+                this.runtime.send('profile', 'reload');
+            });
+
             this.channel.start();
         }
 
