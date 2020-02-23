@@ -8,10 +8,10 @@
         return JSON.parse(decodeURIComponent(global.frameElement.getAttribute('data-params')));
     }
 
-    function cacheBusterKey(buildInfo) {
+    function cacheBusterKey(buildInfo, developMode) {
         // NB developMode not implemented yet, so always defaults
         // to the gitCommitHash
-        if (buildInfo.developMode) {
+        if (developMode) {
             return String(new Date().getTime());
         } else {
             return buildInfo.git.commitHash;
@@ -19,7 +19,7 @@
     }
 
     const params = getParamsFromIFrame(global);
-    const buildKey = cacheBusterKey(params.buildInfo);
+    const buildKey = cacheBusterKey(params.buildInfo, params.developMode);
 
     // Get the path to the index file. Since require-config is loaded directly by
     // index.html, the location is to index.html. We slice off index.html to get
