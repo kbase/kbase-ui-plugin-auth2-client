@@ -1,0 +1,23 @@
+{
+    "name": "kbase-ui-plugin-auth2-client",
+    "version": "1.0.0",
+    "description": "UI client components to provide auth2 services for the ui - login, logout, signup, account editing, id linking",
+    "main": "index.js",
+    "scripts": {
+        "build-plugin": "bash scripts/build-plugin.bash"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kbase/kbase-ui-plugin-auth2-client.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/kbase/kbase-ui-plugin-auth2-client/issues"
+    },
+    "homepage": "https://github.com/kbase/kbase-ui-plugin-auth2-client#readme",
+    "dependencies": {
+        "eslint": "6.8.0",
+        "standard": "14.3.1"
+    }
+}
