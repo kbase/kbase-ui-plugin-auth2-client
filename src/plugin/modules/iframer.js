@@ -11,6 +11,7 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             // this plugin somewhere else.
             this.origin = config.origin;
             this.pathRoot = config.pathRoot;
+            this.runtime = config.runtime;
 
             // So we can deterministically find the iframe
             this.id = 'frame_' + html.genId();
@@ -20,6 +21,7 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             const params = {
                 frameId: this.id,
                 parentHost: document.location.origin,
+                buildInfo: this.runtime.config('buildInfo'),
                 params: config.params,
                 channelId: config.channelId
             };
@@ -28,7 +30,7 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
 
             // All plugins need to follow this pattern for the index for now (but that
             // could be part of the constructor...)
-            const indexPath = this.pathRoot + '/iframe_root/index.html';
+            const indexPath = this.pathRoot + '/iframe_root/index.html' + this.cacheBuster();
 
             // Make an absolute url to this.
             this.url = this.origin + '/' + indexPath;
@@ -65,11 +67,23 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
             this.node = null;
         }
 
+        cacheBuster() {
+            let cbID;
+            if (this.runtime.config('buildInfo.target.dev')) {
+                cbID = this.runtime.config('buildInfo.builtAt');
+            } else {
+                cbID = this.runtime.config('buildInfo.git.commitHash');
+            }
+
+            return '?cb=' + cbID;
+        }
+
         attach(node) {
             this.node = node;
             this.node.innerHTML = this.content;
             this.iframe = document.getElementById(this.id);
             this.window = this.iframe.contentWindow;
+            this.iframe.src = this.url;
         }
     }
 
@@ -105,7 +119,8 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
                 pathRoot: this.pluginPath,
                 channelId: this.channel.channelId,
                 hostId: this.id,
-                params: this.params
+                params: this.params,
+                runtime: this.runtime
             });
 
             this.iframe.attach(this.container);
@@ -278,7 +293,7 @@ define(['kb_lib/html', './windowChannel', 'kb_lib/httpUtils'], function (html, W
         }
 
         start() {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 this.setupAndStartChannel();
                 this.channel.setWindow(this.iframe.window);
                 this.channel.on('ready', ({ channelId }) => {

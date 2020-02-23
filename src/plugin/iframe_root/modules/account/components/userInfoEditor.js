@@ -103,7 +103,7 @@ define([
                             // regex from: https://www.regular-expressions.info
                             const regex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
                             if (!regex.test(value)) {
-                                return 'Please enter a valid email address'
+                                return 'Please enter a valid email address';
                             }
                         }
                     }

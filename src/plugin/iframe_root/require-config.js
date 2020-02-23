@@ -1,7 +1,38 @@
-define([], function () {
+(function (global) {
     'use strict';
-    require.config({
-        baseUrl: './modules',
+
+    function getParamsFromIFrame(global) {
+        if (!global.frameElement.hasAttribute('data-params')) {
+            throw new Error('No params found in window!!');
+        }
+        return JSON.parse(decodeURIComponent(global.frameElement.getAttribute('data-params')));
+    }
+
+    function cacheBusterKey(buildInfo) {
+        // NB developMode not implemented yet, so always defaults
+        // to the gitCommitHash
+        if (buildInfo.developMode) {
+            return String(new Date().getTime());
+        } else {
+            return buildInfo.git.commitHash;
+        }
+    }
+
+    const params = getParamsFromIFrame(global);
+    const buildKey = cacheBusterKey(params.buildInfo);
+
+    // Get the path to the index file. Since require-config is loaded directly by
+    // index.html, the location is to index.html. We slice off index.html to get
+    // the directory pathy.
+    const pathList = global.location.pathname.split('/').slice(0, -1);
+
+    // All javascript modules are located in the modules directory.
+    pathList.push('modules');
+    var baseUrl = pathList.join('/');
+
+    global.require = {
+        baseUrl,
+        urlArgs: 'cb=' + buildKey,
         paths: {
             bluebird: 'vendor/bluebird/bluebird',
             bootstrap: 'vendor/bootstrap/bootstrap',
@@ -40,5 +71,5 @@ define([], function () {
                 deps: ['css!highlight_css']
             }
         }
-    });
-});
+    };
+})(window);
