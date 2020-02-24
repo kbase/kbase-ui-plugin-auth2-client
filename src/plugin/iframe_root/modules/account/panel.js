@@ -7,7 +7,6 @@ define([
     './serviceTokenManager',
     './agreementsManager',
     './signinManager',
-    './profileManager',
     '../widgets/tabsWidget'
 ], (
     Promise,
@@ -18,7 +17,6 @@ define([
     ServiceTokenManager,
     AgreementsManager,
     SigninManager,
-    ProfileManager,
     TabsWidget
 ) => {
     'use strict';
@@ -55,13 +53,7 @@ define([
                 },
                 initialTab: params.tab || 'account',
                 tabs: [
-                    // {
-                    //     name: 'profile',
-                    //     label: 'Your Profile',
-                    //     panel: {
-                    //         class: ProfileManager
-                    //     }
-                    // },
+
                     {
                         name: 'account',
                         label: 'Account',
@@ -136,12 +128,12 @@ define([
                 // vm.roles.value = account.roles;
                 account.roles.forEach((role) => {
                     switch (role.id) {
-                        case 'ServToken':
-                            this.vm.serviceTokens.enabled = true;
-                            break;
-                        case 'DevToken':
-                            this.vm.developerTokens.enabled = true;
-                            break;
+                    case 'ServToken':
+                        this.vm.serviceTokens.enabled = true;
+                        break;
+                    case 'DevToken':
+                        this.vm.developerTokens.enabled = true;
+                        break;
                     }
                 });
 
