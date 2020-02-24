@@ -322,7 +322,7 @@ define([
                         marginTop: '0'
                     }
                 },
-                'Sign in Changes'
+                'Sign-In Changes'
             ),
 
             div(

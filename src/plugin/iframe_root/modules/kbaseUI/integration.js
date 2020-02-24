@@ -147,7 +147,7 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                 handler: () => {
                     this.channel.send('reload-profile', {});
                 }
-            })
+            });
         }
 
         started() {
@@ -163,12 +163,9 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                 // ready message, is itself ready, and is ready for
                 // the iframe app to start running.
                 this.channel.on('start', (payload) => {
-                    const { token, username, config, realname, email } = payload;
-                    if (token) {
-                        this.authorization = { token, username, realname, email };
-                    } else {
-                        this.authorization = null;
-                    }
+                    const { authorization, config} = payload;
+                    this.authorization = authorization || null;
+                    const {token, username} = authorization;
                     this.token = token;
                     this.username = username;
                     this.config = config;
