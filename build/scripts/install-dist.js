@@ -79,24 +79,26 @@ async function taritup(rootDir) {
     ]);
 }
 
-async function main() {
+async function main(distBuild) {
     const cwd = process.cwd().split('/');
     cwd.push('..');
     const projectPath = path.normalize(cwd.join('/'));
     console.log(`Project path: ${projectPath}`);
     console.log('Copying files to dist...');
     await copyFiles(projectPath);
-    console.log('Minifying dist...');
-    await minify(projectPath);
-    console.log('tar-ing dist...');
-    try {
-        await taritup(projectPath.split('/'));
-    } catch (ex) {
-        console.error('Error tarring up dist! ' + ex.message);
+    if (distBuild) {
+        console.log('Minifying dist...');
+        await minify(projectPath);
+        console.log('tar-ing dist...');
+        try {
+            await taritup(projectPath.split('/'));
+        } catch (ex) {
+            console.error('Error tarring up dist! ' + ex.message);
+        }
     }
     console.log('done');
 }
 
 
-
-main();
+const distBuild = true
+main(distBuild);

@@ -34,38 +34,6 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             return JSON.parse(decodeURIComponent(this.rootWindow.frameElement.getAttribute('data-params')));
         }
 
-        // render(ko) {
-        //     this.rootViewModel = new RootViewModel({
-        //         runtime: this.runtime,
-        //         hostChannel: this.hostChannel,
-        //         authorized: this.authorized,
-        //         authorization: this.authorization,
-        //         pluginParams: this.pluginParams
-        //     });
-        //     this.container.innerHTML = div(
-        //         {
-        //             style: {
-        //                 flex: '1 1 0px',
-        //                 display: 'flex',
-        //                 flexDirection: 'column'
-        //             }
-        //         },
-        //         gen.if(
-        //             'ready',
-        //             gen.component({
-        //                 name: MainComponent.name(),
-        //                 params: {
-        //                     runtime: 'runtime',
-        //                     bus: 'bus',
-        //                     authorization: 'authorization',
-        //                     pluginParams: 'pluginParams'
-        //                 }
-        //             })
-        //         )
-        //     );
-        //     ko.applyBindings(this.rootViewModel, this.container);
-        // }
-
         showHelp() {
             this.rootViewModel.bus.send('help');
         }
@@ -188,61 +156,6 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                         .catch((err) => {
                             reject(err);
                         });
-
-                    // this.runtime = new runtime.Runtime({ config, token, username, realname, email });
-                    // this.render(ko);
-
-                    // this.rootViewModel.bus.on('set-plugin-params', ({ pluginParams }) => {
-                    //     this.hostChannel.send('set-plugin-params', { pluginParams });
-                    // });
-
-                    // this.channel.on('show-help', () => {
-                    //     this.showHelp();
-                    // });
-
-                    // this.channel.on('loggedin', ({ token, username, realname, email }) => {
-                    //     this.runtime.auth({ token, username, realname, email });
-                    //     this.rootViewModel.authorized(true);
-                    //     this.rootViewModel.authorization({ token, username, realname, email });
-                    //     // really faked for now.
-                    //     // this.runtime.service('session').
-                    // });
-
-                    // this.channel.on('loggedout', () => {
-                    //     this.runtime.unauth();
-                    //     this.rootViewModel.authorized(false);
-                    //     this.rootViewModel.authorization(null);
-                    // });
-
-                    // this.rootViewModel.bus.on('instrumentation', (payload) => {
-                    //     this.hostChannel.send('send-instrumentation', payload);
-                    // });
-
-                    // this.hostChannel.send('add-button', {
-                    //     button: {
-                    //         name: 'feedback',
-                    //         label: 'Feedback',
-                    //         style: 'default',
-                    //         icon: 'bullhorn',
-                    //         toggle: false,
-                    //         params: {
-                    //         },
-                    //         callbackMessage: ['show-feedback', null]
-                    //     }
-                    // });
-
-                    // this.hostChannel.send('add-button', {
-                    //     button: {
-                    //         name: 'help',
-                    //         label: 'Help',
-                    //         style: 'default',
-                    //         icon: 'question-circle',
-                    //         toggle: false,
-                    //         params: {
-                    //         },
-                    //         callbackMessage: ['show-help', null]
-                    //     }
-                    // });
                 });
 
                 window.document.addEventListener('click', () => {

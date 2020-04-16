@@ -14,9 +14,8 @@ specs:
         selector:
           - type: component
             value: login-view
-          - type: button
+          - type: element
             value: signin
-      - action: click
       - wait: forElement
         selector:
           - type: component
@@ -33,4 +32,3 @@ specs:
               value: signin-button
             - type: name
               value: globus
-
