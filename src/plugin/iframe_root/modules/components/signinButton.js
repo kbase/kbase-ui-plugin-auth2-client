@@ -1,4 +1,10 @@
-define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_common_ts/Auth2Error', 'kb_common_ts/Auth2'], function (
+define([
+    'knockout',
+    'kb_knockout/registry',
+    'kb_lib/html',
+    'kb_common_ts/Auth2Error',
+    'kb_common_ts/Auth2'],
+function (
     ko,
     reg,
     html,
@@ -35,14 +41,14 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_common_ts/Auth2Er
         };
         var imageSource = ko.pureComputed(function () {
             switch (state()) {
-                case 'normal':
-                    return imageBase + 'normal.png';
-                case 'hover':
-                    return imageBase + 'pressed.png';
-                case 'disabled':
-                    return imageBase + 'disabled.png';
-                default:
-                    return imageBase + 'normal.png';
+            case 'normal':
+                return imageBase + 'normal.png';
+            case 'hover':
+                return imageBase + 'hover.png';
+            case 'disabled':
+                return imageBase + 'disabled.png';
+            default:
+                return imageBase + 'normal.png';
             }
         });
         // ['normal', 'disabled', 'focus', 'pressed'].forEach(function (state) {

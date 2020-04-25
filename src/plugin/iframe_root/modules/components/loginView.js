@@ -53,7 +53,6 @@ define([
                 {
                     style: {
                         display: 'inline-block',
-                        width: '50%',
                         textAlign: 'left',
                         fontWeight: 'bold',
                         verticalAlign: 'middle'
@@ -63,7 +62,7 @@ define([
                     span({
                         class: 'fa fa-user-plus fa-2x',
                         style: {
-                            marginRight: '10px',
+                            // marginRight: '10px',
                             verticalAlign: 'middle'
                         }
                     }),
@@ -73,7 +72,7 @@ define([
                                 verticalAlign: 'middle'
                             }
                         },
-                        'New User'
+                        ' Sign Up'
                     )
                 ]
             )
@@ -102,44 +101,44 @@ define([
                         minWidth: '200px'
                     },
                     [
-                        div(
-                            {
-                                dataKBTesthookElement: 'signin',
-                                style: {
-                                    textAlign: 'center',
-                                    width: '100%'
-                                }
-                            },
-                            div(
-                                {
-                                    style: {
-                                        display: 'inline-block',
-                                        width: '50%',
-                                        textAlign: 'left',
-                                        fontWeight: 'bold',
-                                        verticalAlign: 'middle'
-                                    }
-                                },
-                                [
-                                    span({
-                                        class: 'fa fa-sign-in fa-2x',
-                                        style: {
-                                            marginRight: '10px',
-                                            verticalAlign: 'middle'
-                                        }
-                                    }),
-                                    span(
-                                        {
-                                            style: {
-                                                verticalAlign: 'middle'
-                                            },
-                                            dataKBTesthookLabel: 'signin'
-                                        },
-                                        'Sign In'
-                                    )
-                                ]
-                            )
-                        ),
+                        // div(
+                        //     {
+                        //         dataKBTesthookElement: 'signin',
+                        //         style: {
+                        //             textAlign: 'center',
+                        //             width: '100%'
+                        //         }
+                        //     },
+                        //     div(
+                        //         {
+                        //             style: {
+                        //                 display: 'inline-block',
+                        //                 width: '50%',
+                        //                 textAlign: 'left',
+                        //                 fontWeight: 'bold',
+                        //                 verticalAlign: 'middle'
+                        //             }
+                        //         },
+                        //         [
+                        //             span({
+                        //                 class: 'fa fa-sign-in fa-2x',
+                        //                 style: {
+                        //                     marginRight: '10px',
+                        //                     verticalAlign: 'middle'
+                        //                 }
+                        //             }),
+                        //             span(
+                        //                 {
+                        //                     style: {
+                        //                         verticalAlign: 'middle'
+                        //                     },
+                        //                     dataKBTesthookLabel: 'signin'
+                        //                 },
+                        //                 'Sign In With ...'
+                        //             )
+                        //         ]
+                        //     )
+                        // ),
                         div(
                             div(
                                 {
@@ -178,6 +177,12 @@ define([
                                 ]
                             )
                         ),
+                        div({
+                            style: {
+                                textAlign: 'center',
+                                fontWeight: 'bold'
+                            }
+                        }, 'New to KBase?'),
                         buildSignupButton()
                     ]
                 ),
@@ -261,7 +266,28 @@ define([
                         }
                     }, [
                         div({ class: 'login-form' }, [
-                            legend({ style: 'text-align: center' }, 'Use KBase'),
+                            div({ style: {
+                                textAlign: 'center',
+                                fontWeight: 'bold'
+                            } },
+                            [
+                                span({
+                                    class: 'fa fa-sign-in fa-2x',
+                                    style: {
+                                        marginRight: '10px',
+                                        verticalAlign: 'middle'
+                                    }
+                                }),
+                                span(
+                                    {
+                                        style: {
+                                            verticalAlign: 'middle'
+                                        },
+                                        dataKBTesthookLabel: 'signin'
+                                    },
+                                    'Sign In With ...'
+                                )
+                            ]),
                             buildAuthControl()
                         ])
                     ])
