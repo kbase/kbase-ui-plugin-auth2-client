@@ -24,13 +24,12 @@ define([
 {
     'use strict';
 
-    var t = html.tag,
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         p = t('p'),
         a = t('a'),
-        button = t('button'),
-        legend = t('legend');
+        button = t('button');
 
     function buildSignupButton() {
         return button(
@@ -62,7 +61,6 @@ define([
                     span({
                         class: 'fa fa-user-plus fa-2x',
                         style: {
-                            // marginRight: '10px',
                             verticalAlign: 'middle'
                         }
                     }),
@@ -101,44 +99,6 @@ define([
                         minWidth: '200px'
                     },
                     [
-                        // div(
-                        //     {
-                        //         dataKBTesthookElement: 'signin',
-                        //         style: {
-                        //             textAlign: 'center',
-                        //             width: '100%'
-                        //         }
-                        //     },
-                        //     div(
-                        //         {
-                        //             style: {
-                        //                 display: 'inline-block',
-                        //                 width: '50%',
-                        //                 textAlign: 'left',
-                        //                 fontWeight: 'bold',
-                        //                 verticalAlign: 'middle'
-                        //             }
-                        //         },
-                        //         [
-                        //             span({
-                        //                 class: 'fa fa-sign-in fa-2x',
-                        //                 style: {
-                        //                     marginRight: '10px',
-                        //                     verticalAlign: 'middle'
-                        //                 }
-                        //             }),
-                        //             span(
-                        //                 {
-                        //                     style: {
-                        //                         verticalAlign: 'middle'
-                        //                     },
-                        //                     dataKBTesthookLabel: 'signin'
-                        //                 },
-                        //                 'Sign In With ...'
-                        //             )
-                        //         ]
-                        //     )
-                        // ),
                         div(
                             div(
                                 {
@@ -268,7 +228,11 @@ define([
                         div({ class: 'login-form' }, [
                             div({ style: {
                                 textAlign: 'center',
-                                fontWeight: 'bold'
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center'
                             } },
                             [
                                 span({
@@ -285,7 +249,7 @@ define([
                                         },
                                         dataKBTesthookLabel: 'signin'
                                     },
-                                    'Sign In With ...'
+                                    'Sign In with ...'
                                 )
                             ]),
                             buildAuthControl()
@@ -297,16 +261,16 @@ define([
     }
 
     function viewModel(params) {
-        var runtime = params.runtime;
-        var nextRequest = params.nextRequest;
-        var source = params.source;
-        var docs = runtime.config('resources.documentation');
+        const runtime = params.runtime;
+        const nextRequest = params.nextRequest;
+        const source = params.source;
+        const docs = runtime.config('resources.documentation');
 
-        var authorized = runtime.service('session').isAuthorized();
+        const authorized = runtime.service('session').isAuthorized();
 
-        var username = runtime.service('session').getUsername();
+        const username = runtime.service('session').getUsername();
 
-        var providers = new provider.Providers({ runtime: runtime }).get();
+        const providers = new provider.Providers({ runtime: runtime }).get();
 
         const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
@@ -330,10 +294,10 @@ define([
                 });
         }
 
-        var mode = ko.observable();
+        const mode = ko.observable();
 
         function doSetSigninMode() {
-            var currentMode = mode();
+            const currentMode = mode();
             if (currentMode === 'signin') {
                 mode(null);
             } else {
@@ -342,7 +306,7 @@ define([
         }
 
         function doSetSignupMode() {
-            var currentMode = mode();
+            const currentMode = mode();
             if (currentMode === 'signup') {
                 mode(null);
             } else {
@@ -350,19 +314,7 @@ define([
             }
         }
 
-        // var tabs = ko.observableArray([
-        //     {
-        //         name: 'authorization',
-        //         label: 'Sign In Required',
-        //         show: ko.computed(function () {
-        //             return source === 'authorization';
-        //         }),
-        //         active: ko.observable(false),
-        //         template: makeNodes(buildAuthorizationRequired())
-        //     }
-        // ]);
-
-        var authRequired = ko.observable(false);
+        const authRequired = ko.observable(false);
 
         if (source === 'authorization') {
             authRequired(true);

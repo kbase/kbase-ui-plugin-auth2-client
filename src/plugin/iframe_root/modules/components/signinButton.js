@@ -13,49 +13,55 @@ function (
 ) {
     'use strict';
 
-    var t = html.tag,
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         img = t('img');
 
     function viewModel(params) {
         // import params into this VM.
-        var provider = params.provider;
-        var runtime = params.runtime;
-        var nextRequest = params.nextRequest;
-        var assetsPath = params.assetsPath;
-        var origin = params.origin;
+        const provider = params.provider;
+        const runtime = params.runtime;
+        const nextRequest = params.nextRequest;
+        const assetsPath = params.assetsPath;
+        const origin = params.origin;
 
         const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
         });
         const currentUserToken = runtime.service('session').getAuthToken();
 
-        var imageBase = assetsPath + '/providers/' + provider.id.toLowerCase() + '/signin-button/';
-        var state = ko.observable('normal');
-        var doMouseOver = function () {
+        const imageBase = assetsPath + '/providers/' + provider.id.toLowerCase() + '/signin-button/';
+        const state = ko.observable('normal');
+        const doMouseOver = function () {
             state('hover');
         };
-        var doMouseOut = function () {
+        const doMouseOut = function () {
             state('normal');
         };
-        var imageSource = ko.pureComputed(function () {
+        const doMouseDown = function () {
+            state('pressed');
+        };
+        const doMouseUp = function () {
+            state('normal');
+        };
+        const imageSource = ko.pureComputed(function () {
             switch (state()) {
             case 'normal':
                 return imageBase + 'normal.png';
             case 'hover':
                 return imageBase + 'hover.png';
+            case 'pressed':
+                return imageBase + 'pressed.png';
             case 'disabled':
                 return imageBase + 'disabled.png';
             default:
                 return imageBase + 'normal.png';
             }
         });
-        // ['normal', 'disabled', 'focus', 'pressed'].forEach(function (state) {
-        //     provider.imageSource[state] = imageBase + state + '.png';
-        // });
-        var disabled = ko.observable(false);
-        var loading = ko.observable(false);
+
+        const disabled = ko.observable(false);
+        const loading = ko.observable(false);
 
         function makeRedirectURL() {
             const query = {
@@ -75,6 +81,8 @@ function (
         function doSignin(data) {
             // set last provider...
             data.loading(true);
+            state('disabled');
+            disabled(true);
             // providers.forEach(function (provider) {
             //     provider.state('disabled');
             //     provider.disabled(true);
@@ -110,37 +118,36 @@ function (
                         action: action,
                         params: params
                     });
-
-                    // auth2Client.loginStart({
-                    //     // runtime.service('session').loginStart({
-                    //     // TODO: this should be either the redirect url passed in
-                    //     // or the dashboard.
-                    //     // We just let the login page do this. When the login page is
-                    //     // entered with a valid token, redirect to the nextrequest,
-                    //     // and if that is empty, the dashboard.
-                    //     state: {
-                    //         nextrequest: nextRequest,
-                    //         origin: origin
-                    //     },
-                    //     provider: provider.id
-                    // });
                 })
                 .finally(function () {
                     loading(false);
                 });
         }
 
+        // At time of writing (4/25/2020), Safari will restore the page and
+        // JS context as left when returned to via back button (history),
+        // which would otherwise leave the button in the disabled state after
+        // clicking to sign in via a provider. Safari does support pageshow,
+        // so this restores the button state.
+        // Other browsers (FF, Chrome) don't seem to honor pageshow, but also
+        // don't restore the page state when returning to it.
+        window.addEventListener('pageshow', () => {
+            state('normal');
+        });
+
         return {
-            runtime: runtime,
-            provider: provider,
-            doSignin: doSignin,
-            imageSource: imageSource,
-            state: state,
-            doMouseOver: doMouseOver,
-            doMouseOut: doMouseOut,
-            disabled: disabled,
-            loading: loading,
-            assetsPath: assetsPath
+            runtime,
+            provider,
+            doSignin,
+            imageSource,
+            state,
+            doMouseOver,
+            doMouseOut,
+            doMouseDown,
+            doMouseUp,
+            disabled,
+            loading,
+            assetsPath
         };
     }
 
@@ -171,7 +178,9 @@ function (
                         click: 'doSignin',
                         event: {
                             mouseover: 'doMouseOver',
-                            mouseout: 'doMouseOut'
+                            mouseout: 'doMouseOut',
+                            mousedown: 'doMouseDown',
+                            mouseup: 'doMouseUp'
                         },
                         attr: {
                             src: 'imageSource'
