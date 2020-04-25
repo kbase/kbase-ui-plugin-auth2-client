@@ -125,10 +125,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
                 {
                     class: 'btn btn-default',
                     style: {
-                        margin: '8px 0',
-                        height: '44px',
-                        fontSize: '110%',
-                        fontWeight: 'bold'
+                        margin: '8px 0'
                     },
                     id: events.addEvent('click', function () {
                         doLogin(provider.id, state);

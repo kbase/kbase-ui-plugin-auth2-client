@@ -39,7 +39,8 @@ define([
                 style: {
                     textAlign: 'center',
                     marginTop: '10px',
-                    width: '100%'
+                    // Note: set as same width as sign-in buttons.
+                    width: '180px'
                 },
                 dataBind: {
                     click: 'doSignup',
@@ -84,9 +85,7 @@ define([
                     ifnot: 'authorized'
                 },
                 style: {
-                    width: '80%',
-                    display: 'inline-block',
-                    minWidth: '210px'
+                    display: 'inline-block'
                 }
             },
             [
@@ -95,8 +94,7 @@ define([
                         class: 'xbtn-group-vertical',
                         style: {
                             width: '100%'
-                        },
-                        minWidth: '200px'
+                        }
                     },
                     [
                         div(
