@@ -170,7 +170,6 @@ function (
             [
                 img({
                     style: {
-                        height: '44px',
                         cursor: 'pointer'
                     },
                     class: 'signin-button',

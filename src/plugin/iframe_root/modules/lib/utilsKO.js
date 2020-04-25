@@ -50,10 +50,7 @@ define([
         return button({
             class: 'btn btn-default',
             style: {
-                margin: '8px 0',
-                height: '44px',
-                fontSize: '110%',
-                fontWeight: 'bold'
+                margin: '8px 0'
             },
             dataControl: 'signin-button',
             dataBind: {
