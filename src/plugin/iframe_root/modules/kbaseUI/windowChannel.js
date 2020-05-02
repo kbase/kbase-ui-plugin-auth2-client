@@ -1,17 +1,9 @@
-define([], function () {
+define([
+    'uuid'
+], function (
+    Uuid
+) {
     'use strict';
-
-    // copy pasta: https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
-    function uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0;
-            if (c === 'x') {
-                return r.toString(16);
-            } else {
-                return ((r & 0x3) | 0x8).toString(16);
-            }
-        });
-    }
 
     class Listener {
         constructor(config) {
@@ -25,7 +17,7 @@ define([], function () {
         constructor({ from, to }) {
             this.from = from;
             this.to = to;
-            this.id = uuidv4();
+            this.id = new Uuid(4).format();
             this.created = new Date();
         }
 
@@ -73,7 +65,7 @@ define([], function () {
 
             // The channel id. Used to filter all messages received to
             // this channel.
-            this.channelId = uuidv4();
+            this.channelId = new Uuid(4).format();
 
             this.partnerId = to;
 
@@ -223,7 +215,13 @@ define([], function () {
         }
 
         sendMessage(message) {
-            this.window.postMessage(message.toJSON(), this.host);
+            console.log('[auth2-client] sending message', message);
+            try {
+                const status = this.window.postMessage(message.toJSON(), this.host);
+                console.log('[auth2-client] sent message', status);
+            } catch (ex) {
+                console.error('[auth2-client] Error sending message!', message, ex);
+            }
         }
 
         send(name, payload) {
@@ -363,7 +361,7 @@ define([], function () {
 
             // The host for the window; required for postmessage
             this.host = host || document.location.origin;
-            this.channelId = uuidv4();
+            this.channelId = new Uuid(4).format();
             this.partnerId = to;
             this.lastId = 0;
             this.sentCount = 0;
@@ -416,7 +414,7 @@ define([], function () {
 
             // The channel id. Used to filter all messages received to
             // this channel.
-            this.channelId = uuidv4();
+            this.channelId = new Uuid(4).format();
 
             this.partnerId = to;
 
