@@ -4,7 +4,8 @@
     "description": "UI client components to provide auth2 services for the ui - login, logout, signup, account editing, id linking",
     "main": "index.js",
     "scripts": {
-        "build-plugin": "bash scripts/build-plugin.bash"
+        "build": "bash scripts/build-plugin.bash",
+        "build-dev": "bash scripts/build-plugin-dev.bash"
     },
     "repository": {
         "type": "git",
