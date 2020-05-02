@@ -20,6 +20,8 @@ define([
 
         var listeners = [];
 
+        console.log('[auth2-client] making login widget');
+
         function showErrorMessage(message) {
             container.innerHTML = div(
                 {
@@ -84,6 +86,8 @@ define([
         function start(params) {
             // if is logged in, just redirect to the nextrequest,
             // or the nexturl, or dashboard.
+            console.log('[auth2-client] starting login widget');
+
             if (params.nextrequest) {
                 nextRequest = JSON.parse(params.nextrequest);
             } else {

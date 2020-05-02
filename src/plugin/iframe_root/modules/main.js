@@ -65,6 +65,7 @@ require([
                     } else {
                         view = path[0];
                     }
+                    console.log('navigating...', view, path, params);
                     dispatcher.dispatch({ view, path, params });
                 });
                 integration.started();
