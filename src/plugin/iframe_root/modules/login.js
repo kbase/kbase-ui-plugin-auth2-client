@@ -37,10 +37,8 @@ define([
                     class: 'scrollable-flex-column'
                 }, [
                     div({
-                        class: 'Col',
                         style: {
-                            justifyContent: 'center',
-                            minHeight: '8em'
+                            marginBottom: '20px'
                         }
                     }, [
                         div({
