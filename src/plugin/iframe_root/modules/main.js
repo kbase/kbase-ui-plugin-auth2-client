@@ -8,7 +8,30 @@ require([
     'css!font_awesome'
 ], (Promise, Integration, Dispatcher, knockoutLoader, pluginConfig) => {
     'use strict';
-    console.log('[auth2-client] main loaded');
+
+    function well(message) {
+        // clone of bootstrap 3 'well' class.
+        const style = {
+            'border': '1px solid #e3e3e3',
+            'padding': '19px',
+            'border-radius': '4px',
+            'background-color': '#f5f5f5',
+            'min-height': '20px',
+            'max-width': '40em',
+            'margin': '20px auto 0 auto',
+            'box-shadow': 'inset 0 1px 1px rgba(0, 0, 0, 0.05)'
+        };
+        const styleString = Object.entries(style).map(([key, value]) => {
+            return `${key}:${value};`;
+        }).join(' ');
+        return `
+            <div style="${styleString}">
+            ${message}
+            </div>
+        `;
+    }
+
+
     Promise.try(() => {
         const integration = new Integration({
             rootWindow: window,
@@ -19,11 +42,12 @@ require([
         // NOW -- we need to implement widget dispatch here
         // based on the navigation received from the parent context.
         let dispatcher = null;
+        let loadingTimer = null;
+        const LOADING_TIME = 1000;
 
         return knockoutLoader
             .load()
             .then((ko) => {
-                console.log('[auth2-client] knockout loaded');
                 // For more efficient ui updates.
                 // This was introduced in more recent knockout releases,
                 // and in the past introduced problems which were resolved
@@ -31,12 +55,16 @@ require([
                 ko.options.deferUpdates = true;
             })
             .then(() => {
-                console.log('[auth2-client] starting integration');
                 return integration.start();
             })
             .then(() => {
+                // place a loader.
+                loadingTimer = window.setTimeout(() => {
+                    document.getElementById('root').innerHTML = well('Loading Auth Plugin ...');
+                }, LOADING_TIME);
+
+
                 // // This installs all widgets from the config file.
-                console.log('[auth2-client] integration finished, loading widgets');
                 const widgets = pluginConfig.install.widgets;
                 widgets.forEach((widgetDef) => {
                     integration.runtime
@@ -47,7 +75,6 @@ require([
             })
             .then(() => {
                 // Add routes to panels here
-                console.log('[auth2-client] widgets loaded, starting dispatcher');
                 dispatcher = new Dispatcher({
                     runtime: integration.runtime,
                     node: rootNode,
@@ -56,23 +83,17 @@ require([
                 return dispatcher.start();
             })
             .then((dispatcher) => {
-                console.log('[auth2-client] dispatcher started, setting up navigation');
+                window.clearTimeout(loadingTimer);
                 integration.onNavigate(({ path, params }) => {
-                    // TODO: ever
                     let view;
                     if (params.view) {
                         view = params.view;
                     } else {
                         view = path[0];
                     }
-                    console.log('navigating...', view, path, params);
                     dispatcher.dispatch({ view, path, params });
                 });
                 integration.started();
-                // TODO: more channel listeners.
-            })
-            .then(() => {
-                console.log('[auth2-client] all done ... should be OK');
             });
     }).catch((err) => {
         console.error('ERROR', err);

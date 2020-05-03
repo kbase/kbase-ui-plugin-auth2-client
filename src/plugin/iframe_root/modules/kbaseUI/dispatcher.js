@@ -61,7 +61,6 @@ define(['require'], (require) => {
         }
 
         dispatch({ view: viewId, path, params }) {
-            console.log('[auth2-client] dispatching', viewId, path, params);
             const view = this.selectView(viewId);
             if (!view || !view.module) {
                 console.warn('bad view request', viewId, path, params);
@@ -70,13 +69,11 @@ define(['require'], (require) => {
             }
 
             if (this.currentPanel && this.currentPanel.view === view) {
-                console.log('[auth2-client] running view', view, params);
                 return this.currentPanel.widget.run(params);
             }
 
             return this.unmount()
                 .then(() => {
-                    console.log('[auth2-client] mounting widget', view);
                     let widget;
                     switch (view.type) {
                     case 'factory':
@@ -97,6 +94,8 @@ define(['require'], (require) => {
                     }
                 })
                 .then(() => {
+                    // clear the host node first.
+                    this.hostNode.innerHTML = '';
                     return this.currentPanel.widget.attach(this.hostNode);
                 })
                 .then(() => {

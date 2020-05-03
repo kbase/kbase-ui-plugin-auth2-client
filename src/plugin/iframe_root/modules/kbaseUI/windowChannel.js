@@ -215,10 +215,8 @@ define([
         }
 
         sendMessage(message) {
-            console.log('[auth2-client] sending message', message);
             try {
-                const status = this.window.postMessage(message.toJSON(), this.host);
-                console.log('[auth2-client] sent message', status);
+                this.window.postMessage(message.toJSON(), this.host);
             } catch (ex) {
                 console.error('[auth2-client] Error sending message!', message, ex);
             }
