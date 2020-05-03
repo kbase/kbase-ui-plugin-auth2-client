@@ -39,7 +39,8 @@ define([
                     div({
                         class: 'Col',
                         style: {
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            minHeight: '8em'
                         }
                     }, [
                         div({
