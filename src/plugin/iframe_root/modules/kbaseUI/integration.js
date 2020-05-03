@@ -131,7 +131,6 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                 // ready message, is itself ready, and is ready for
                 // the iframe app to start running.
                 this.channel.on('start', (payload) => {
-                    console.log('[auth2-client] received start...');
                     const { authorization, config} = payload;
                     this.authorization = authorization || null;
                     const {token, username} = authorization;
@@ -169,7 +168,6 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                 // on the same channel, with control via the channel id. However, there is a risk
                 // the the channels will listen on for the same message ... unlikely though.
                 // Still, it would be odd for one window to listen for messages on another...
-                console.log('[auth2-client] sending ready');
                 this.channel.send('ready', {});
             });
         }
