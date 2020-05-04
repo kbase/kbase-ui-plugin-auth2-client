@@ -132,16 +132,11 @@ define([
             {
                 dataBind: {
                     ifnot: 'authorized'
-                },
-                style: {
-                    display: 'flex',
-                    flexDirection: 'column'
                 }
             },
             [
                 div({
                     style: {
-                        flex: '1 1 0px',
                         display: 'flex',
                         flexDirection: 'row'
                     }
@@ -218,12 +213,14 @@ define([
                     div({
                         style: {
                             flex: '1 1 0px',
-                            position: 'relative'
+                            position: 'relative',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center'
                         }
                     }, [
                         div({
                             style: {
-                                textAlign: 'center',
                                 fontWeight: 'bold'
                             }
                         }, 'New to KBase?'),
@@ -331,17 +328,6 @@ define([
         );
     }
 
-    function buildAuthControl() {
-        return div(
-            {
-                style: {
-                    textAlign: 'center'
-                }
-            },
-            [buildLoginControl()]
-        );
-    }
-
     function buildAuthorizationRequired() {
         return div({
             class: 'alert alert-danger',
@@ -377,12 +363,6 @@ define([
         ]);
     }
 
-    function buildIntroNormal() {
-        return div({},
-            gen.if('authRequired', buildAuthorizationRequired())
-        );
-    }
-
     function template() {
         return div(
             {
@@ -392,8 +372,8 @@ define([
                 dataWidget: 'login'
             },
             [
-                div({ class: '' }, buildIntroNormal()),
-                div({ class: '' }, [
+                gen.if('authRequired', div(buildAuthorizationRequired())),
+                div([
                     div({
                         class: 'well well-kbase',
                         style: {
@@ -401,35 +381,7 @@ define([
                             margin: '0 auto'
                         }
                     }, [
-                        div({ class: 'login-form' }, [
-                            // div({ style: {
-                            //     textAlign: 'center',
-                            //     fontWeight: 'bold',
-                            //     display: 'flex',
-                            //     flexDirection: 'row',
-                            //     justifyContent: 'center',
-                            //     alignItems: 'center'
-                            // } },
-                            // [
-                            //     span({
-                            //         class: 'fa fa-sign-in fa-2x',
-                            //         style: {
-                            //             marginRight: '10px',
-                            //             verticalAlign: 'middle'
-                            //         }
-                            //     }),
-                            //     span(
-                            //         {
-                            //             style: {
-                            //                 verticalAlign: 'middle'
-                            //             },
-                            //             dataKBTesthookLabel: 'signin'
-                            //         },
-                            //         'Sign In with ...'
-                            //     )
-                            // ]),
-                            buildAuthControl()
-                        ])
+                        buildLoginControl()
                     ])
                 ])
             ]
