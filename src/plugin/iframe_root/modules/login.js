@@ -58,7 +58,6 @@ define([
                             div({
                                 class: 'Title',
                                 style: {
-                                    fontWeight: 'bold',
                                     fontSize: '200%',
                                     marginLeft: '10px',
                                     color: 'rgba(50, 50, 50, 1)'
