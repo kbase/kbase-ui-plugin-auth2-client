@@ -147,68 +147,60 @@ define([
                             flex: '1 1 0px;'
                         }
                     }, [
-                        div({ style: {
-                            textAlign: 'center',
-                            fontWeight: 'bold',
-                            display: 'flex',
-                            flexDirection: 'row',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        } },
-                        [
+                        div({
+                            style: {
+                                textAlign: 'center',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: '30px'
+                            }
+                        }, [
                             span({
                                 class: 'fa fa-sign-in fa-2x',
                                 style: {
-                                    marginRight: '10px',
-                                    verticalAlign: 'middle'
+                                    marginRight: '10px'
                                 }
                             }),
-                            span(
+                            span({
+                                dataKBTesthookLabel: 'signin'
+                            }, 'Sign In with ...')
+                        ]),
+                        div({
+                            style: {
+                                marginBottom: '20px',
+                                padding: '4px',
+                                textAlign: 'left'
+                            }
+                        }, [
+                            div(
                                 {
                                     style: {
-                                        verticalAlign: 'middle'
+                                        width: '100%',
+                                        display: 'inline-block'
                                     },
-                                    dataKBTesthookLabel: 'signin'
+                                    dataBind: {
+                                        foreach: 'providers'
+                                    }
                                 },
-                                'Sign In with ...'
-                            )
-                        ]),
-                        div(
-                            {
-                                style: {
-                                    marginBottom: '20px',
-                                    padding: '4px',
-                                    textAlign: 'left'
-                                }
-                            },
-                            [
-                                div(
-                                    {
-                                        style: {
-                                            width: '100%',
-                                            display: 'inline-block'
-                                        },
-                                        dataBind: {
-                                            foreach: 'providers'
-                                        }
-                                    },
-                                    div({
-                                        dataBind: {
-                                            component: {
-                                                name: SigninButtonComponent.quotedName(),
-                                                params: {
-                                                    provider: '$data',
-                                                    runtime: '$component.runtime',
-                                                    nextRequest: '$component.nextRequest',
-                                                    assetsPath: '$component.assetsPath',
-                                                    origin: '"login"'
-                                                }
+                                div({
+                                    dataBind: {
+                                        component: {
+                                            name: SigninButtonComponent.quotedName(),
+                                            params: {
+                                                provider: '$data',
+                                                runtime: '$component.runtime',
+                                                nextRequest: '$component.nextRequest',
+                                                assetsPath: '$component.assetsPath',
+                                                origin: '"login"'
                                             }
                                         }
-                                    })
-                                )
-                            ]
-                        )
+                                    }
+                                })
+                            )
+                        ])
                     ]),
                     div({
                         style: {
@@ -216,14 +208,30 @@ define([
                             position: 'relative',
                             display: 'flex',
                             flexDirection: 'column',
-                            alignItems: 'center'
+                            alignItems: 'center',
                         }
                     }, [
                         div({
                             style: {
-                                fontWeight: 'bold'
+                                textAlign: 'center',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: '30px'
                             }
-                        }, 'New to KBase?'),
+                        }, [
+                            span({
+                                class: 'fa fa-user-o fa-2x',
+                                style: {
+                                    marginRight: '10px'
+                                }
+                            }),
+                            span({
+                                dataKBTesthookLabel: 'signin'
+                            }, 'New to KBase?')
+                        ]),
                         buildSignupButton(),
                         div({
                             style: {
