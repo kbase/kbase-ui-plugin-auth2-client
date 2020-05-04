@@ -38,8 +38,8 @@
 .flex-tabs>.-tabs>.-tab>.-label {
     line-height: 2.8em;
     padding: 0 8px;
-    display: inline-block;
-    vertical-align: middle;
+    /* display: inline-block;
+vertical-align: middle; */
     white-space: nowrap;
     color: #337ab7;
 }

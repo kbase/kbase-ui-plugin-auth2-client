@@ -32,11 +32,11 @@
 /* Policy resolver component styles */
 
 .policy-markdown {
-    font-family: Oxygen, Arial, sans-serif;
+    font-family: SourceSansPro, Arial, sans-serif;
 }
 
 .policy-markdown h1 {
-    font-family: Oxygen, Arial, sans-serif;
+    font-family: SourceSansPro, Arial, sans-serif;
     margin-top: 0;
     margin-bottom: 0;
     font-weight: bold;
@@ -44,7 +44,7 @@
 }
 
 .policy-markdown h2 {
-    font-family: Oxygen, Arial, sans-serif;
+    font-family: SourceSansPro, Arial, sans-serif;
     margin-top: 1em;
     margin-bottom: 0;
     font-weight: bold;
@@ -52,7 +52,7 @@
 }
 
 .policy-markdown h3 {
-    font-family: Oxygen, Arial, sans-serif;
+    font-family: SourceSansPro, Arial, sans-serif;
     margin-top: 1em;
     margin-bottom: 0;
     font-weight: bold;
@@ -60,7 +60,7 @@
 }
 
 .policy-markdown h4 {
-    font-family: Oxygen, Arial, sans-serif;
+    font-family: SourceSansPro, Arial, sans-serif;
     margin-top: 1em;
     margin-bottom: 0;
     font-weight: bold;

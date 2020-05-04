@@ -65,6 +65,55 @@
     font-style: normal;
 }
 
+
+@font-face {
+    font-family: 'SourceSansPro';
+    src: url('./fonts/Source_Sans_Pro/SourceSansPro-Regular.woff') format('woff'),
+        url('./fonts/Source_Sans_Pro/SourceSansPro-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SourceSansPro';
+    src: url('./fontsSource_Sans_Pro/SourceSansPro-Bold.woff') format('woff'),
+        url('./fontsSource_Sans_Pro/SourceSansPro-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SourceSansPro';
+    src: url('./fonts/Source_Sans_Pro/SourceSansPro-BoldItalic.woff') format('woff'),
+        url('./fonts/Source_Sans_Pro/SourceSansPro-BoldItalic.wottfff') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'SourceSansPro';
+    src: url('./fonts/Source_Sans_Pro/SourceSansPro-Italic.woff') format('woff'),
+        url('./fonts/Source_Sans_Pro/SourceSansPro-Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'SourceSansProBlack';
+    src: url('./fonts/Source_Sans_Pro/SourceSansPro-Black.woff') format('woff'),
+        url('./fonts/Source_Sans_Pro/SourceSansPro-Black.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'SourceCodePro';
+    src: url('./fonts/Source_Code_Pro/SourceCodePro-Regular.woff') format('woff'),
+        url('./fonts/Source_Code_Pro/SourceCodePro-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 html {
     height: 100%;
 }
@@ -76,8 +125,8 @@ body {
     -moz-osx-font-smoothing: grayscale;
     height: 100%;
     width: 100%;
-    font-size: 14px;
-    font-family: 'Oxygen', sans-serif;
+    font-size: 16px;
+    font-family: 'SourceSansPro', sans-serif;
     flex: 1 1 0px;
     display: flex;
     flex-direction: column;
@@ -88,7 +137,7 @@ body {
 
 .kbase-ui h1,
 .kbase-ui .h1 {
-    font-family: 'RobotoBlack', Arial, sans-serif;
+    font-family: 'SourceSansProBlack', Arial, sans-serif;
     letter-spacing: 0;
     font-size: 29px;
     padding: 5px 0px;
@@ -100,40 +149,41 @@ body {
 
 .kbase-ui h2,
 .kbase-ui .h2 {
-    font-family: 'RobotoBlack', Arial, sans-serif;
+    font-family: 'SourceSansProBlack', Arial, sans-serif;
     letter-spacing: 0;
     font-size: 25px;
 }
 
 .kbase-ui h3,
 .kbase-ui .h3 {
-    font-family: 'RobotoBlack', Arial, sans-serif;
+    font-family: 'SourceSansProBlack', Arial, sans-serif;
     letter-spacing: 0;
     font-size: 21px;
 }
 
 .kbase-ui h4,
 .kbase-ui .h4 {
-    font-family: 'RobotoBlack', Arial, sans-serif;
+    font-family: 'SourceSansProBlack', Arial, sans-serif;
     letter-spacing: 0em;
     font-size: 19px;
 }
 
 .kbase-ui h5,
 .kbase-ui .h5 {
-    font-family: 'RobotoBlack', Arial, sans-serif;
+    font-family: 'SourceSansProBlack', Arial, sans-serif;
     letter-spacing: 0em;
     font-size: 17px;
 }
 
 body.kbase-ui {
-    font-family: 'Oxygen', Arial, sans-serif;
+    font-family: 'SourceSansPro', Arial, sans-serif;
+    font-size: 16px;
     color: #333333;
 }
 
 .panel-title {
     /*color: #0072AF;*/
-    font-family: 'Oxygen', Arial, sans-serif;
+    font-family: 'SourceSansPro', Arial, sans-serif;
     font-weight: bold;
 }
 
@@ -152,4 +202,10 @@ div::-webkit-scrollbar-track {
 div::-webkit-scrollbar-thumb {
     border-radius: 10px;
     background: #666;
+}
+
+/* Bootstrap fixes */
+.kbase-ui .form-control,
+.kbase-ui .btn {
+    font-size: 16px;
 }
