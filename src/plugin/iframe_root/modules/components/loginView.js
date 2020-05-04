@@ -78,7 +78,181 @@ define([
         );
     }
 
+    function buildHelpButton() {
+        return a(
+            {
+                dataKBTesthookButton: 'signup',
+                class: 'btn btn-default',
+                style: {
+                    textAlign: 'center',
+                    marginTop: '10px',
+                    // Note: set as same width as sign-in buttons.
+                    width: '180px'
+                },
+                dataBind: {
+                    click: 'doSignup',
+                    attr: {
+                        'data-control': '"signup-button"'
+                    }
+                },
+                target: '_blank',
+                href: 'http://kbase.us/new-to-kbase'
+            },
+            div(
+                {
+                    style: {
+                        display: 'inline-block',
+                        textAlign: 'left',
+                        fontWeight: 'bold',
+                        verticalAlign: 'middle'
+                    }
+                },
+                [
+                    span({
+                        class: 'fa fa-question-circle fa-2x',
+                        style: {
+                            verticalAlign: 'middle'
+                        }
+                    }),
+                    span(
+                        {
+                            style: {
+                                verticalAlign: 'middle'
+                            }
+                        },
+                        ' Need Help?'
+                    )
+                ]
+            )
+        );
+    }
+
     function buildLoginControl() {
+        return div(
+            {
+                dataBind: {
+                    ifnot: 'authorized'
+                },
+                style: {
+                    display: 'flex',
+                    flexDirection: 'column'
+                }
+            },
+            [
+                div({
+                    style: {
+                        flex: '1 1 0px',
+                        display: 'flex',
+                        flexDirection: 'row'
+                    }
+                },
+                [
+                    div({
+                        style: {
+                            flex: '1 1 0px;'
+                        }
+                    }, [
+                        div({ style: {
+                            textAlign: 'center',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        } },
+                        [
+                            span({
+                                class: 'fa fa-sign-in fa-2x',
+                                style: {
+                                    marginRight: '10px',
+                                    verticalAlign: 'middle'
+                                }
+                            }),
+                            span(
+                                {
+                                    style: {
+                                        verticalAlign: 'middle'
+                                    },
+                                    dataKBTesthookLabel: 'signin'
+                                },
+                                'Sign In with ...'
+                            )
+                        ]),
+                        div(
+                            {
+                                style: {
+                                    marginBottom: '20px',
+                                    padding: '4px',
+                                    textAlign: 'left'
+                                }
+                            },
+                            [
+                                div(
+                                    {
+                                        style: {
+                                            width: '100%',
+                                            display: 'inline-block'
+                                        },
+                                        dataBind: {
+                                            foreach: 'providers'
+                                        }
+                                    },
+                                    div({
+                                        dataBind: {
+                                            component: {
+                                                name: SigninButtonComponent.quotedName(),
+                                                params: {
+                                                    provider: '$data',
+                                                    runtime: '$component.runtime',
+                                                    nextRequest: '$component.nextRequest',
+                                                    assetsPath: '$component.assetsPath',
+                                                    origin: '"login"'
+                                                }
+                                            }
+                                        }
+                                    })
+                                )
+                            ]
+                        )
+                    ]),
+                    div({
+                        style: {
+                            flex: '1 1 0px',
+                            position: 'relative'
+                        }
+                    }, [
+                        div({
+                            style: {
+                                textAlign: 'center',
+                                fontWeight: 'bold'
+                            }
+                        }, 'New to KBase?'),
+                        buildSignupButton(),
+                        div({
+                            style: {
+                                position: 'absolute',
+                                bottom: '0',
+                                left: '0',
+                                right: '0',
+                                display: 'flex',
+                                flexPosition: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }
+                        }, [
+                            // buildHelpButton()
+                            a({
+                                href: 'http://kbase.us/new-to-kbase',
+                                target: '_blank'
+                            }, 'Need Help?')
+                        ])
+                    ])
+                ])
+            ]
+        );
+    }
+
+    function buildLoginControlx() {
         return div(
             {
                 dataBind: {
@@ -171,7 +345,11 @@ define([
     function buildAuthorizationRequired() {
         return div({
             class: 'alert alert-danger',
-            role: 'alert'
+            role: 'alert',
+            style: {
+                maxWidth: '40em',
+                margin: '0 auto 20px auto'
+            }
         }, [
             div({
                 style: {
@@ -219,37 +397,37 @@ define([
                     div({
                         class: 'well well-kbase',
                         style: {
-                            maxWidth: '20em',
+                            width: '40em',
                             margin: '0 auto'
                         }
                     }, [
                         div({ class: 'login-form' }, [
-                            div({ style: {
-                                textAlign: 'center',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            } },
-                            [
-                                span({
-                                    class: 'fa fa-sign-in fa-2x',
-                                    style: {
-                                        marginRight: '10px',
-                                        verticalAlign: 'middle'
-                                    }
-                                }),
-                                span(
-                                    {
-                                        style: {
-                                            verticalAlign: 'middle'
-                                        },
-                                        dataKBTesthookLabel: 'signin'
-                                    },
-                                    'Sign In with ...'
-                                )
-                            ]),
+                            // div({ style: {
+                            //     textAlign: 'center',
+                            //     fontWeight: 'bold',
+                            //     display: 'flex',
+                            //     flexDirection: 'row',
+                            //     justifyContent: 'center',
+                            //     alignItems: 'center'
+                            // } },
+                            // [
+                            //     span({
+                            //         class: 'fa fa-sign-in fa-2x',
+                            //         style: {
+                            //             marginRight: '10px',
+                            //             verticalAlign: 'middle'
+                            //         }
+                            //     }),
+                            //     span(
+                            //         {
+                            //             style: {
+                            //                 verticalAlign: 'middle'
+                            //             },
+                            //             dataKBTesthookLabel: 'signin'
+                            //         },
+                            //         'Sign In with ...'
+                            //     )
+                            // ]),
                             buildAuthControl()
                         ])
                     ])
