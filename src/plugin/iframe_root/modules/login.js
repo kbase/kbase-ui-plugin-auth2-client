@@ -56,9 +56,9 @@ define([
                                 }
                             }),
                             div({
-                                class: 'Title',
                                 style: {
                                     fontSize: '200%',
+                                    fontWeight: 'bold',
                                     marginLeft: '10px',
                                     color: 'rgba(50, 50, 50, 1)'
                                 }

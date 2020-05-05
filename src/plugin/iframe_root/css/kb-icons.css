@@ -1,6 +1,7 @@
 /* ICONS FROM NARRATIVE kbaseIcons.css */
 
 @charset "UTF-8";
+
 @font-face {
     font-family: "kbase-icons";
     src: url("icons/custom_icons/kbase-icons.eot");
@@ -64,10 +65,6 @@
     content: "f";
 }
 
-.icon-md:before {
-    /* font-size: 16pt; */
-}
-
 
 /* Nudge the data icon a bit to the left or right */
 
@@ -81,8 +78,4 @@
 
 .kb-data-icon-unudge {
     margin-bottom: 0.5em;
-}
-
-.kb-data-icon-dnudge {
-    /* margin-top: 0.5em; */
 }
