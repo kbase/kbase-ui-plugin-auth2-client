@@ -11,6 +11,7 @@ define([
     const t = html.tag,
         img = t('img'),
         p = t('p'),
+        h1 = t('h1'),
         div = t('div');
 
     function factory(config) {
@@ -55,9 +56,8 @@ define([
                                     height: '50px'
                                 }
                             }),
-                            div({
+                            h1({
                                 style: {
-                                    fontSize: '200%',
                                     fontWeight: 'bold',
                                     marginLeft: '10px',
                                     color: 'rgba(50, 50, 50, 1)'

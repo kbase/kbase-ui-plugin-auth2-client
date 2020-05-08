@@ -10,12 +10,13 @@ specs:
       - action: navigate
         path: login
       - subtask: plugin
-      - wait: forElement
-        selector:
-          - type: component
-            value: login-view
-          - type: element
-            value: signin
+      # - wait: forElement
+      #   selector:
+      #     - type: component
+      #       value: login-view
+      #     - type: button
+      #       value: signin
+      # - action: click
       - wait: forElement
         selector:
           - type: component
@@ -24,6 +25,14 @@ specs:
               value: signin-button
             - type: name
               value: google
+      - wait: forElement
+        selector:
+          - type: component
+            value: login-view
+          - - type: component
+              value: signin-button
+            - type: name
+              value: orcid
       - wait: forElement
         selector:
           - type: component
