@@ -51,13 +51,9 @@ define([
             if (run) {
                 return value;
             }
-            try {
-                value = fun.apply(null, arguments);
-                run = true;
-                return value;
-            } catch (ex) {
-                throw ex;
-            }
+            value = fun.apply(null, arguments);
+            run = true;
+            return value;
         };
     }
 
@@ -74,9 +70,18 @@ define([
         });
 
         // TODO: extra cookies!
+        const extraCookies = [];
+        const sessionConfig = runtime.config('ui.services.session');
+        if (sessionConfig.cookie.backup.enabled) {
+            this.extraCookies.push({
+                name: sessionConfig.cookie.backup.name,
+                domain: sessionConfig.cookie.backup.domain
+            });
+        }
+
         var auth2Session = new MAuth2Session.Auth2Session({
-            cookieName: runtime.config('services.auth2.cookieName'),
-            extraCookies: [],
+            cookieName: sessionConfig.cookie.name,
+            extraCookies: extraCookies,
             baseUrl: runtime.config('services.auth2.url'),
             providers: runtime.config('services.auth2.providers')
         });
@@ -507,44 +512,45 @@ define([
         signupState('incomplete');
 
         function createProfile(response) {
-            return auth2Client.getMe(response.token.token).then(function (accountInfo) {
-                var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
-                    token: response.token.token
-                });
-                var newProfile = {
-                    user: {
-                        username: accountInfo.user,
-                        realname: realname()
-                    },
-                    profile: {
-                        metadata: {
-                            createdBy: 'userprofile_ui_service',
-                            created: new Date().toISOString()
-                        },
-                        // was globus info, no longer used
-                        account: {},
-                        preferences: {},
-                        // when auto-creating a profile, there is nothing to put here het.
-                        userdata: {
-                            // title: role(),
-                            organization: organization(),
-                            department: department()
-                        }
-                    }
-                };
-                return userProfileClient
-                    .set_user_profile({
-                        profile: newProfile
-                    })
-                    .catch(function (err) {
-                        if (err.status === 500) {
-                            // TODO: return fancy error.
-                            throw new Error('Profile creation failed: ' + err.error.message);
-                        } else {
-                            throw err;
-                        }
+            return auth2Client.getMe(response.token.token)
+                .then(function (accountInfo) {
+                    var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
+                        token: response.token.token
                     });
-            });
+                    var newProfile = {
+                        user: {
+                            username: accountInfo.user,
+                            realname: realname()
+                        },
+                        profile: {
+                            metadata: {
+                                createdBy: 'userprofile_ui_service',
+                                created: new Date().toISOString()
+                            },
+                            // was globus info, no longer used
+                            account: {},
+                            preferences: {},
+                            // when auto-creating a profile, there is nothing to put here het.
+                            userdata: {
+                            // title: role(),
+                                organization: organization(),
+                                department: department()
+                            }
+                        }
+                    };
+                    return userProfileClient
+                        .set_user_profile({
+                            profile: newProfile
+                        })
+                        .catch(function (err) {
+                            if (err.status === 500) {
+                            // TODO: return fancy error.
+                                throw new Error('Profile creation failed: ' + err.error.message);
+                            } else {
+                                throw err;
+                            }
+                        });
+                });
         }
 
         function submitSignup() {
@@ -1375,7 +1381,7 @@ define([
                 },
                 BS.buildPanel({
                     type: 'success',
-                    title: 'KBase Account Successfuly Created',
+                    title: 'KBase Account Successfully Created',
                     body: div([
                         p('Your new KBase account has been created and is ready to be used.'),
                         div([
