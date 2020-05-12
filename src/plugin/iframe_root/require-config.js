@@ -39,8 +39,6 @@
             bootstrap_css: 'vendor/bootstrap/css/bootstrap',
             css: 'vendor/require-css/css',
             font_awesome: 'vendor/font-awesome/css/font-awesome',
-            highlight_css: 'vendor/highlightjs/default',
-            highlight: 'vendor/highlightjs/highlight.pack',
             jquery: 'vendor/jquery/jquery',
             'js-yaml': 'vendor/js-yaml/js-yaml',
             kb_common: 'vendor/kbase-common-js',
