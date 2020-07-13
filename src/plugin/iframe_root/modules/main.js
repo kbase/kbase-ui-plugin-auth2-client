@@ -84,13 +84,7 @@ require([
             })
             .then((dispatcher) => {
                 window.clearTimeout(loadingTimer);
-                integration.onNavigate(({ path, params }) => {
-                    let view;
-                    if (params.view) {
-                        view = params.view;
-                    } else {
-                        view = path[0];
-                    }
+                integration.onNavigate(({ path, params, view }) => {
                     dispatcher.dispatch({ view, path, params });
                 });
                 integration.started();
