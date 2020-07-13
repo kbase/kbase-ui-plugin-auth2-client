@@ -6,3 +6,5 @@ dist
 # during development, e.g. refactored away, but for convenience you don't 
 # want to delete them only to have to restore them.
 _attic
+
+vendor/
