@@ -1,76 +1,68 @@
 ## YAML Template.
 ---
 package:
-  author: Erik Pearson
   name: auth2-client
   description: Auth2 client plugin
-  date: Feb 14, 2017
-source:
-  modules:
-  styles:
-    # - file: main.css
-install:
-  routes:
-    - path: [auth2, account]
-      params:
+services:
+  route:
+    routes:
+      - path: auth2/account
         view: account
-      queryParams:
-        tab: {}
-      widget: kb_iframe_loader
-      authorization: true
-      reentrant: false
-    - path: [account]
-      params:
+        queryParams:
+          tab: {}
+        authorization: true
+        reentrant: false
+      - path: account
         view: account
-      queryParams:
-        tab: {}
-      widget: kb_iframe_loader
-      authorization: true
-      reentrant: false
-    - path: [auth2, signedout]
-      widget: kb_iframe_loader
-      authorization: false
-      reentrant: false
-      queryParams:
-        path: { literal: ["signedout"] }
-    - path: [auth2, login, continue]
-      widget: kb_iframe_loader
-      authorization: false
-      queryParams:
-        path: { literal: [loginContinue] }
-        nextrequest: {}
-        in-process-login-token: {}
-    - path: [login]
-      widget: kb_iframe_loader
-      authorization: false
-      reentrant: false
-      queryParams:
-        path: { literal: [login] }
-        nextrequest: {}
-        source: {}
-    - path: [auth2, link, continue]
-      widget: kb_iframe_loader
-      authorization: false
-      queryParams:
-        path: { literal: [linkContinue] }
-        in-process-link-token: {}
-    - path: [auth2, { type: "rest", name: "path" }]
-      widget: kb_iframe_loader
-      authorization: true
-      reentrant: true
-      queryParams:
-        tab: {}
-    - path: [signup, { type: param, name: step, optional: true }]
-      widget: kb_iframe_loader
-      authorization: false
-      reentrant: false
-      queryParams:
-        path: { literal: ["signup"] }
-        nextrequest: {}
+        queryParams:
+          tab: {}
+        authorization: true
+        reentrant: false
+      - path: auth2/signedout
+        view: signedout
+        authorization: false
+        reentrant: false
+        queryParams:
+          path: {literal: ["signedout"]}
+      - path: auth2/login/continue
+        view: loginContinue
+        authorization: false
+        queryParams:
+          path: {literal: [loginContinue]}
+          nextrequest: {}
+          in-process-login-token: {}
+      - path: login
+        view: login
+        authorization: false
+        reentrant: false
+        queryParams:
+          path: {literal: [login]}
+          nextrequest: {}
+          source: {}
+      - path: auth2/link/continue
+        view: linkContinue
+        widget: kb_iframe_loader
+        authorization: false
+        queryParams:
+          path: {literal: [linkContinue]}
+          in-process-link-token: {}
+      # - path: [auth2, {type: "rest", name: "path"}]
+      #   view:
+      #   authorization: true
+      #   reentrant: true
+      #   queryParams:
+      #     tab: {}
+      - path: signup/:-step
+        view: signup
+        authorization: false
+        reentrant: false
+        queryParams:
+          path: {literal: ["signup"]}
+          nextrequest: {}
 
-    # - path: [auth2, interrupted]
-    #   widget: auth2_interrupted
-    #   authorization: false
+      # - path: [auth2, interrupted]
+      #   widget: auth2_interrupted
+      #   authorization: false
   menu:
     - name: account
       path: [auth2, account]

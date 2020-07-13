@@ -5,7 +5,11 @@ define([
 
     // for effect
     'bootstrap'
-], function (ko, html, LoginViewComponent) {
+], function (
+    ko,
+    html,
+    LoginViewComponent
+) {
     'use strict';
 
     const t = html.tag,
@@ -107,9 +111,9 @@ define([
                 ]);
                 ko.applyBindings(
                     {
-                        runtime: runtime,
-                        nextRequest: nextRequest,
-                        source: source
+                        runtime,
+                        nextRequest,
+                        source
                     },
                     container
                 );

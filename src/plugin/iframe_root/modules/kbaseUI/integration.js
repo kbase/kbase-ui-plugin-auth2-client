@@ -43,36 +43,29 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             if (this.navigationListeners.length === 1) {
                 const queue = this.navigationQueue;
                 this.navigationQueue = [];
-                queue.forEach(({ path, params }) => {
+                queue.forEach(({ path, params, view }) => {
                     this.navigationListeners.forEach((listener) => {
-                        listener({ path, params });
+                        listener({ path, params, view });
                     });
                 });
             }
         }
 
-        handleNavigation({ path, params }) {
+        handleNavigation({ path, params, view }) {
             // If no listeners yet, queue up the navigation.
             if (this.navigationListeners.length === 0) {
-                this.navigationQueue.push({ path, params });
+                this.navigationQueue.push({ path, params, view });
             } else {
                 this.navigationListeners.forEach((listener) => {
-                    listener({ path, params });
+                    listener({ path, params, view });
                 });
             }
         }
 
         setupListeners() {
             this.channel.on('navigate', (message) => {
-                const { path, params } = message;
-
-                // TODO: proper routing to error page
-                if ((!path || path.length === 0) && !params.view) {
-                    alert('no view provided...');
-                    return;
-                }
-
-                this.handleNavigation({ path, params });
+                const { path, params, view } = message;
+                this.handleNavigation({ path, params , view });
             });
         }
 

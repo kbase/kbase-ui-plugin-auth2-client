@@ -131,7 +131,7 @@ define([
         return div(
             {
                 dataBind: {
-                    ifnot: 'authorized'
+                    ifnot: 'authenticated'
                 }
             },
             [
@@ -261,7 +261,7 @@ define([
         return div(
             {
                 dataBind: {
-                    ifnot: 'authorized'
+                    ifnot: 'authenticated'
                 },
                 style: {
                     display: 'inline-block'
@@ -401,11 +401,8 @@ define([
         const nextRequest = params.nextRequest;
         const source = params.source;
         const docs = runtime.config('resources.documentation');
-
-        const authorized = runtime.service('session').isAuthorized();
-
+        const authenticated = runtime.service('session').isAuthorized();
         const username = runtime.service('session').getUsername();
-
         const providers = new provider.Providers({ runtime: runtime }).get();
 
         const auth2Client = new auth2.Auth2({
@@ -452,6 +449,8 @@ define([
 
         const authRequired = ko.observable(false);
 
+        console.log('source?', source);
+
         if (source === 'authorization') {
             authRequired(true);
         }
@@ -463,7 +462,7 @@ define([
             source,
             docs,
             providers,
-            authorized,
+            authenticated,
             username,
             doSignup,
             doSetSigninMode,
