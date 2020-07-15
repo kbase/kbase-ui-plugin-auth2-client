@@ -20,8 +20,8 @@ define([
     auth2,
     config,
     provider,
-    SigninButtonComponent)
-{
+    SigninButtonComponent
+) {
     'use strict';
 
     const t = html.tag,
@@ -72,55 +72,6 @@ define([
                             }
                         },
                         ' Sign Up'
-                    )
-                ]
-            )
-        );
-    }
-
-    function buildHelpButton() {
-        return a(
-            {
-                dataKBTesthookButton: 'signup',
-                class: 'btn btn-default',
-                style: {
-                    textAlign: 'center',
-                    marginTop: '10px',
-                    // Note: set as same width as sign-in buttons.
-                    width: '180px'
-                },
-                dataBind: {
-                    click: 'doSignup',
-                    attr: {
-                        'data-control': '"signup-button"'
-                    }
-                },
-                target: '_blank',
-                href: 'http://kbase.us/new-to-kbase'
-            },
-            div(
-                {
-                    style: {
-                        display: 'inline-block',
-                        textAlign: 'left',
-                        fontWeight: 'bold',
-                        verticalAlign: 'middle'
-                    }
-                },
-                [
-                    span({
-                        class: 'fa fa-question-circle fa-2x',
-                        style: {
-                            verticalAlign: 'middle'
-                        }
-                    }),
-                    span(
-                        {
-                            style: {
-                                verticalAlign: 'middle'
-                            }
-                        },
-                        ' Need Help?'
                     )
                 ]
             )
@@ -257,85 +208,6 @@ define([
         );
     }
 
-    function buildLoginControlx() {
-        return div(
-            {
-                dataBind: {
-                    ifnot: 'authenticated'
-                },
-                style: {
-                    display: 'inline-block'
-                }
-            },
-            [
-                div(
-                    {
-                        class: 'xbtn-group-vertical',
-                        style: {
-                            width: '100%'
-                        }
-                    },
-                    [
-                        div(
-                            div(
-                                {
-                                    style: {
-                                        marginBottom: '20px',
-                                        padding: '4px',
-                                        textAlign: 'left'
-                                    }
-                                },
-                                [
-                                    div(
-                                        {
-                                            style: {
-                                                width: '100%',
-                                                display: 'inline-block'
-                                            },
-                                            dataBind: {
-                                                foreach: 'providers'
-                                            }
-                                        },
-                                        div({
-                                            dataBind: {
-                                                component: {
-                                                    name: SigninButtonComponent.quotedName(),
-                                                    params: {
-                                                        provider: '$data',
-                                                        runtime: '$component.runtime',
-                                                        nextRequest: '$component.nextRequest',
-                                                        assetsPath: '$component.assetsPath',
-                                                        origin: '"login"'
-                                                    }
-                                                }
-                                            }
-                                        })
-                                    )
-                                ]
-                            )
-                        ),
-                        div({
-                            style: {
-                                textAlign: 'center',
-                                fontWeight: 'bold'
-                            }
-                        }, 'New to KBase?'),
-                        buildSignupButton()
-                    ]
-                ),
-                div({
-                    style: {
-                        marginTop: '2em'
-                    }
-                }, [
-                    a({
-                        href: 'http://kbase.us/new-to-kbase'
-                    }, 'Need Help?')
-                ])
-            ]
-        );
-    }
-
     function buildAuthorizationRequired() {
         return div({
             class: 'alert alert-danger',
@@ -448,8 +320,6 @@ define([
         }
 
         const authRequired = ko.observable(false);
-
-        console.log('source?', source);
 
         if (source === 'authorization') {
             authRequired(true);

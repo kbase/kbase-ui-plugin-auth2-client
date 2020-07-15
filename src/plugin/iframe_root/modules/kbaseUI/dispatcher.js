@@ -68,7 +68,7 @@ define(['require'], (require) => {
                 return;
             }
 
-            if (this.currentPanel && this.currentPanel.view === view) {
+            if (this.currentPanel && this.currentPanel.view === view && this.currentPanel.widget.run) {
                 return this.currentPanel.widget.run(params);
             }
 
