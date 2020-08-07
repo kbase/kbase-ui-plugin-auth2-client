@@ -198,7 +198,7 @@ define([
                         }, [
                             // buildHelpButton()
                             a({
-                                href: 'http://kbase.us/new-to-kbase',
+                                href: 'https://www.kbase.us/support',
                                 target: '_blank'
                             }, 'Need Help?')
                         ])
