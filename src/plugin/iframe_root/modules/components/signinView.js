@@ -193,16 +193,7 @@ define([
                             }
                         })
                     ]),
-                    ', you should log in through Globus using Globus ID. ',
-                    'Please consult our ',
-                    a(
-                        {
-                            href: 'http://kbase.us/auth-update-2017',
-                            target: '_blank'
-                        },
-                        'sign-in and account update announcement '
-                    ),
-                    ' for further information.'
+                    ', you should log in through Globus using Globus ID. '
                 ]),
                 p([
                     'Or you may simply have chosen the wrong account to sign in with. ',
@@ -220,7 +211,7 @@ define([
                     'please ',
                     a(
                         {
-                            href: 'http://kbase.us/contact'
+                            href: 'https://www.kbase.us/support'
                         },
                         'contact us'
                     ),
