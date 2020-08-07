@@ -69,19 +69,9 @@ define([
             baseUrl: runtime.config('services.auth.url')
         });
 
-        // TODO: extra cookies!
-        const extraCookies = [];
-        const sessionConfig = runtime.config('ui.services.session');
-        if (sessionConfig.cookie.backup.enabled) {
-            extraCookies.push({
-                name: sessionConfig.cookie.backup.name,
-                domain: sessionConfig.cookie.backup.domain
-            });
-        }
-
         var auth2Session = new MAuth2Session.Auth2Session({
-            cookieName: sessionConfig.cookie.name,
-            extraCookies,
+            cookieName: runtime.config('ui.services.session.cookie.name'),
+            extraCookies: [],
             baseUrl: runtime.config('services.auth2.url'),
             providers: runtime.config('services.auth2.providers')
         });

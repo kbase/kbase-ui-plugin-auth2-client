@@ -520,18 +520,9 @@ define([
         });
 
         function doSigninSubmit() {
-            // just get the first, since we only have one now.
-            // TODO: get extra cookies from plugin config.
-            var extraCookies = [];
-            // if (config.cookie.backup.enabled) {
-            //     extraCookies.push({
-            //         name: config.cookie.backup.name,
-            //         domain: config.cookie.backup.domain
-            //     });
-            // }
             var auth2Session = new MAuth2Session.Auth2Session({
-                cookieName: runtime.config('services.auth2.cookieName'),
-                extraCookies: extraCookies,
+                cookieName: runtime.config('ui.services.session.cookie.name'),
+                extraCookies: [],
                 baseUrl: runtime.config('services.auth2.url'),
                 providers: runtime.config('services.auth2.providers')
             });
