@@ -433,9 +433,10 @@ define([
         });
 
         var referralSources = ko.observableArray(referralSourceData);
+        var referralSourceCopy = 'How did you hear about us? (select all that apply)';
         var selectedReferralSources = ko.observableArray().extend({
-          required: true
-        });;
+            required: true,
+        });
 
         var allValid = ko.pureComputed(function () {
             var valid =
@@ -531,9 +532,18 @@ define([
                             userdata: {
                             // title: role(),
                                 organization: organization(),
-                                department: department()
-                            }
-                        }
+                                department: department(),
+                            },
+                            surveydata: {
+                                referralSources: {
+                                    question: referralSourceCopy,
+                                    response: referralSources.reduce((responses, source) => {
+                                        responses[source.id] = selectedReferralSources.indexOf(source.id) != -1;
+                                        return responses;
+                                    }, {}),
+                                },
+                            },
+                        },
                     };
                     return userProfileClient
                         .set_user_profile({
@@ -724,6 +734,7 @@ define([
             organizationDataSource: organizationDataSource,
             department: department,
             referralSources: referralSources,
+            referralSourceCopy: referralSourceCopy,
             selectedReferralSources:selectedReferralSources,
             policiesToResolve: policiesToResolve,
             error: error,
@@ -1149,7 +1160,7 @@ define([
                     }
                 },
                 [
-                    label(['How did you hear about us? (select all that apply)', requiredIcon('selectedReferralSources')]),
+                    label([span({ dataBind: { text: 'referralSourceCopy' } }) , requiredIcon('selectedReferralSources')]),
                     div({
                         class: 'text-danger',
                         style: {
