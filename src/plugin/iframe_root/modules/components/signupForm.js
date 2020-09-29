@@ -12,7 +12,8 @@ define([
     '../lib/dataSource',
     './policyResolver',
     './typeaheadInput',
-    './errorView'
+    './errorView',
+    'yaml!../../resources/data/referralSources.yaml',
 ], function (
     ko,
     reg,
@@ -27,7 +28,8 @@ define([
     DataSource,
     PolicyResolverComponent,
     TypeaheadInputComponent,
-    ErrorViewComponent
+    ErrorViewComponent,
+    referralSourceData
 ) {
     'use strict';
 
@@ -430,6 +432,12 @@ define([
             validationFieldBorder: true
         });
 
+        var referralSources = ko.observableArray(referralSourceData);
+        var referralSourceCopy = 'How did you hear about us? (select all that apply)';
+        var selectedReferralSources = ko.observableArray().extend({
+            required: true,
+        });
+
         var allValid = ko.pureComputed(function () {
             var valid =
                 realname.isValid() &&
@@ -524,9 +532,18 @@ define([
                             userdata: {
                             // title: role(),
                                 organization: organization(),
-                                department: department()
-                            }
-                        }
+                                department: department(),
+                            },
+                            surveydata: {
+                                referralSources: {
+                                    question: referralSourceCopy,
+                                    response: referralSources().reduce((responses, source) => {
+                                        responses[source.id] = selectedReferralSources().indexOf(source.id) != -1;
+                                        return responses;
+                                    }, {}),
+                                },
+                            },
+                        },
                     };
                     return userProfileClient
                         .set_user_profile({
@@ -716,6 +733,9 @@ define([
             organization: organization,
             organizationDataSource: organizationDataSource,
             department: department,
+            referralSources: referralSources,
+            referralSourceCopy: referralSourceCopy,
+            selectedReferralSources:selectedReferralSources,
             policiesToResolve: policiesToResolve,
             error: error,
 
@@ -1127,6 +1147,50 @@ define([
         };
     });
 
+    var buildReferralField = memoize(function () {
+        return {
+            field: div(
+                {
+                    class: 'form-group',
+                    style: {
+                        padding: '2px',
+                    },
+                    dataBind: {
+                        class: 'selectedReferralSources.validationFieldBorder'
+                    }
+                },
+                [
+                    label([span({ dataBind: { text: 'referralSourceCopy' } }) , requiredIcon('selectedReferralSources')]),
+                    div({
+                        class: 'text-danger',
+                        style: {
+                            padding: '4px',
+                        },
+                        dataBind: {
+                            validationMessage: 'selectedReferralSources'
+                        }
+                    }),
+                    '<!-- ko foreach: referralSources -->',
+                    div({class:"checkbox"},
+                    [
+                        label([
+                            input({
+                                type: 'checkbox',
+                                dataBind: {
+                                    checkedValue: '$data.id',
+                                    checked: '$component.selectedReferralSources',
+                                },
+                            }),
+                            span({ dataBind: { text: '$data.name' } }),
+                        ])
+                    ]),
+                    '<!-- /ko -->'
+                ]
+            ),
+            info: '',
+        };
+    });
+
     function buildSignupForm() {
         return div(
             {
@@ -1269,6 +1333,25 @@ define([
                                                 class: 'col-md-5'
                                             },
                                             buildDepartmentField().field
+                                        ),
+                                        div({
+                                            class: 'col-md-7',
+                                            style: {
+                                                paddingTop: '20px'
+                                            }
+                                        })
+                                    ]
+                                ),
+                                div(
+                                    {
+                                        class: 'row'
+                                    },
+                                    [
+                                        div(
+                                            {
+                                                class: 'col-md-5'
+                                            },
+                                            buildReferralField().field
                                         ),
                                         div({
                                             class: 'col-md-7',
