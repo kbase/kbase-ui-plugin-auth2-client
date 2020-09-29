@@ -537,8 +537,8 @@ define([
                             surveydata: {
                                 referralSources: {
                                     question: referralSourceCopy,
-                                    response: referralSources.reduce((responses, source) => {
-                                        responses[source.id] = selectedReferralSources.indexOf(source.id) != -1;
+                                    response: referralSources().reduce((responses, source) => {
+                                        responses[source.id] = selectedReferralSources().indexOf(source.id) != -1;
                                         return responses;
                                     }, {}),
                                 },
