@@ -44,6 +44,7 @@ define([
         label = t('label'),
         button = t('button'),
         form = t('form'),
+        small = t('small'),
         input = t('input');
 
     function memoize(fun) {
@@ -432,11 +433,31 @@ define([
             validationFieldBorder: true
         });
 
-        var referralSources = ko.observableArray(referralSourceData);
-        var referralSourceCopy = 'How did you hear about us? (select all that apply)';
+        var referralSourceCopy = 'How did you hear about us?';
         var selectedReferralSources = ko.observableArray().extend({
             required: true,
         });
+        var referralSources = ko.observableArray(
+            referralSourceData
+                .filter((sourceData) => sourceData.active)
+                .map((sourceData) => {
+                    var source = {
+                        name: sourceData.name,
+                        id: sourceData.id,
+                        textinput: sourceData.textinput,
+                        selected: ko.computed(() => selectedReferralSources.indexOf(sourceData.id) != -1),
+                    };
+                    if (source.textinput) {
+                        source.value = ko.observable().extend({
+                            required: {
+                                onlyIf: source.selected,
+                                message: 'This field is required when checked.',
+                            },
+                        });
+                    }
+                    return source;
+                })
+        );
 
         var allValid = ko.pureComputed(function () {
             var valid =
@@ -538,7 +559,11 @@ define([
                                 referralSources: {
                                     question: referralSourceCopy,
                                     response: referralSources().reduce((responses, source) => {
-                                        responses[source.id] = selectedReferralSources().indexOf(source.id) != -1;
+                                        if (source.selected() && source.textinput) {
+                                            responses[source.id] = source.value() || '';
+                                        } else {
+                                            responses[source.id] = source.selected();
+                                        }
                                         return responses;
                                     }, {}),
                                 },
@@ -1156,23 +1181,26 @@ define([
                         padding: '2px',
                     },
                     dataBind: {
-                        class: 'selectedReferralSources.validationFieldBorder'
-                    }
+                        class: 'selectedReferralSources.validationFieldBorder',
+                    },
                 },
                 [
-                    label([span({ dataBind: { text: 'referralSourceCopy' } }) , requiredIcon('selectedReferralSources')]),
+                    label([
+                        span({ dataBind: { text: 'referralSourceCopy' } }),
+                        requiredIcon('selectedReferralSources'),
+                    ]),
+                    p([small(['(select all that apply)'])]),
                     div({
                         class: 'text-danger',
                         style: {
                             padding: '4px',
                         },
                         dataBind: {
-                            validationMessage: 'selectedReferralSources'
-                        }
+                            validationMessage: 'selectedReferralSources',
+                        },
                     }),
                     '<!-- ko foreach: referralSources -->',
-                    div({class:"checkbox"},
-                    [
+                    div({ class: 'checkbox' }, [
                         label([
                             input({
                                 type: 'checkbox',
@@ -1182,9 +1210,33 @@ define([
                                 },
                             }),
                             span({ dataBind: { text: '$data.name' } }),
-                        ])
+                            '<!-- ko if: $data.textinput -->',
+                            ' ',
+                            div({
+                                class: 'text-danger',
+                                style: {
+                                    padding: '4px',
+                                },
+                                dataBind: {
+                                    validationMessage: '$data.value',
+                                },
+                            }),
+                            div({ class: 'form-inline' }, [
+                                input({
+                                    class: 'form-control',
+                                    placeholder: 'Please specify',
+                                    dataBind: {
+                                        class: '$data.value.validationFieldBorder',
+                                        visible: '$data.selected',
+                                        textInput: '$data.value',
+                                    },
+                                }),
+                                span({ dataBind: { visible: '$data.selected' } }, [requiredIcon('$data.value')]),
+                            ]),
+                            '<!-- /ko -->',
+                        ]),
                     ]),
-                    '<!-- /ko -->'
+                    '<!-- /ko -->',
                 ]
             ),
             info: '',
