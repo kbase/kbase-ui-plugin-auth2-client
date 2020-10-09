@@ -1,23 +1,47 @@
 # Refferal Sources for HDYHAU Question
 ---
 -
-  name: Journal Publication
-  id: journal-publication
--
-  name: Workshop/Webinar
-  id: workshop-webinar
+  name: Journal Publication # Text to show user
+  id: journal-publication # fixed id in collected response
+  active: true # set to false to hide deprecated/removed responses from users
 -
   name: Conference Presentation
   id: conference-presentation
+  active: true
 -
-  name: Search Engine
-  id: search-engine
--
-  name: Online Advertisement
-  id: online-ad
+  name: Workshop/Webinar
+  id: workshop-webinar
+  active: true
 -
   name: Colleague
   id: colleague
+  active: true
 -
-  name: Other
+  name: Course/Instructor
+  id: course
+  active: true
+-
+  name: Newsletter/Email
+  id: newsletter-email
+  active: true
+-
+  name: YouTube
+  id: youtube
+  active: true
+-
+  name: Twitter
+  id: twitter
+  active: true
+-
+  name: Search Engine
+  id: search-engine
+  active: true
+-
+  name: Online Advertisement
+  id: online-ad
+  active: true
+-
+  name: Other...
   id: other
+  active: true
+  textinput: true # setting textinput=true prompts the user with an open-ended text response when selected
