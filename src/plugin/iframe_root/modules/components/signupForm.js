@@ -433,15 +433,15 @@ define([
             validationFieldBorder: true
         });
 
-        var referralSourceCopy = 'How did you hear about us?';
-        var selectedReferralSources = ko.observableArray().extend({
+        const referralSourceCopy = 'How did you hear about us?';
+        const selectedReferralSources = ko.observableArray().extend({
             required: true,
         });
-        var referralSources = ko.observableArray(
+        const referralSources = ko.observableArray(
             referralSourceData
                 .filter((sourceData) => sourceData.active)
                 .map((sourceData) => {
-                    var source = {
+                    const source = {
                         name: sourceData.name,
                         id: sourceData.id,
                         textinput: sourceData.textinput,
@@ -1181,8 +1181,8 @@ define([
                         padding: '2px',
                     },
                     dataBind: {
-                        class: 'selectedReferralSources.validationFieldBorder',
-                    },
+                        class: 'selectedReferralSources.validationFieldBorder'
+                    }
                 },
                 [
                     label([
