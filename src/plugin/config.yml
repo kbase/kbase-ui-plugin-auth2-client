@@ -6,68 +6,38 @@ package:
 services:
   route:
     routes:
-      - path: auth2/account
+      - path: auth2/account?:-tab
         view: account
-        queryParams:
-          tab: {}
         authorization: true
         reentrant: false
-      - path: account
+      - path: account?:-tab
         view: account
-        queryParams:
-          tab: {}
         authorization: true
         reentrant: false
       - path: auth2/signedout
         view: signedout
         authorization: false
         reentrant: false
-        queryParams:
-          path: {literal: ["signedout"]}
-      - path: auth2/login/continue
+      - path: auth2/login/continue?:-nextrequest&:-in-process-login-token
         view: loginContinue
         authorization: false
-        queryParams:
-          path: {literal: [loginContinue]}
-          nextrequest: {}
-          in-process-login-token: {}
-      - path: login
+      - path: login?:-nextrequest&:-source
         view: login
         authorization: false
         reentrant: false
-        queryParams:
-          path: {literal: [login]}
-          nextrequest: {}
-          source: {}
-      - path: auth2/link/continue
+      - path: auth2/link/continue?:-in-process-link-token
         view: linkContinue
-        widget: kb_iframe_loader
         authorization: false
-        queryParams:
-          path: {literal: [linkContinue]}
-          in-process-link-token: {}
-      # - path: [auth2, {type: "rest", name: "path"}]
-      #   view:
-      #   authorization: true
-      #   reentrant: true
-      #   queryParams:
-      #     tab: {}
-      - path: signup/:-step
+      - path: signup/:-step&:-nextrequest
         view: signup
         authorization: false
         reentrant: false
-        queryParams:
-          path: {literal: ["signup"]}
-          nextrequest: {}
-
-      # - path: [auth2, interrupted]
-      #   widget: auth2_interrupted
-      #   authorization: false
   menu:
-    - name: account
-      path: [auth2, account]
-      label: Account
-      icon: drivers-license
+    items:
+      - name: account
+        path: auth2/account
+        label: Account
+        icon: drivers-license
   coreServices:
     dependencies:
       auth2:
