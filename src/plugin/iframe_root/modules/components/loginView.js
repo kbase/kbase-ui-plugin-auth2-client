@@ -235,7 +235,7 @@ define([
                     },
                     dataKBTesthookField: 'requested-path',
                     dataBind: {
-                        text: '$component.nextRequest.original'
+                        text: '$component.nextRequest.path.join("/");'
                     }
                 })
             ]),
