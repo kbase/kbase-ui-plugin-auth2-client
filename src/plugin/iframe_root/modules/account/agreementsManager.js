@@ -140,7 +140,7 @@ define([
             }, [
 
                 p([
-                    'This tab lists the Usage Policies you have agreed to during signup or signin to KBase.'
+                    'This tab lists the User Policies you have agreed to during signup or signin to KBase.'
                 ])
             ]);
         }
