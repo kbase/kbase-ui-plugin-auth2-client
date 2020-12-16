@@ -328,7 +328,7 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
             },
             BS.buildPanel({
                 type: 'default',
-                title: 'Agree to KBase User Policies',
+                title: 'Agree to KBase Use Policies',
                 class: 'kb-panel-light',
                 body: div([
                     div(
@@ -371,7 +371,7 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
                                 },
                                 [
                                     p([
-                                        'The following KBase User Agreements have been updated and you need to re-agree to them. '
+                                        'The following KBase Use Agreements have been updated and you need to re-agree to them. '
                                     ]),
                                     p([
                                         'You may log into this account after you have agreed to these policies by checking the box at the top of each.'
