@@ -99,7 +99,7 @@ define([
                     },
                     {
                         name: 'agreements',
-                        label: 'User Agreements',
+                        label: 'Use Agreements',
                         panel: {
                             class: AgreementsManager
                         }

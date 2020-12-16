@@ -1,19 +1,24 @@
-[{
+[
+    {
         "id": "kbase-user",
-        "title": "KBase User Agreement",
-        "versions": [{
-            "version": 1,
-            "file": "v1.md",
-            "date": "2015-01-01"
-        }]
+        "title": "KBase Use Agreement",
+        "versions": [
+            {
+                "version": 1,
+                "file": "v1.md",
+                "date": "2015-01-01"
+            }
+        ]
     },
     {
         "id": "data-policy",
         "title": "KBase Data Policy",
-        "versions": [{
-            "version": 1,
-            "file": "v1.md",
-            "date": "2015-01-01"
-        }]
+        "versions": [
+            {
+                "version": 1,
+                "file": "v1.md",
+                "date": "2015-01-01"
+            }
+        ]
     }
 ]
