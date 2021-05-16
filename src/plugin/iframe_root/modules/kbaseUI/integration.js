@@ -115,6 +115,12 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             this.channel.send('started', {});
         }
 
+        startError(error) {
+            this.channel.send('start-error', {
+                message: error.message
+            });
+        }
+
         start() {
             return new Promise((resolve, reject) => {
                 this.channel.start();
