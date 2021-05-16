@@ -9,7 +9,10 @@ require([
 ], (Promise, Integration, Dispatcher, knockoutLoader, pluginConfig) => {
     'use strict';
 
-    function well(message) {
+
+    const SHOW_LOADER_AFTER = 1000;
+
+    function loader(message) {
         // clone of bootstrap 3 'well' class.
         const style = {
             'border': '1px solid #e3e3e3',
@@ -19,18 +22,21 @@ require([
             'min-height': '20px',
             'max-width': '40em',
             'margin': '20px auto 0 auto',
-            'box-shadow': 'inset 0 1px 1px rgba(0, 0, 0, 0.05)'
+            'box-shadow': 'inset 0 1px 1px rgba(0, 0, 0, 0.05)',
+            display: 'flex',
+            'flex-direction': 'row',
+            'justify-content': 'center',
+            'align-items': 'center'
         };
         const styleString = Object.entries(style).map(([key, value]) => {
             return `${key}:${value};`;
         }).join(' ');
         return `
             <div style="${styleString}">
-            ${message}
+            ${message} <span class="fa fa-2x fa-spinner fa-pulse" />
             </div>
         `;
     }
-
 
     Promise.try(() => {
         const integration = new Integration({
@@ -43,7 +49,6 @@ require([
         // based on the navigation received from the parent context.
         let dispatcher = null;
         let loadingTimer = null;
-        const LOADING_TIME = 1000;
 
         return knockoutLoader
             .load()
@@ -60,8 +65,8 @@ require([
             .then(() => {
                 // place a loader.
                 loadingTimer = window.setTimeout(() => {
-                    document.getElementById('root').innerHTML = well('Loading Auth Plugin ...');
-                }, LOADING_TIME);
+                    rootNode.innerHTML = loader('Loading Auth Plugin ...');
+                }, SHOW_LOADER_AFTER);
 
 
                 // // This installs all widgets from the config file.
@@ -88,6 +93,9 @@ require([
                     dispatcher.dispatch({ view, path, params });
                 });
                 integration.started();
+            })
+            .catch((err) => {
+                integration.startError(err);
             });
     }).catch((err) => {
         console.error('ERROR', err);

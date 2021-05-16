@@ -3,8 +3,10 @@ bower_components
 dist
 
 # this directory is a good place to stash files you think you don't need
-# during development, e.g. refactored away, but for convenience you don't 
+# during development, e.g. refactored away, but for convenience you don't
 # want to delete them only to have to restore them.
 _attic
 
 vendor/
+
+.idea
