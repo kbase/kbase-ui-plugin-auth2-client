@@ -7,8 +7,7 @@ define(['bluebird', 'marked', 'kb_common_ts/HttpClient'], function (Promise, mar
         function getPolicyFile(arg) {
             var http = new M_HttpClient.HttpClient();
             var policyVersion = getPolicyVersion(arg.id, arg.version);
-            var agreementPath = [runtime.pluginResourcePath, 'agreements', arg.id, policyVersion.file].join('/');
-            var url = window.location.origin + '/' + agreementPath;
+            var url = [window.location.origin + runtime.pluginResourcePath, 'agreements', arg.id, policyVersion.file].join('/');
             return http
                 .request({
                     method: 'GET',
@@ -29,7 +28,7 @@ define(['bluebird', 'marked', 'kb_common_ts/HttpClient'], function (Promise, mar
         }
 
         function loadPolicies() {
-            var url = [window.location.origin, runtime.pluginResourcePath, 'agreements', 'policies.json'].join('/');
+            var url = [window.location.origin + runtime.pluginResourcePath, 'agreements', 'policies.json'].join('/');
             var http = new M_HttpClient.HttpClient();
             return http
                 .request({
@@ -147,7 +146,7 @@ define(['bluebird', 'marked', 'kb_common_ts/HttpClient'], function (Promise, mar
         }
 
         function stop() {
-            return Promise.try(function () {});
+            return Promise.try(function () { });
         }
 
         return {

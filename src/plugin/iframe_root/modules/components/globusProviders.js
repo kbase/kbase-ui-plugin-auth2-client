@@ -112,9 +112,7 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBuilders'
 
         function getGlobusProviders() {
             var http = new HttpClient.HttpClient();
-
-            var path = [runtime.pluginResourcePath, 'data', 'globus-providers.json'].join('/');
-            var url = window.location.origin + '/' + path;
+            var url = [window.location.origin + runtime.pluginResourcePath, 'data', 'globus-providers.json'].join('/');
 
             return http
                 .request({
