@@ -164,7 +164,7 @@ define([
                     doRedirect(params);
                 })
             );
-            runtime.send('ui', 'setTitle', 'KBase Sign In');
+            runtime.send('ui', 'setTitle', 'Sign In');
             return render(params);
         }
 
