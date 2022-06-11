@@ -1,38 +1,43 @@
-define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstrap'], function (
+define([
+    'kb_lib/html',
+    'kb_common_ts/Auth2',
+    'kb_common_ts/Auth2Error',
+    'lib/domUtils',
+
+    // for effect
+    'bootstrap'], (
     html,
     auth2,
-    Auth2Error
-) {
-    'use strict';
-
-    var t = html.tag,
+    Auth2Error,
+    {setInnerHTML}
+) => {
+    const t = html.tag,
         div = t('div'),
         img = t('img'),
         span = t('span'),
         button = t('button');
 
     function factory(config) {
-        var runtime = config.runtime;
+        const runtime = config.runtime;
 
-        var auth2Client = new auth2.Auth2({
+        const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
         });
-        var currentUserToken = runtime.service('session').getAuthToken();
 
         function doLogin(providerId, state) {
             auth2Client
                 .loginCancel()
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     // ignore this specific error...
                     if (err.code !== '10010') {
                         throw err;
                     }
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     // TODO: show error.
                     console.error('Skipping error', err);
                 })
-                .finally(function () {
+                .finally(() => {
                     //  don 't care whether it succeeded or failed.
                     return runtime.service('session').loginStart({
                         // TODO: this should be either the redirect url passed in
@@ -40,7 +45,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
                         // We just let the login page do this. When the login page is
                         // entered with a valid token, redirect to the nextrequest,
                         // and if that is empty, the dashboard.
-                        state: state,
+                        state,
                         provider: providerId
                     });
                 });
@@ -66,7 +71,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
                             }
                         },
                         img({
-                            src: runtime.pluginResourcePath + '/providers/' + provider.id.toLowerCase() + '/logo.png',
+                            src: `${runtime.pluginResourcePath  }/providers/${  provider.id.toLowerCase()  }/logo.png`,
                             style: {
                                 height: '24px'
                             }
@@ -84,7 +89,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
                     style: {
                         textAlign: 'center'
                     },
-                    id: events.addEvent('click', function () {
+                    id: events.addEvent('click', () => {
                         doLogin(provider.id, state);
                     })
                 },
@@ -100,7 +105,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
                     },
                     [
                         img({
-                            src: runtime.pluginResourcePath + '/providers/' + provider.id.toLowerCase() + '/logo.png',
+                            src: `${runtime.pluginResourcePath  }/providers/${  provider.id.toLowerCase()  }/logo.png`,
                             style: {
                                 height: '24px',
                                 marginRight: '10px',
@@ -127,7 +132,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
                     style: {
                         margin: '8px 0'
                     },
-                    id: events.addEvent('click', function () {
+                    id: events.addEvent('click', () => {
                         doLogin(provider.id, state);
                     })
                 },
@@ -136,8 +141,8 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
         }
 
         function parsePolicyAgreements(policyIds) {
-            return policyIds.map(function (policyId) {
-                var id = policyId.id.split('.');
+            return policyIds.map((policyId) => {
+                const id = policyId.id.split('.');
                 return {
                     id: id[0],
                     version: parseInt(id[1], 10),
@@ -147,23 +152,22 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
         }
 
         function buildTable(arg) {
-            var t = html.tag,
+            const t = html.tag,
                 table = t('table'),
                 thead = t('thead'),
                 tbody = t('tbody'),
                 tr = t('tr'),
                 th = t('th'),
-                td = t('td'),
-                id,
-                attribs;
+                td = t('td');
+            let id;
             arg = arg || {};
             if (arg.id) {
                 id = arg.id;
             } else {
                 id = html.genId();
-                arg.generated = { id: id };
+                arg.generated = {id};
             }
-            attribs = { id: id };
+            const attribs = {id};
             if (arg.class) {
                 attribs.class = arg.class;
             } else if (arg.classes) {
@@ -172,22 +176,22 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
             return table(attribs, [
                 thead(
                     tr(
-                        arg.columns.map(function (x) {
+                        arg.columns.map((x) => {
                             return th(x.label);
                         })
                     )
                 ),
                 tbody(
-                    arg.rows.map(function (row) {
+                    arg.rows.map((row) => {
                         return tr(
-                            row.map(function (x, index) {
-                                var col = arg.columns[index];
-                                var value = x;
+                            row.map((x, index) => {
+                                const col = arg.columns[index];
+                                let value = x;
                                 if (col.format) {
                                     try {
                                         value = col.format(x);
                                     } catch (ex) {
-                                        value = 'er: ' + ex.message;
+                                        value = `er: ${  ex.message}`;
                                     }
                                 }
                                 return td(value);
@@ -199,41 +203,41 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
         }
 
         function getTimeBias() {
-            var then = new Date().getTime();
-            return auth2Client.root().then(function (root) {
-                var now = new Date().getTime();
-                var serverBias = root.servertime - (now + then) / 2;
+            const then = new Date().getTime();
+            return auth2Client.root().then((root) => {
+                const now = new Date().getTime();
+                const serverBias = root.servertime - (now + then) / 2;
                 return serverBias;
             });
         }
 
         return {
-            buildLoginButton: buildLoginButton,
-            buildLoginButton2: buildLoginButton2,
-            parsePolicyAgreements: parsePolicyAgreements,
-            buildTable: buildTable,
-            getTimeBias: getTimeBias
+            buildLoginButton,
+            buildLoginButton2,
+            parsePolicyAgreements,
+            buildTable,
+            getTimeBias
         };
     }
 
     function ViewModel(config) {
-        var vm = config.model;
+        const vm = config.model;
         if (!vm) {
             throw new Error('The vm must be supplied in the "model" property');
         }
 
         function get(path) {
-            var l = path.split('.');
+            const l = path.split('.');
 
             function getPath(vm, p) {
-                var vmNode = vm[p[0]];
+                const vmNode = vm[p[0]];
                 if (vmNode) {
                     if (p.length > 1) {
                         if (vmNode.model) {
                             return getPath(vmNode.model, p.slice(1));
-                        } else {
-                            throw new Error('Path does not exist: ' + p.join('.'));
                         }
+                        throw new Error(`Path does not exist: ${  p.join('.')}`);
+
                     } else {
                         return vmNode;
                     }
@@ -243,7 +247,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
         }
 
         function getElement(containerOrPath, names) {
-            var container;
+            let container;
             if (typeof containerOrPath === 'string') {
                 container = get(containerOrPath).node;
             } else {
@@ -251,7 +255,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
             }
             if (!container) {
                 console.error('ERROR', containerOrPath, container);
-                throw new Error('Could not get vm node: ' + containerOrPath);
+                throw new Error(`Could not get vm node: ${  containerOrPath}`);
             }
             if (typeof names === 'string') {
                 names = names.split('.');
@@ -259,22 +263,22 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
             if (names.length === 0) {
                 return container;
             }
-            var selector = names
-                .map(function (name) {
-                    return '[data-element="' + name + '"]';
+            const selector = names
+                .map((name) => {
+                    return `[data-element="${  name  }"]`;
                 })
                 .join(' ');
 
-            var node = container.querySelector(selector);
+            const node = container.querySelector(selector);
 
             return node;
         }
 
         function bindVmNode(vmNode) {
             if (!vmNode.disabled && (vmNode.node === null || vmNode.node === undefined) && vmNode.id) {
-                var node = document.getElementById(vmNode.id);
+                const node = document.getElementById(vmNode.id);
                 if (node === null) {
-                    throw new Error('bind failed, node not found with id: ' + vmNode.id);
+                    throw new Error(`bind failed, node not found with id: ${  vmNode.id}`);
                 }
                 vmNode.node = node;
             }
@@ -282,7 +286,7 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
 
         function bindAll() {
             function bindModel(model) {
-                Object.keys(model).forEach(function (key) {
+                Object.keys(model).forEach((key) => {
                     bindVmNode(model[key]);
                     if (model[key].model) {
                         bindModel(model[key].model);
@@ -293,19 +297,19 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
         }
 
         function setHTML(vmPath, elementPath, content) {
-            var vmNode = get(vmPath);
+            const vmNode = get(vmPath);
             if (!vmNode) {
                 return;
             }
-            var domNode = getElement(vmNode.node, elementPath);
+            const domNode = getElement(vmNode.node, elementPath);
             if (!domNode) {
                 return;
             }
-            domNode.innerHTML = content;
+            setInnerHTML(domNode, content);
         }
 
         function bind(path) {
-            var vmNode = get(path);
+            const vmNode = get(path);
             if (!vmNode) {
                 return;
             }
@@ -313,29 +317,29 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
         }
 
         return {
-            bindAll: bindAll,
-            bind: bind,
-            get: get,
-            setHTML: setHTML,
-            getElement: getElement
+            bindAll,
+            bind,
+            get,
+            setHTML,
+            getElement
         };
     }
 
     function DeferUI() {
-        var deferred = [];
+        const deferred = [];
 
         function defer(fun) {
-            var id = html.genId();
+            const id = html.genId();
             deferred.push({
-                id: id,
-                fun: fun
+                id,
+                fun
             });
             return id;
         }
 
         function resolve() {
-            deferred.forEach(function (defer) {
-                var node = document.getElementById(defer.id);
+            deferred.forEach((defer) => {
+                const node = document.getElementById(defer.id);
                 try {
                     defer.fun(node);
                 } catch (ex) {
@@ -344,16 +348,16 @@ define(['kb_lib/html', 'kb_common_ts/Auth2', 'kb_common_ts/Auth2Error', 'bootstr
             });
         }
         return {
-            defer: defer,
-            resolve: resolve
+            defer,
+            resolve
         };
     }
 
     return {
-        make: function (config) {
+        make(config) {
             return factory(config);
         },
-        ViewModel: ViewModel,
-        DeferUI: DeferUI
+        ViewModel,
+        DeferUI
     };
 });

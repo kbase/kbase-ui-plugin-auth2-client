@@ -6,7 +6,8 @@ define([
     'kb_common/bootstrapUtils',
     'kb_service/client/userProfile',
     './components/userInfoEditor',
-    'kb_common_ts/Auth2'
+    'kb_common_ts/Auth2',
+    'lib/domUtils'
 ], (
     Promise,
     ko,
@@ -15,16 +16,15 @@ define([
     BS,
     UserProfileService,
     UserInfoEditorComponent,
-    auth2
+    auth2,
+    {setInnerHTML, clearInnerHTML}
 ) => {
-    'use strict';
-
     const t = html.tag,
         div = t('div'),
         p = t('p');
 
     class PersonalInfoManager {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.runtime = runtime;
             this.hostNode = null;
             this.container = null;
@@ -97,7 +97,7 @@ define([
                     created: account.created,
                     lastLogin: account.lastlogin,
                     username: account.user,
-                    doSave: ({ email, realname }) => {
+                    doSave: ({email, realname}) => {
                         const client = new UserProfileService(this.runtime.config('services.user_profile.url'), {
                             token: this.runtime.service('session').getAuthToken()
                         });
@@ -118,7 +118,7 @@ define([
                             return Promise.all([
                                 this.auth2.putMe(currentUserToken, meData),
                                 client.set_user_profile({
-                                    profile: profile
+                                    profile
                                 })
                             ]).then(() => {
                                 this.runtime.send('profile', 'reload');
@@ -126,7 +126,7 @@ define([
                         });
                     }
                 };
-                this.container.innerHTML = this.render();
+                setInnerHTML(this.container, this.render());
                 ko.applyBindings(this.vm, this.container);
             });
         }
@@ -139,7 +139,7 @@ define([
             return Promise.try(() => {
                 if (this.hostNode && this.container) {
                     this.hostNode.removeChild(this.container);
-                    this.hostNode.innerHTML = '';
+                    clearInnerHTML(this.hostNode);
                 }
             });
         }

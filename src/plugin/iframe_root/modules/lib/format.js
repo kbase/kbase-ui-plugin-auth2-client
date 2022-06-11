@@ -1,9 +1,7 @@
 define([
-], function () {
-    'use strict';
-
+], () => {
     function niceDuration(value, options) {
-        var defaultValue;
+        let defaultValue;
         options = options || {};
         if (typeof options === 'string') {
             defaultValue = options;
@@ -14,8 +12,8 @@ define([
         if (!value) {
             return defaultValue;
         }
-        var minimized = [];
-        var units = [{
+        let minimized = [];
+        const units = [{
             unit: 'millisecond',
             short: 'ms',
             single: 'm',
@@ -57,11 +55,11 @@ define([
         }
         ];
         // always start by rounding up to seconds.
-        var temp = Math.round(value / 1000) * 1000;
+        let temp = Math.round(value / 1000) * 1000;
         // var temp = value;
-        var parts = units
-            .map(function (unit) {
-                var unitValue;
+        const parts = units
+            .map((unit) => {
+                let unitValue;
                 if (unit.size) {
                     if (unit.max && temp <= unit.max) {
                         unitValue = temp;
@@ -81,8 +79,8 @@ define([
 
         parts.pop();
 
-        var keep = false;
-        var i;
+        let keep = false;
+        let i;
         for (i = 0; i < parts.length; i += 1) {
             if (!keep) {
                 if (parts[i].value > 0) {
@@ -95,7 +93,7 @@ define([
         }
         keep = false;
         if (options.trimEnd) {
-            var trimmed = [];
+            const trimmed = [];
             for (i = minimized.length - 1; i >= 0; i -= 1) {
                 if (!keep) {
                     if (minimized[i].value > 0) {
@@ -112,19 +110,19 @@ define([
         if (minimized.length === 0) {
             // This means that there is are no time measurements > 1 second.
             return '<1s';
-        } else {
-            // Skip seconds if we are into the hours...
-            if (minimized.length > 2) {
-                minimized.pop();
-            }
-            return minimized.map(function (item) {
-                return String(item.value) + item.name;
-            })
-                .join(' ');
         }
+        // Skip seconds if we are into the hours...
+        if (minimized.length > 2) {
+            minimized.pop();
+        }
+        return minimized.map((item) => {
+            return String(item.value) + item.name;
+        })
+            .join(' ');
+
     }
 
     return {
-        niceDuration: niceDuration
+        niceDuration
     };
 });

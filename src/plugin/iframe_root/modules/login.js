@@ -1,17 +1,17 @@
 define([
     'knockout',
     'kb_lib/html',
+    'lib/domUtils',
     './components/loginView',
 
     // for effect
     'bootstrap'
-], function (
+], (
     ko,
     html,
+    {setInnerHTML},
     LoginViewComponent
-) {
-    'use strict';
-
+) => {
     const t = html.tag,
         img = t('img'),
         p = t('p'),
@@ -19,26 +19,26 @@ define([
         div = t('div');
 
     function factory(config) {
-        var hostNode,
+        let hostNode,
             container,
-            runtime = config.runtime,
             nextRequest,
             source;
+        const runtime = config.runtime;
 
         const listeners = [];
 
         function showErrorMessage(message) {
-            container.innerHTML = div(
+            setInnerHTML(container, div(
                 {
                     class: 'alert alert-danger'
                 },
                 message
-            );
+            ));
         }
 
         function render() {
             try {
-                container.innerHTML = div({
+                setInnerHTML(container, div({
                     class: 'scrollable-flex-column'
                 }, [
                     div({
@@ -55,7 +55,7 @@ define([
                             }
                         }, [
                             img({
-                                src: runtime.pluginResourcePath + '/images/kbase-logo-99.png',
+                                src: `${runtime.pluginResourcePath  }/images/kbase-logo-99.png`,
                                 style: {
                                     height: '50px'
                                 }
@@ -108,7 +108,7 @@ define([
                     div({
                         class: 'Col'
                     })
-                ]);
+                ]));
                 ko.applyBindings(
                     {
                         runtime,
@@ -160,7 +160,7 @@ define([
                 return null;
             }
             listeners.push(
-                runtime.recv('session', 'loggedin', function () {
+                runtime.recv('session', 'loggedin', () => {
                     doRedirect(params);
                 })
             );
@@ -169,7 +169,7 @@ define([
         }
 
         function stop() {
-            listeners.forEach(function (listener) {
+            listeners.forEach((listener) => {
                 runtime.drop(listener);
             });
         }
@@ -189,7 +189,7 @@ define([
     }
 
     return {
-        make: function (config) {
+        make(config) {
             return factory(config);
         }
     };

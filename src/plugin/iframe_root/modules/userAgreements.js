@@ -1,18 +1,24 @@
-define(['bluebird', 'marked', 'kb_common_ts/HttpClient', './lib/utils', 'kb_common_ts/Auth2'], function (
+define([
+    'bluebird',
+    'marked',
+    'dompurify',
+    'kb_common_ts/HttpClient',
+    './lib/utils',
+    'kb_common_ts/Auth2'
+], (
     Promise,
     marked,
+    DOMPurify,
     M_HttpClient,
     Utils,
     auth2
-) {
-    'use strict';
-
+) => {
     function factory(config) {
-        var runtime = config.runtime;
-        var policies = null;
-        var userAgreements = null;
-        var utils = Utils.make({
-            runtime: runtime
+        const runtime = config.runtime;
+        let policies = null;
+        let userAgreements = null;
+        const utils = Utils.make({
+            runtime
         });
 
         const auth2Client = new auth2.Auth2({
@@ -21,56 +27,56 @@ define(['bluebird', 'marked', 'kb_common_ts/HttpClient', './lib/utils', 'kb_comm
         const currentUserToken = runtime.service('session').getAuthToken();
 
         function getPolicyFile(arg) {
-            var http = new M_HttpClient.HttpClient();
-            var policyVersion = getPolicyVersion(arg.id, arg.version);
-            var url = [window.location.origin + runtime.pluginResourcePath, 'agreements', arg.id, policyVersion.file].join('/');
+            const http = new M_HttpClient.HttpClient();
+            const policyVersion = getPolicyVersion(arg.id, arg.version);
+            const url = [window.location.origin + runtime.pluginResourcePath, 'agreements', arg.id, policyVersion.file].join('/');
             return http
                 .request({
                     method: 'GET',
-                    url: url
+                    url
                 })
-                .then(function (result) {
+                .then((result) => {
                     if (result.status === 200) {
                         try {
                             return marked(result.response);
                         } catch (ex) {
-                            throw new Error('Error formatting agreement file: ' + ex.message);
+                            throw new Error(`Error formatting agreement file: ${ex.message}`);
                         }
                     } else {
                         console.error('ERROR', result);
-                        throw new Error('Error fetching agreement: ' + result.status);
+                        throw new Error(`Error fetching agreement: ${result.status}`);
                     }
                 });
         }
 
         function loadPolicies() {
-            var url = [window.location.origin + runtime.pluginResourcePath, 'agreements', 'policies.json'].join('/');
-            var http = new M_HttpClient.HttpClient();
+            const url = [window.location.origin + runtime.pluginResourcePath, 'agreements', 'policies.json'].join('/');
+            const http = new M_HttpClient.HttpClient();
             return http
                 .request({
                     method: 'GET',
-                    url: url
+                    url
                 })
-                .then(function (result) {
+                .then((result) => {
                     if (result.status === 200) {
                         return JSON.parse(result.response);
-                    } else {
-                        throw new Error('Error fetching index: ' + result.status);
                     }
+                    throw new Error(`Error fetching index: ${  result.status}`);
+
                 });
         }
 
         function getLatestPolicies() {
-            return policies.map(function (policy) {
-                var latestVersionId = Math.max.apply(
+            return policies.map((policy) => {
+                const latestVersionId = Math.max.apply(
                     null,
-                    policy.versions.map(function (version) {
+                    policy.versions.map((version) => {
                         return version.version;
                     })
                 );
                 // Array.from not supported in IE
                 // TODO: use es6 polyfill lib
-                var latestVersion = policy.versions.filter(function (version) {
+                const latestVersion = policy.versions.filter((version) => {
                     return version.version === latestVersionId;
                 })[0];
 
@@ -85,18 +91,18 @@ define(['bluebird', 'marked', 'kb_common_ts/HttpClient', './lib/utils', 'kb_comm
         }
 
         function getPolicy(id) {
-            return policies.filter(function (policy) {
+            return policies.filter((policy) => {
                 return policy.id === id;
             })[0];
         }
 
         function getPolicyVersion(id, version) {
-            var policy = getPolicy(id);
+            const policy = getPolicy(id);
             if (!policy) {
                 return;
             }
 
-            return policy.versions.filter(function (ver) {
+            return policy.versions.filter((ver) => {
                 return version === ver.version;
             })[0];
         }
@@ -107,36 +113,36 @@ define(['bluebird', 'marked', 'kb_common_ts/HttpClient', './lib/utils', 'kb_comm
 
         function start() {
             return loadPolicies()
-                .then(function (result) {
+                .then((result) => {
                     policies = result;
                     return auth2Client.getMe(currentUserToken);
                 })
-                .then(function (account) {
+                .then((account) => {
                     userAgreements = utils.parsePolicyAgreements(account.policyids);
                 });
         }
 
         function stop() {
-            return Promise.try(function () { });
+            return Promise.try(() => { });
         }
 
         return {
-            start: start,
-            stop: stop,
+            start,
+            stop,
             // user agreements
-            getUserAgreements: getUserAgreements,
+            getUserAgreements,
 
             // policies
-            getPolicyFile: getPolicyFile,
-            loadPolicies: loadPolicies,
-            getPolicy: getPolicy,
-            getPolicyVersion: getPolicyVersion,
-            getLatestPolicies: getLatestPolicies
+            getPolicyFile,
+            loadPolicies,
+            getPolicy,
+            getPolicyVersion,
+            getLatestPolicies
         };
     }
 
     return {
-        make: function (config) {
+        make(config) {
             return factory(config);
         }
     };

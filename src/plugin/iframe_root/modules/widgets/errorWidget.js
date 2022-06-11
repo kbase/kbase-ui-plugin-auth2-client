@@ -2,22 +2,22 @@ define([
     'bluebird',
     'kb_common/html',
     'kb_common/bootstrapUtils',
+    'lib/domUtils',
     '../lib/utils'
-], function (
+], (
     Promise,
     html,
     BS,
+    {setInnerHTML},
     Utils
-) {
-    'use strict';
-
-    var t = html.tag,
+) => {
+    const t = html.tag,
         div = t('div');
 
     function factory() {
-        var hostNode, container;
+        let hostNode, container;
 
-        var vm = Utils.ViewModel({
+        const vm = Utils.ViewModel({
             model: {
                 error: {
                     id: html.genId(),
@@ -43,7 +43,7 @@ define([
         //
 
         function render() {
-            container.innerHTML = BS.buildPanel({
+            setInnerHTML(container, BS.buildPanel({
                 name: 'error',
                 hidden: true,
                 id: vm.get('error').id,
@@ -95,22 +95,22 @@ define([
                         })
                     }))
                 ])
-            });
+            }));
             vm.bindAll();
         }
 
         function update(error) {
             vm.get('error').node.classList.remove('hidden');
-            vm.setHTML('error.code', 'body', error.code);
+            vm.setHTML('error.code', 'body', error.code || 'n/a');
             vm.setHTML('error.message', 'body', error.message);
-            vm.setHTML('error.detail', 'body', error.detail);
-            vm.setHTML('error.data', 'body', BS.buildPresentableJson(error.data));
+            vm.setHTML('error.detail', 'body', error.detail || 'n/a');
+            vm.setHTML('error.data', 'body', error.data ? BS.buildPresentableJson(error.data) : 'n/a');
         }
 
-        // API 
+        // API
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 return api;
@@ -118,7 +118,7 @@ define([
         }
 
         function start(params) {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 render();
                 update(params.error);
                 return api;
@@ -126,13 +126,13 @@ define([
         }
 
         function stop() {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 return api;
             });
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -141,17 +141,17 @@ define([
         }
 
 
-        var api = {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
+        const api = {
+            attach,
+            start,
+            stop,
+            detach
         };
         return api;
     }
 
     return {
-        make: function (config) {
+        make(config) {
             return factory(config);
         }
     };

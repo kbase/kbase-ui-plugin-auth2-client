@@ -1,7 +1,6 @@
 define(['kb_common_ts/Auth2'], (auth2) => {
-    'use strict';
     class Session {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.runtime = runtime;
 
             this.auth2Root = null;
@@ -18,13 +17,13 @@ define(['kb_common_ts/Auth2'], (auth2) => {
             return this.runtime.username;
         }
         isLoggedIn() {
-            return this.runtime.token ? true : false;
+            return !!this.runtime.token;
         }
         isAuthorized() {
-            return this.runtime.token ? true : false;
+            return !!this.runtime.token;
         }
         getClient() {
-            return this.auth2Session;
+            return this.auth2Client;
         }
 
         serverTimeOffset() {

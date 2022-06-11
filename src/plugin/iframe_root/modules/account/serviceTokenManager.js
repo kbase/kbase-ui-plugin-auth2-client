@@ -5,13 +5,12 @@ define([
     'kb_common/bootstrapUtils',
     'kb_common/format',
     'kb_common_ts/Auth2',
+    'lib/domUtils',
     '../lib/format',
-    '../lib/utils'
-], (Promise, html, DomEvent, BS, Format, auth2, fmt, Utils) => {
-    'use strict';
-
-    const // t = html.tagMaker(),
-        t = html.tag,
+    '../lib/utils',
+    'lib/domUtils'
+], (Promise, html, DomEvent, BS, Format, auth2, {domEncodedText}, fmt, Utils, {setInnerHTML, clearInnerHTML}) => {
+    const t = html.tag,
         div = t('div'),
         table = t('table'),
         tr = t('tr'),
@@ -26,7 +25,7 @@ define([
         span = t('span');
 
     class ServiceTokenManager {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.runtime = runtime;
 
             this.hostNode = null;
@@ -34,7 +33,7 @@ define([
             this.serverBias = null;
 
             this.utils = Utils.make({
-                runtime: runtime
+                runtime
             });
 
             this.vm = {
@@ -88,7 +87,7 @@ define([
         showAlert(type, message) {
             const alert = div(
                 {
-                    class: 'alert ' + 'alert-' + type,
+                    class: `alert alert-${type}`,
                     style: {
                         marginTop: '10px'
                     },
@@ -113,12 +112,12 @@ define([
                 ]
             );
             const temp = document.createElement('div');
-            temp.innerHTML = alert;
+            setInnerHTML(temp, alert);
             this.vm.alerts.node.appendChild(temp);
         }
 
         renderLayout() {
-            this.container.innerHTML = div(
+            setInnerHTML(this.container, div(
                 {
                     style: {
                         marginTop: '10px'
@@ -158,7 +157,7 @@ define([
                         }
                     ]
                 }).content
-            );
+            ));
             this.bindVm();
         }
 
@@ -185,7 +184,7 @@ define([
             const events = new DomEvent.make({
                 node: this.vm.newToken.node
             });
-            this.vm.newToken.node.innerHTML = div(
+            setInnerHTML(this.vm.newToken.node, div(
                 {
                     class: 'well',
                     style: {
@@ -193,9 +192,9 @@ define([
                     }
                 },
                 [
-                    p('New ' + b(newToken.type) + ' token successfully created'),
+                    p(`New ${b(newToken.type)} token successfully created`),
                     p('Please copy it to a secure location and remove this message'),
-                    p('This message will self-destruct in ' + span({ id: clockId }) + '.'),
+                    p(`This message will self-destruct in ${  span({id: clockId})  }.`),
                     p([
                         'New Token: ',
                         span(
@@ -218,7 +217,7 @@ define([
                                     type: 'click',
                                     handler: () => {
                                         this.clock.stop();
-                                        this.vm.newToken.node.innerHTML = '';
+                                        clearInnerHTML(this.vm.newToken.node);
                                     }
                                 })
                             },
@@ -226,7 +225,7 @@ define([
                         )
                     )
                 ]
-            );
+            ));
             events.attachEvents();
 
             const CountDownClock = (countDownInSeconds, id) => {
@@ -239,7 +238,7 @@ define([
                 }
 
                 const render = (timeLeft) => {
-                    node.innerHTML = fmt.niceDuration(timeLeft);
+                    setInnerHTML(node, fmt.niceDuration(timeLeft));
                 };
 
                 const loop = () => {
@@ -250,7 +249,7 @@ define([
                         if (elapsed < countdown) {
                             loop();
                         } else {
-                            this.vm.newToken.node.innerHTML = '';
+                            clearInnerHTML(this.vm.newToken.node);
                         }
                     }, 500);
                 };
@@ -264,33 +263,32 @@ define([
                 render();
                 loop();
                 return {
-                    stop: stop
+                    stop
                 };
             };
             this.clock = CountDownClock(300, clockId);
         }
 
         handleSubmitAddToken() {
-            const name = this.vm.addTokenForm.node.querySelector('[name="name"]');
+            Promise.try(() => {
+                const tokenName = this.vm.addTokenForm.node.querySelector('[name="token-name"]').value;
+                if (tokenName.length === 0) {
+                    throw new Error('A token must have a non-zero length name');
+                }
 
-            const tokenName = name.value;
-            if (tokenName.length === 0) {
-                this.showAlert('danger', 'A token must have a non-zero length name');
-                return;
-            }
-
-            this.auth2
-                .createToken(this.currentUserToken, {
-                    name: name.value,
-                    type: 'service'
-                })
+                return this.auth2
+                    .createToken(this.currentUserToken, {
+                        name: tokenName,
+                        type: 'service'
+                    });
+            })
                 .then((result) => {
                     this.vm.newToken.value = result;
                     this.renderNewToken();
                     return this.render();
                 })
                 .catch((err) => {
-                    console.error('ERROR', err);
+                    this.showAlert('danger', domEncodedText(err.message));
                 });
         }
 
@@ -298,7 +296,7 @@ define([
             const events = DomEvent.make({
                 node: this.vm.addTokenForm.node
             });
-            this.vm.addTokenForm.node.innerHTML = form(
+            setInnerHTML(this.vm.addTokenForm.node, form(
                 {
                     class: 'form-inline',
                     id: events.addEvent({
@@ -324,7 +322,7 @@ define([
                             'Token name'
                         ),
                         input({
-                            name: 'name',
+                            name: 'token-name',
                             class: 'form-control'
                         }),
                         ' ',
@@ -337,7 +335,7 @@ define([
                         )
                     ]
                 )
-            );
+            ));
             events.attachEvents();
         }
 
@@ -368,7 +366,8 @@ define([
                     'Revoke All'
                 );
             }
-            this.vm.serviceTokens.node.innerHTML = table(
+
+            setInnerHTML(this.vm.serviceTokens.node, table(
                 {
                     class: 'table table-striped',
                     style: {
@@ -415,13 +414,12 @@ define([
                     this.vm.serviceTokens.value.map((token) => {
                         return tr([
                             td(this.niceDate(token.created)),
-                            // td(niceElapsed(token.expires)),
                             td(
                                 fmt.niceDuration(this.timeRemaining(token.expires), {
                                     trimEnd: true
                                 })
                             ),
-                            td(token.name),
+                            td(domEncodedText(token.name)),
                             td(
                                 {
                                     style: {
@@ -445,7 +443,7 @@ define([
                         ]);
                     })
                 )
-            );
+            ));
             events.attachEvents();
         }
 
@@ -476,7 +474,7 @@ define([
                     this.renderAddTokenForm();
                 })
                 .catch((err) => {
-                    this.vm.serviceTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
+                    setInnerHTML(this.vm.serviceTokens.node, `Error; look in console: ${domEncodedText(err.message)}`);
                 });
         }
 
@@ -503,7 +501,7 @@ define([
             return Promise.try(() => {
                 if (this.hostNode && this.container) {
                     this.hostNode.removeChild(this.container);
-                    this.hostNode.innerHTML = '';
+                    clearInnerHTML(this.hostNode);
                 }
             });
         }

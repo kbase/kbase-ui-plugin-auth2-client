@@ -10,20 +10,21 @@ source:
   styles:
     - file: main.css
 install:
-  widgets:
-    - module: login
-      id: auth2_login
-      css: true
-      type: factory
-    - module: loginContinue
-      id: auth2LoginContinue
-      type: factory
-    - module: account/panel
-      id: auth2Account
-      type: es6
-    - module: signedout
-      id: auth2_signedout
-      type: factory
+  widgets: []
+  # widgets:
+  #   - module: login
+  #     id: auth2_login
+  #     css: true
+  #     type: factory
+  #   - module: loginContinue
+  #     id: auth2LoginContinue
+  #     type: factory
+  #   - module: account/panel
+  #     id: auth2Account
+  #     type: es6
+  #   - module: signedout
+  #     id: auth2_signedout
+  #     type: factory
   coreServices:
     dependencies:
       auth2:
