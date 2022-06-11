@@ -7,6 +7,7 @@ define([
     './serviceTokenManager',
     './agreementsManager',
     './signinManager',
+    'lib/domUtils',
     '../widgets/tabsWidget'
 ], (
     Promise,
@@ -17,12 +18,11 @@ define([
     ServiceTokenManager,
     AgreementsManager,
     SigninManager,
+    {clearInnerHTML},
     TabsWidget
 ) => {
-    'use strict';
-
     class AccountPanel {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.runtime = runtime;
             this.hostNode = null;
             this.tabs = null;
@@ -105,7 +105,7 @@ define([
                         }
                     }
                 ].filter((tab) => {
-                    return tab ? true : false;
+                    return !!tab;
                 })
             };
 
@@ -149,7 +149,7 @@ define([
             } else {
                 tab = 'profile';
             }
-            this.tabs.run({ tab });
+            this.tabs.run({tab});
             // this.tabs.activeTab(para)
         }
 
@@ -170,7 +170,7 @@ define([
                 return this.tabs.detach().then(() => { });
             }).finally(() => {
                 if (this.hostNode) {
-                    this.hostNode.innerHTML = '';
+                    clearInnerHTML(this.hostNode);
                 }
             });
         }

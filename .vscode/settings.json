@@ -4,5 +4,8 @@
     "prettier.printWidth": 120,
     "prettier.singleQuote": true,
     "prettier.tabWidth": 4,
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "eslint.alwaysShowStatus": true,
+    "eslint.format.enable": true,
+    "javascript.validate.enable": true
 }

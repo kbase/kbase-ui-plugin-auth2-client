@@ -1,27 +1,30 @@
 require([
     'bluebird',
+    'dompurify',
     'kbaseUI/integration',
     'kbaseUI/dispatcher',
     'kb_knockout/load',
+    'lib/domUtils',
     'yaml!./config.yml',
+
+    // for effect
     'bootstrap',
     'css!font_awesome'
-], (Promise, Integration, Dispatcher, knockoutLoader, pluginConfig) => {
-    'use strict';
-
-
+], (Promise, DOMPurify, Integration, Dispatcher, knockoutLoader, {setInnerHTML}, pluginConfig) => {
     const SHOW_LOADER_AFTER = 1000;
+
+    DOMPurify.setConfig({ADD_ATTR: ['target'], ADD_URI_SAFE_ATTR: ['target']});
 
     function loader(message) {
         // clone of bootstrap 3 'well' class.
         const style = {
-            'border': '1px solid #e3e3e3',
-            'padding': '19px',
+            border: '1px solid #e3e3e3',
+            padding: '19px',
             'border-radius': '4px',
             'background-color': '#f5f5f5',
             'min-height': '20px',
             'max-width': '40em',
-            'margin': '20px auto 0 auto',
+            margin: '20px auto 0 auto',
             'box-shadow': 'inset 0 1px 1px rgba(0, 0, 0, 0.05)',
             display: 'flex',
             'flex-direction': 'row',
@@ -65,7 +68,7 @@ require([
             .then(() => {
                 // place a loader.
                 loadingTimer = window.setTimeout(() => {
-                    rootNode.innerHTML = loader('Loading Auth Plugin ...');
+                    setInnerHTML(rootNode, loader('Loading Auth Plugin ...'));
                 }, SHOW_LOADER_AFTER);
 
 
@@ -89,8 +92,8 @@ require([
             })
             .then((dispatcher) => {
                 window.clearTimeout(loadingTimer);
-                integration.onNavigate(({ path, params, view }) => {
-                    dispatcher.dispatch({ view, path, params });
+                integration.onNavigate(({path, params, view}) => {
+                    dispatcher.dispatch({view, path, params});
                 });
                 integration.started();
             })

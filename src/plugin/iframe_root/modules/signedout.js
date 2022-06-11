@@ -1,7 +1,9 @@
-define(['kb_common/html', './lib/provider'], function (html, provider) {
-    'use strict';
-
-    var t = html.tag,
+define([
+    'kb_common/html',
+    './lib/provider',
+    'lib/domUtils'
+], (html, provider, {setInnerHTML, clearInnerHTML}) => {
+    const t = html.tag,
         p = t('p'),
         div = t('div'),
         ul = t('ul'),
@@ -9,17 +11,17 @@ define(['kb_common/html', './lib/provider'], function (html, provider) {
         a = t('a');
 
     class Signedout {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.hostNode = null;
             this.container = null;
             this.runtime = runtime;
             this.listeners = [];
 
-            this.providers = new provider.Providers({ runtime: runtime }).get();
+            this.providers = new provider.Providers({runtime}).get();
         }
 
         render() {
-            this.container.innerHTML = div(
+            setInnerHTML(this.container, div(
                 {
                     class: 'container-fluid'
                 },
@@ -66,14 +68,14 @@ define(['kb_common/html', './lib/provider'], function (html, provider) {
                                             const labelOrder = a.label < b.label ? -1 : a.label > b.label ? 0 : 1;
                                             return labelOrder;
                                         })
-                                        .map(function (provider) {
+                                        .map((provider) => {
                                             return li(
                                                 a(
                                                     {
                                                         href: provider.logoutUrl,
                                                         target: '_blank'
                                                     },
-                                                    'Log out from ' + provider.label
+                                                    `Log out from ${  provider.label}`
                                                 )
                                             );
                                         })
@@ -91,7 +93,7 @@ define(['kb_common/html', './lib/provider'], function (html, provider) {
                         })
                     ]
                 )
-            );
+            ));
         }
 
         // API
@@ -122,6 +124,7 @@ define(['kb_common/html', './lib/provider'], function (html, provider) {
             this.listeners.forEach((listener) => {
                 this.runtime.drop(listener);
             });
+            clearInnerHTML(this.container);
             return null;
         }
 

@@ -4,9 +4,9 @@ define([
     'kb_common/domEvent',
     'kb_common/bootstrapUtils',
     'kb_common_ts/Auth2',
-    '../lib/provider'
-], (Promise, html, DomEvents, BS, auth2, provider) => {
-    'use strict';
+    '../lib/provider',
+    'lib/domUtils'
+], (Promise, html, DomEvents, BS, auth2, provider, {domEncodedText, setInnerHTML, clearInnerHTML}) => {
     const t = html.tag,
         p = t('p'),
         div = t('div'),
@@ -23,10 +23,10 @@ define([
         input = t('input');
 
     class LinksManager {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.runtime = runtime;
 
-            this.providers = new provider.Providers({ runtime: runtime }).get();
+            this.providers = new provider.Providers({runtime}).get();
 
             this.providersMap = this.providers.reduce((providersMap, provider) => {
                 providersMap[provider.id] = provider;
@@ -76,27 +76,23 @@ define([
                             }
                         },
                         img({
-                            src:
-                                this.runtime.pluginResourcePath +
-                                '/providers/' +
-                                provider.id.toLowerCase() +
-                                '/logo.png',
+                            src: `${this.runtime.pluginResourcePath}/providers/${provider.id.toLowerCase()}/logo.png`,
                             style: {
                                 height: '24px'
                             }
                         })
                     ),
-                    provider.label
+                    domEncodedText(provider.label)
                 ]
             );
         }
 
         setContent(parentNode, element, content) {
-            var node = parentNode.querySelector('[data-element="' + element + '"');
+            const node = parentNode.querySelector(`[data-element="${  element  }"`);
             if (!node) {
                 return;
             }
-            node.innerHTML = content;
+            node.innerText = content;
         }
 
         renderError() {
@@ -116,8 +112,8 @@ define([
         }
 
         doLink() {
-            var providerSelect = document.querySelector('[data-element="link-form"] [name="provider"]');
-            var providerId = providerSelect.value;
+            const providerSelect = document.querySelector('[data-element="link-form"] [name="provider"]');
+            const providerId = providerSelect.value;
 
             try {
                 // TODO: routing back into here.
@@ -125,11 +121,11 @@ define([
                     provider: providerId,
                     token: this.currentUserToken
                 };
-                const action = this.runtime.config('services.auth.url') + '/link/start';
+                const action = `${this.runtime.config('services.auth.url')}/link/start`;
 
                 this.runtime.send('app', 'post-form', {
-                    action: action,
-                    params: params
+                    action,
+                    params
                 });
 
                 // this.auth2.linkStart(this.currentUserToken, {
@@ -148,7 +144,7 @@ define([
         doUnlink(identityId) {
             this.auth2
                 .removeLink(this.currentUserToken, {
-                    identityId: identityId
+                    identityId
                 })
                 .then(() => {
                     this.reload();
@@ -164,11 +160,11 @@ define([
         }
 
         buildLinkForm(events) {
-            var providerControlId = html.genId();
-            var providerMenuId = html.genId();
-            var providerMenuLabelId = html.genId();
-            var selectedProviderId = 'Globus';
-            var selectedProvider = this.providers.filter((provider) => {
+            const providerControlId = html.genId();
+            const providerMenuId = html.genId();
+            const providerMenuLabelId = html.genId();
+            const selectedProviderId = 'Globus';
+            const selectedProvider = this.providers.filter((provider) => {
                 return provider.id === selectedProviderId;
             })[0];
             return form(
@@ -209,7 +205,7 @@ define([
                                         class: 'btn btn-default dropdown-toggle',
                                         type: 'button',
                                         id: events.addEvent('click', () => {
-                                            var n = document.getElementById(providerMenuId);
+                                            const n = document.getElementById(providerMenuId);
                                             if (n.style.display === 'none') {
                                                 n.style.display = 'block';
                                             } else {
@@ -267,15 +263,16 @@ define([
                                                 {
                                                     id: events.addEvent('click', () => {
                                                         // var controlNode = document.getElementById(providerControlId);
-                                                        var providerInput = document.querySelector(
+                                                        const providerInput = document.querySelector(
                                                             '[data-element="link-form"] [name="provider"]'
                                                         );
                                                         providerInput.value = provider.id;
-                                                        var menuLabelNode = document.getElementById(
+                                                        const menuLabelNode = document.getElementById(
                                                             providerMenuLabelId
                                                         );
-                                                        menuLabelNode.innerHTML = this.buildProviderLabel(provider);
-                                                        var n = document.getElementById(providerMenuId);
+                                                        // xss safe
+                                                        setInnerHTML(menuLabelNode,this.buildProviderLabel(provider));
+                                                        const n = document.getElementById(providerMenuId);
                                                         n.style.display = 'none';
                                                     })
                                                 },
@@ -300,8 +297,8 @@ define([
         }
 
         renderInfo() {
-            var canUnlink = this.vm.identities.value.length > 1;
-            var content = [
+            const canUnlink = this.vm.identities.value.length > 1;
+            let content = [
                 p([
                     'This tab provides access to all of the the external accounts which you have set up sign in to your KBase account.'
                 ]),
@@ -339,12 +336,12 @@ define([
         }
 
         render() {
-            var events = DomEvents.make({
+            const events = DomEvents.make({
                 node: this.container
             });
-            var canUnlink = this.vm.identities.value.length > 1;
+            const canUnlink = this.vm.identities.value.length > 1;
 
-            var tabs = BS.buildTabs({
+            const tabs = BS.buildTabs({
                 initialTab: 0,
                 tabs: [
                     {
@@ -361,19 +358,19 @@ define([
                                     },
                                     [tr([th('Provider'), th('Username'), th('Action')])].concat(
                                         this.vm.identities.value.map((identity) => {
-                                            var tooltip;
+                                            let tooltip;
                                             if (canUnlink) {
                                                 tooltip =
-                                                    'Unlink this  ' +
-                                                    identity.provider +
-                                                    ' account from your KBase account';
+                                                    `Unlink this  ${
+                                                        identity.provider
+                                                    } account from your KBase account`;
                                             } else {
                                                 tooltip =
                                                     'Since this is the only external sign-in account linked to your KBase account, you cannot unlink it';
                                             }
                                             return tr([
                                                 td(this.buildProviderLabel(this.providersMap[identity.provider])),
-                                                td(identity.provusername),
+                                                td(domEncodedText(identity.provusername)),
                                                 td(
                                                     button(
                                                         {
@@ -456,14 +453,15 @@ define([
                 ]
             });
 
-            this.container.innerHTML = div(
+            // xss safe
+            setInnerHTML(this.container, div(
                 {
                     style: {
                         marginTop: '10px'
                     }
                 },
                 tabs.content
-            );
+            ));
             this.vm.error.node = this.container.querySelector('[data-element="error"]');
             events.attachEvents();
         }
@@ -502,7 +500,7 @@ define([
             return Promise.try(() => {
                 if (this.hostNode && this.container) {
                     this.hostNode.removeChild(this.container);
-                    this.hostNode.innerHTML = '';
+                    clearInnerHTML(this.hostNode);
                 }
             });
         }

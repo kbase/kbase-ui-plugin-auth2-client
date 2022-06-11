@@ -10,11 +10,11 @@ define([
     './lib/format',
     './components/errorView',
     './components/signupView',
+    'lib/domUtils',
 
     // loaded for effect
     'bootstrap'
-], function (
-    Promise,
+], (Promise,
     ko,
     SubscriptionManager,
     html,
@@ -24,47 +24,43 @@ define([
     CountDownClock,
     Format,
     ErrorViewComponent,
-    SignupViewComponent
-) {
-    'use strict';
-
-    var t = html.tag,
-        div = t('div'),
-        span = t('span');
+    SignupViewComponent,
+    {setInnerHTML, clearInnerHTML}
+) => {
+    const t = html.tag, div = t('div'), span = t('span');
 
     function factory(config) {
-        var hostNode,
-            container,
-            runtime = config.runtime,
-            vm = {
-                clock: {
-                    id: html.genId(),
-                    node: null
-                },
-                main: {
-                    id: html.genId(),
-                    node: null
-                },
-                error: {
-                    id: html.genId(),
-                    node: null
-                }
-            };
+        let hostNode, container;
+        const runtime = config.runtime;
+        const vm = {
+            clock: {
+                id: html.genId(),
+                node: null
+            },
+            main: {
+                id: html.genId(),
+                node: null
+            },
+            error: {
+                id: html.genId(),
+                node: null
+            }
+        };
 
         const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
         });
 
-        var koSubscriptions = new SubscriptionManager();
+        const koSubscriptions = new SubscriptionManager();
 
         function renderLayout() {
-            container.innerHTML = div(
+            setInnerHTML(container, div(
                 {
                     class: 'container-fluid',
                     dataKBTesthookWidget: 'signup'
                 },
                 [
-                    div({ class: 'row' }, [
+                    div({class: 'row'}, [
                         div(
                             {
                                 class: 'col-sm-10 col-sm-offset-1',
@@ -86,20 +82,20 @@ define([
                         )
                     ])
                 ]
-            );
+            ));
             vm.clock.node = document.getElementById(vm.clock.id);
             vm.main.node = document.getElementById(vm.main.id);
             vm.error.node = document.getElementById(vm.error.id);
         }
 
         function showError(node, err) {
-            var viewModel = {
+            const viewModel = {
                 code: ko.observable(err.code),
                 message: ko.observable(err.message),
                 detail: ko.observable(err.detail),
                 data: ko.observable(err.data)
             };
-            hostNode.innerHTML = div({
+            setInnerHTML(hostNode, div({
                 dataBind: {
                     component: {
                         name: ErrorViewComponent.quotedName(),
@@ -111,14 +107,14 @@ define([
                         }
                     }
                 }
-            });
+            }));
             ko.applyBindings(viewModel, node);
         }
 
         function cancelLogin() {
             return auth2Client
                 .loginCancel()
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     // just continue...
                     if (err.code === '10010') {
                         // simply continue
@@ -126,7 +122,7 @@ define([
                         throw err;
                     }
                 })
-                .then(function () {
+                .then(() => {
                     if (clock) {
                         clock.stop();
                     }
@@ -134,17 +130,17 @@ define([
                         path: 'login'
                     });
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('error', err);
                 });
         }
 
-        var clock;
+        let clock;
 
         function createClock(container, response) {
-            var timeOffset = runtime.service('session').serverTimeOffset();
-            var clockId = html.genId();
-            container.innerHTML = div(
+            const timeOffset = runtime.service('session').serverTimeOffset();
+            const clockId = html.genId();
+            setInnerHTML(container, div(
                 {
                     style: {
                         textAlign: 'right'
@@ -160,26 +156,26 @@ define([
                         }
                     },
                     [
-                        div(['You have ', span({ id: clockId }), ' until this signup session expires.']),
+                        div(['You have ', span({id: clockId}), ' until this signup session expires.']),
                         div('After this, you will be returned to the sign-in page.')
                     ]
                 )
-            );
-            var clockNode = document.getElementById(clockId);
+            ));
+            const clockNode = document.getElementById(clockId);
 
             function updateTimer(remainingTime) {
-                clockNode.innerHTML = Format.niceDuration(remainingTime);
+                setInnerHTML(clockNode, Format.niceDuration(remainingTime));
             }
 
             clock = new CountDownClock({
                 tick: 1000,
                 until: response.expires - timeOffset,
                 // for: 60000,
-                onTick: function (remaining) {
+                onTick(remaining) {
                     updateTimer(remaining);
                 },
-                onExpired: function () {
-                    cancelLogin().then(function () {
+                onExpired() {
+                    cancelLogin().then(() => {
                         runtime.send('notification', 'notify', {
                             type: 'warning',
                             message: 'Your sign-in session has expired.'
@@ -191,9 +187,8 @@ define([
         }
 
         // LIFECYCLE API
-
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 hostNode = node;
                 container = hostNode.appendChild(document.createElement('div'));
                 container.setAttribute('data-k-b-testhook-plugin', 'auth2-client');
@@ -212,29 +207,29 @@ define([
             runtime.send('ui', 'setTitle', 'Sign Up for KBase');
             return auth2Client
                 .getLoginChoice()
-                .then(function (choice) {
+                .then((choice) => {
                     createClock(vm.clock.node, choice);
-                    var policies = Policies.make({
-                        runtime: runtime
+                    const policies = Policies.make({
+                        runtime
                     });
                     return policies
                         .start()
-                        .then(function () {
+                        .then(() => {
                             if (choice.login && choice.login.length === 1) {
                                 return policies.evaluatePolicies(choice.login[0].policyids);
                             } else if (choice.create && choice.create.length === 1) {
                                 // just pass empty policy ids, since this user has none yet.
                                 return policies.evaluatePolicies([]);
-                            } else {
-                                // should never gethere.
-                                throw new Error('Neither login nor signup available for this sign-up account');
                             }
+                            // should never gethere.
+                            throw new Error('Neither login nor signup available for this sign-up account');
+
                         })
-                        .then(function (policiesToResolve) {
+                        .then((policiesToResolve) => {
                             return [choice, policiesToResolve];
                         });
                 })
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
                     if (err.code === '10010') {
@@ -242,8 +237,8 @@ define([
                     }
                     throw err;
                 })
-                .spread(function (choice, policiesToResolve) {
-                    var step, nextRequest;
+                .spread((choice, policiesToResolve) => {
+                    let step, nextRequest;
                     // comes in as "nextrequest" all lower case, but known otherwise
                     // as "nextRequest", camelCase
                     if (params.nextrequest) {
@@ -252,7 +247,8 @@ define([
                         nextRequest = null;
                     }
 
-                    vm.main.node.innerHTML = div({
+                    // xss safe
+                    setInnerHTML(vm.main.node, div({
                         dataPlugin: 'auth2-client',
                         dataBind: {
                             component: {
@@ -267,50 +263,50 @@ define([
                                 }
                             }
                         }
-                    });
+                    }));
 
                     // quick'n'dirty
                     // TODO: done should be a boolean observable which
                     // signals that someone things the choice session is done...
-                    var done = ko.observable(false);
+                    const done = ko.observable(false);
 
                     koSubscriptions.add(
-                        done.subscribe(function (newDone) {
+                        done.subscribe((newDone) => {
                             if (newDone) {
                                 if (clock) {
                                     clock.stop();
                                 }
                                 if (vm.clock.node) {
-                                    vm.clock.node.innerHTML = '';
+                                    clearInnerHTML(vm.clock.node);
                                 }
                             }
                         })
                     );
 
-                    var viewModel = {
+                    const viewModel = {
                         runtime: config.runtime,
-                        step: step,
-                        nextRequest: nextRequest,
-                        choice: choice,
-                        policiesToResolve: policiesToResolve,
-                        done: done
+                        step,
+                        nextRequest,
+                        choice,
+                        policiesToResolve,
+                        done
                     };
                     ko.applyBindings(viewModel, container);
                 })
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     showError(vm.error.node, err);
                 })
 
-                .catch(function (err) {
+                .catch((err) => {
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
-                    var viewModel = {
+                    const viewModel = {
                         code: ko.observable(err.name),
                         message: ko.observable(err.message),
                         detail: '',
                         data: ''
                     };
-                    container.innerHTML = div({
+                    clearInnerHTML(container, div({
                         dataBind: {
                             component: {
                                 name: ErrorViewComponent.quotedName(),
@@ -322,19 +318,19 @@ define([
                                 }
                             }
                         }
-                    });
+                    }));
                     ko.applyBindings(viewModel, container);
                 });
         }
 
         function stop() {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 koSubscriptions.dispose();
             });
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -342,15 +338,15 @@ define([
         }
 
         return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
+            attach,
+            start,
+            stop,
+            detach
         };
     }
 
     return {
-        make: function (config) {
+        make(config) {
             return factory(config);
         }
     };

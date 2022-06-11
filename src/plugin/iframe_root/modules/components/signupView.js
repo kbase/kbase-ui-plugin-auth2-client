@@ -14,7 +14,7 @@ define([
 
     // loaded for effect
     'bootstrap'
-], function (
+], (
     ko,
     reg,
     gen,
@@ -27,26 +27,24 @@ define([
     SigninFormComponent,
     SignupFormComponent,
     SigninButtonComponent
-) {
-    'use strict';
-
-    var t = html.tag,
+) => {
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         p = html.tag('p');
 
     function viewModel(params) {
-        var runtime = params.runtime;
-        var done = params.done;
+        const runtime = params.runtime;
+        const done = params.done;
 
-        var choice = params.choice;
+        const choice = params.choice;
 
-        var policiesToResolve = params.policiesToResolve;
+        const policiesToResolve = params.policiesToResolve;
 
-        var nextRequest = params.nextRequest;
+        const nextRequest = params.nextRequest;
 
         // UI state
-        var uiState = {
+        const uiState = {
             auth: ko.observable(false),
             signin: ko.observable(false),
             signup: ko.observable(false),
@@ -67,17 +65,17 @@ define([
                 .service('session')
                 .getClient()
                 .loginCancel()
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     // ignore this specific error...
                     if (err.code !== '10010') {
                         throw err;
                     }
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     // TODO: show error.
                     console.error('Skipping error', err);
                 })
-                .finally(function () {
+                .finally(() => {
                     //  don 't care whether it succeeded or failed.
                     return runtime.service('session').loginStart({
                         // TODO: this should be either the redirect url passed in
@@ -85,7 +83,7 @@ define([
                         // We just let the login page do this. When the login page is
                         // entered with a valid token, redirect to the nextrequest,
                         // and if that is empty, the dashboard.
-                        state: state,
+                        state,
                         provider: providerId
                     });
                 });
@@ -100,8 +98,8 @@ define([
             });
         }
 
-        var error = ko.observable();
-        var isError = ko.pureComputed(function () {
+        const error = ko.observable();
+        const isError = ko.pureComputed(() => {
             if (error()) {
                 return true;
             }
@@ -109,24 +107,24 @@ define([
         });
 
         // no assumptions ... this is set by the signup component, if any.
-        var signupState = ko.observable();
+        const signupState = ko.observable();
 
-        var providers = new provider.Providers({ runtime }).get();
+        const providers = new provider.Providers({runtime}).get();
 
         return {
-            runtime: runtime,
-            uiState: uiState,
-            providers: providers,
-            nextRequest: nextRequest,
-            choice: choice,
-            policiesToResolve: policiesToResolve,
-            doSignin: doSignin,
-            signupState: signupState,
-            error: error,
-            isError: isError,
+            runtime,
+            uiState,
+            providers,
+            nextRequest,
+            choice,
+            policiesToResolve,
+            doSignin,
+            signupState,
+            error,
+            isError,
             assetsPath: runtime.pluginResourcePath,
-            config: config,
-            done: done
+            config,
+            done
         };
     }
 
@@ -267,7 +265,7 @@ define([
     }
 
     function incompleteStep(number, active) {
-        var color;
+        let color;
         if (active) {
             color = 'orange';
         } else {
@@ -276,7 +274,7 @@ define([
         return span(
             {
                 style: {
-                    color: color,
+                    color,
                     verticalAlign: 'middle',
                     marginRight: '6px',
                     fontSize: '150%'
@@ -804,7 +802,7 @@ define([
 
     function component() {
         return {
-            viewModel: viewModel,
+            viewModel,
             template: template()
         };
     }

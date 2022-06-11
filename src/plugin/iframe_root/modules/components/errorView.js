@@ -4,11 +4,8 @@ define([
     'kb_knockout/lib/generators',
     'kb_lib/html',
     'kb_lib/htmlBootstrapBuilders'
-], function (ko, reg, gen, html, BS) {
-    'use strict';
-
-    var t = html.tag,
-        div = t('div');
+], (ko, reg, gen, html, BS) => {
+    const t = html.tag, div = t('div');
 
     function template() {
         return BS.buildPanel({
@@ -86,7 +83,7 @@ define([
 
     function component() {
         return {
-            viewModel: viewModel,
+            viewModel,
             template: template()
         };
     }

@@ -1,14 +1,12 @@
-define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], function (Promise, html, DomEvents) {
-    'use strict';
-
-    function cleanText(text) {
-        const n = document.createElement('div');
-        n.textContent = text;
-        return n.innerHTML;
-    }
-
+define([
+    'bluebird',
+    'kb_common/html',
+    'kb_common/domEvent2',
+    'lib/domUtils',
+    'bootstrap'
+], (Promise, html, DomEvents, {setInnerHTML}) => {
     function myWidget(config) {
-        var runtime = config.runtime;
+        const runtime = config.runtime;
         if (!runtime) {
             throw {
                 name: 'RuntimeMissing',
@@ -17,7 +15,7 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
             };
         }
 
-        var t = html.tag,
+        const t = html.tag,
             button = t('button'),
             div = t('div'),
             a = t('a'),
@@ -32,12 +30,12 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
             runtime
                 .service('session')
                 .logout()
-                .then(function () {
-                    runtime.send('app', 'navigate', {
+                .then(() => {
+                    runtime.send('app', 'auth-navigate', {
                         path: 'auth2/signedout'
                     });
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('ERROR');
                     console.error(err);
                     alert('Error signing out (check console for details)');
@@ -51,15 +49,15 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
                 var gravatarHash = profile.profile.synced.gravatarHash;
                 if (gravatarHash) {
                     return (
-                        'https://www.gravatar.com/avatar/' + gravatarHash + '?s=32&amp;r=pg&d=' + gravatarDefault
+                        `https://www.gravatar.com/avatar/${  gravatarHash  }?s=32&amp;r=pg&d=${  gravatarDefault}`
                     );
-                } else {
-                    return runtime.pluginResourcePath + '/images/nouserpic.png';
                 }
+                return `${runtime.pluginResourcePath  }/images/nouserpic.png`;
+
             case 'silhouette':
             case 'mysteryman':
             default:
-                return runtime.pluginResourcePath + '/images/nouserpic.png';
+                return `${runtime.pluginResourcePath  }/images/nouserpic.png`;
             }
         }
 
@@ -68,7 +66,7 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
                 console.warn('no profile?', profile);
                 return '';
             }
-            var avatarUrl = buildAvatarUrl(profile);
+            const avatarUrl = buildAvatarUrl(profile);
 
             return img({
                 src: avatarUrl,
@@ -81,19 +79,19 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
         }
 
         function renderLogin(events) {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 if (runtime.service('session').isLoggedIn()) {
                     return runtime
                         .service('userprofile')
                         .getProfile()
-                        .then(function (profile) {
+                        .then((profile) => {
                             if (!profile) {
                                 // Don't bother rendering yet if the profile is not ready
                                 // yet.
                                 return;
                             }
-                            var realname = cleanText(profile.user.realname);
-                            var username = cleanText(profile.user.username);
+                            const realname = profile.user.realname;
+                            const username = profile.user.username;
                             return div(
                                 {
                                     class: 'navbar container-fluid'
@@ -119,10 +117,10 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
                                                 },
                                                 [
                                                     buildAvatar(profile),
-                                                    span({ class: 'caret', style: 'margin-left: 5px;' })
+                                                    span({class: 'caret', style: 'margin-left: 5px;'})
                                                 ]
                                             ),
-                                            ul({ class: 'dropdown-menu', role: 'menu' }, [
+                                            ul({class: 'dropdown-menu', role: 'menu'}, [
                                                 li({}, [
                                                     div(
                                                         {
@@ -151,7 +149,7 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
                                                         ]
                                                     )
                                                 ]),
-                                                li({ class: 'divider' }),
+                                                li({class: 'divider'}),
                                                 li({}, [
                                                     a(
                                                         {
@@ -200,27 +198,27 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
                     [
                         div({
                             class: 'fa fa-sign-in  fa-inverse',
-                            style: { marginRight: '5px' }
+                            style: {marginRight: '5px'}
                         }),
-                        div({ class: 'kb-nav-btn-txt' }, 'Sign In')
+                        div({class: 'kb-nav-btn-txt'}, 'Sign In')
                     ]
                 );
             });
         }
 
         function render() {
-            var events = DomEvents.make({
+            const events = DomEvents.make({
                 node: container
             });
-            return renderLogin(events).then(function (loginContent) {
-                container.innerHTML = loginContent;
+            return renderLogin(events).then((loginContent) => {
+                setInnerHTML(container, loginContent);
                 events.attachEvents();
             });
         }
 
         // LIFECYCLE API
 
-        var hostNode, container;
+        let hostNode, container;
 
         function attach(node) {
             hostNode = node;
@@ -231,9 +229,9 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
 
         function start() {
             runtime.service('userprofile').onChange(
-                function () {
+                () => {
                     render();
-                }.bind(this)
+                }
             );
 
             return render();
@@ -250,15 +248,15 @@ define(['bluebird', 'kb_common/html', 'kb_common/domEvent2', 'bootstrap'], funct
         }
 
         return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
+            attach,
+            start,
+            stop,
+            detach
         };
     }
 
     return {
-        make: function (config) {
+        make(config) {
             return myWidget(config);
         }
     };

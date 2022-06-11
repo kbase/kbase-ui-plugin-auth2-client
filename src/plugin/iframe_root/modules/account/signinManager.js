@@ -4,10 +4,9 @@ define([
     'kb_common/domEvent2',
     'kb_common/bootstrapUtils',
     'kb_common/format',
-    'kb_common_ts/Auth2'
-], (Promise, html, DomEvent, BS, Format, auth2) => {
-    'use strict';
-
+    'kb_common_ts/Auth2',
+    'lib/domUtils'
+], (Promise, html, DomEvent, BS, Format, auth2, {domEncodedText, setInnerHTML, clearInnerHTML}) => {
     const t = html.tag,
         div = t('div'),
         span = t('span'),
@@ -20,7 +19,7 @@ define([
         em = t('em');
 
     class SigninManager {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.runtime = runtime;
 
             this.hostNode = null;
@@ -111,19 +110,20 @@ define([
                 ]
             });
 
-            this.container.innerHTML = div(
+            setInnerHTML(this.container, div(
                 {
                     style: {
                         marginTop: '10px'
                     }
                 },
                 tabs.content
-            );
+            ));
             this.bindVm();
         }
 
         renderInfo() {
-            this.vm.intro.node.innerHTML = div(
+            // xss safe
+            setInnerHTML(this.vm.intro.node, div(
                 {
                     style: {
                         maxWidth: '60em',
@@ -184,7 +184,7 @@ define([
                         'when your browser is exited.'
                     ])
                 ]
-            );
+            ));
         }
 
         doRevokeToken(tokenId) {
@@ -201,12 +201,12 @@ define([
 
         doLogout() {
             // Revoke
-            this.auth2
+            this.runtime.service('session').getClient()
                 .logout(this.currentUserToken)
                 .then(() => {
-                    // runtime.send('session', 'loggedout');
-                    this.runtime.send('app', 'navigate', {
-                        path: 'auth2/signedout'
+                    this.runtime.send('app', 'auth-navigate', {
+                        nextRequest: {path: 'auth2/signedout'},
+                        tokenInfo: null
                     });
                 })
                 .catch((err) => {
@@ -249,7 +249,7 @@ define([
             }
 
             if (this.vm.allTokens.value.length === 0) {
-                this.vm.allTokens.node.innerHTML = div(
+                setInnerHTML(this.vm.allTokens.node, div(
                     {
                         style: {
                             fontStyle: 'italic',
@@ -257,11 +257,11 @@ define([
                         }
                     },
                     'You do not have any additional active sign-ins.'
-                );
+                ));
                 return;
             }
 
-            this.vm.allTokens.node.innerHTML = table(
+            setInnerHTML(this.vm.allTokens.node, table(
                 {
                     class: 'table table-striped',
                     style: {
@@ -344,7 +344,7 @@ define([
                                             );
                                         }
                                         return span([
-                                            token.agent,
+                                            domEncodedText(token.agent),
                                             span(
                                                 {
                                                     style: {
@@ -353,7 +353,7 @@ define([
                                                         color: '#888'
                                                     }
                                                 },
-                                                token.agentver
+                                                domEncodedText(token.agentver)
                                             )
                                         ]);
                                     })()
@@ -373,7 +373,7 @@ define([
                                             );
                                         }
                                         return span([
-                                            token.os,
+                                            domEncodedText(token.os),
                                             span(
                                                 {
                                                     style: {
@@ -382,7 +382,7 @@ define([
                                                         color: '#888'
                                                     }
                                                 },
-                                                token.osver
+                                                domEncodedText(token.osver)
                                             )
                                         ]);
                                     })()
@@ -393,7 +393,7 @@ define([
                                             fontFamily: 'monospace'
                                         }
                                     },
-                                    token.ip
+                                    domEncodedText(token.ip)
                                 ),
                                 td(
                                     {
@@ -422,15 +422,15 @@ define([
                             ]);
                         })
                 )
-            );
+            ));
             events.attachEvents();
         }
 
         renderCurrentTokens(node, tokens) {
             const events = DomEvent.make({
-                node: node
+                node
             });
-            node.innerHTML = table(
+            setInnerHTML(node, table(
                 {
                     class: 'table table-striped',
                     style: {
@@ -491,7 +491,9 @@ define([
                 ].concat(
                     tokens.map((token) => {
                         return tr([
-                            td(Format.niceElapsedTime(token.created) + ' (' + Format.niceTime(token.created) + ')'),
+                            td({
+                                title: Format.niceTime(token.created)
+                            }, Format.niceElapsedTime(token.created)),
                             td(Format.niceElapsedTime(token.expires)),
                             td(
                                 (() => {
@@ -590,17 +592,16 @@ define([
                         ]);
                     })
                 )
-            );
+            ));
             events.attachEvents();
         }
 
         doRevokeAll2() {
             return this.auth2.revokeAllTokens(this.currentUserToken).then(() => {
-                // TODO: port this over -- how???
-                // this.runtime
-                //     .service('session')
-                //     .getClient()
-                //     .removeSessionCookie();
+                this.runtime.send('app', 'auth-navigate', {
+                    nextRequest: {path: 'auth2/signedout'},
+                    tokenInfo: null
+                });
             });
         }
 
@@ -622,7 +623,7 @@ define([
             const events = DomEvent.make({
                 node: this.container
             });
-            this.vm.toolbar.node.innerHTML = div(
+            setInnerHTML(this.vm.toolbar.node, div(
                 {
                     class: 'btn-toolbar',
                     role: 'toolbar',
@@ -655,7 +656,7 @@ define([
                         ]
                     )
                 ]
-            );
+            ));
             events.attachEvents();
         }
 
@@ -678,7 +679,8 @@ define([
                     this.renderTokens();
                 })
                 .catch((err) => {
-                    this.vm.allTokens.node.innerHTML = 'Sorry, error, look in console: ' + err.message;
+                    console.error(err);
+                    this.vm.allTokens.node.innerText = `Sorry, error, look in console: ${err.message}`;
                 });
         }
 
@@ -710,7 +712,7 @@ define([
             return Promise.try(() => {
                 if (this.hostNode && this.container) {
                     this.hostNode.removeChild(this.container);
-                    this.hostNode.innerHTML = '';
+                    clearInnerHTML(this.hostNode);
                 }
             });
         }

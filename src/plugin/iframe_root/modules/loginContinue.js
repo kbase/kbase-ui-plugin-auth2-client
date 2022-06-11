@@ -11,9 +11,10 @@ define([
     './components/errorView',
     './components/signinView',
     'kb_common_ts/Auth2',
+    'lib/domUtils',
     // loaded for effect
     'bootstrap'
-], function (
+], (
     Promise,
     ko,
     SubscriptionManager,
@@ -25,18 +26,17 @@ define([
     provider,
     ErrorViewComponent,
     SigninViewComponent,
-    auth2
-) {
-    'use strict';
-
-    var t = html.tag,
+    auth2,
+    {setInnerHTML, clearInnerHTML}
+) => {
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         p = t('p'),
         a = t('a');
 
     class UIError extends Error {
-        constructor({ code, message, detail, data }) {
+        constructor({code, message, detail, data}) {
             super(message);
             this.code = code;
             this.detail = detail;
@@ -45,11 +45,11 @@ define([
     }
 
     function Query(search) {
-        var query = {};
-        search.split('&').forEach(function (field) {
-            var parts = field.split('=');
-            var key = decodeURIComponent(parts[0]);
-            var value = decodeURIComponent(parts[1]);
+        const query = {};
+        search.split('&').forEach((field) => {
+            const parts = field.split('=');
+            const key = decodeURIComponent(parts[0]);
+            const value = decodeURIComponent(parts[1]);
             query[key] = value;
         });
         return query;
@@ -57,12 +57,12 @@ define([
 
     function URL(url) {
         if (typeof url !== 'string') {
-            throw new TypeError('Incoming url must be a string, is ' + typeof url);
+            throw new TypeError(`Incoming url must be a string, is ${  typeof url}`);
         }
-        var scheme, host, path, search, hash, query;
+        let scheme, host, query;
         // get scheme
-        var fullUrl = /^(?:(http[s]*):\/\/)([^/?#]*)(?:(.*))?/.exec(url);
-        var schemaLess;
+        const fullUrl = /^(?:(http[s]*):\/\/)([^/?#]*)(?:(.*))?/.exec(url);
+        let schemaLess;
         if (fullUrl) {
             // Either host + path or just host.
             scheme = fullUrl[1];
@@ -75,22 +75,22 @@ define([
             schemaLess = url;
         }
 
-        var theRest = /^(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?/.exec(schemaLess);
+        const theRest = /^(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?/.exec(schemaLess);
 
-        path = theRest[1];
-        search = theRest[2];
-        hash = theRest[3];
+        const path = theRest[1];
+        const search = theRest[2];
+        const hash = theRest[3];
         if (search) {
             query = Query(search);
         }
 
         return {
-            scheme: scheme,
-            host: host,
-            path: path,
-            search: search,
-            query: query,
-            hash: hash
+            scheme,
+            host,
+            path,
+            search,
+            query,
+            hash
         };
     }
 
@@ -108,7 +108,7 @@ define([
                         p(['The original error message is: ', ex.message])
                     ]),
                     data: {
-                        choice: choice
+                        choice
                     }
                 });
             }
@@ -131,7 +131,7 @@ define([
                             p(['The original error message is: ', ex.message])
                         ]),
                         data: {
-                            choice: choice
+                            choice
                         }
                     });
                 }
@@ -147,7 +147,7 @@ define([
                     ])
                 ]),
                 data: {
-                    choice: choice
+                    choice
                 }
             });
         } else {
@@ -162,24 +162,24 @@ define([
                     )
                 ]),
                 data: {
-                    choice: choice
+                    choice
                 }
             });
         }
     }
 
     function factory(config) {
-        var hostNode,
-            container,
-            mounts = {
-                main: null,
-                clock: null,
-                error: null
-            },
-            runtime = config.runtime,
-            serverTimeOffset;
-        var clock;
-        var koSubscriptions = new SubscriptionManager();
+        let hostNode;
+        let container;
+        const mounts = {
+            main: null,
+            clock: null,
+            error: null
+        };
+        const runtime = config.runtime;
+        let serverTimeOffset;
+        let clock;
+        const koSubscriptions = new SubscriptionManager();
 
         const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
@@ -190,18 +190,19 @@ define([
             // var timeOffset = auth2Client.serverTimeOffset();
 
             function updateTimer(remainingTime) {
-                clockNode.innerHTML = Format.niceDuration(remainingTime);
+                // xss safe
+                setInnerHTML(clockNode, Format.niceDuration(remainingTime));
             }
 
-            var clock = new CountDownClock({
+            const clock = new CountDownClock({
                 tick: 1000,
                 until: expires - serverTimeOffset,
                 // for: 600000,
-                onTick: function (remaining) {
+                onTick(remaining) {
                     updateTimer(remaining);
                 },
-                onExpired: function () {
-                    cancelLogin().then(function () {
+                onExpired() {
+                    cancelLogin().then(() => {
                         runtime.send('notification', 'notify', {
                             type: 'warning',
                             message: 'Your sign-in session has expired.'
@@ -216,7 +217,7 @@ define([
         function cancelLogin() {
             return auth2Client
                 .loginCancel()
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     // just continue...
                     if (err.code === '10010') {
                         // simply continue
@@ -224,12 +225,12 @@ define([
                         throw err;
                     }
                 })
-                .then(function () {
+                .then(() => {
                     runtime.send('app', 'navigate', {
                         path: 'login'
                     });
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('error', err);
                 });
         }
@@ -237,12 +238,12 @@ define([
         // LIFECYCLE API
 
         function attach(node) {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 hostNode = node;
-                var id = html.genId();
-                var errorId = html.genId();
-                var clockId = html.genId();
-                var layout = div(
+                const id = html.genId();
+                const errorId = html.genId();
+                const clockId = html.genId();
+                const layout = div(
                     {
                         class: 'container-fluid'
                     },
@@ -264,7 +265,7 @@ define([
                                             }
                                         }),
                                         div({
-                                            id: id
+                                            id
                                         }),
                                         div({
                                             id: errorId
@@ -276,11 +277,11 @@ define([
                     ]
                 );
                 container = hostNode.appendChild(document.createElement('div'));
-                container.innerHTML = layout;
+
+                setInnerHTML(container, layout);
                 mounts.main = document.getElementById(id);
                 mounts.clock = document.getElementById(clockId);
                 mounts.error = document.getElementById(errorId);
-                // renderLayout();
             });
         }
 
@@ -291,7 +292,7 @@ define([
                     linkAll: false,
                     agreements: []
                 })
-                .then(function (pickResult) {
+                .then((pickResult) => {
                     if (nextRequest !== null) {
                         try {
                             // since the plugin is operating inside of the iframe, it needs
@@ -313,7 +314,7 @@ define([
                         });
                     }
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('Error', err);
                     // showError(err);
                 });
@@ -328,9 +329,9 @@ define([
                 });
             }
 
-            var providers = new provider.Providers({ runtime: runtime }).get();
+            const providers = new provider.Providers({runtime}).get();
 
-            var providersMap = providers.reduce((providersMap, provider) => {
+            const providersMap = providers.reduce((providersMap, provider) => {
                 providersMap[provider.id] = provider;
                 return providersMap;
             }, {});
@@ -342,8 +343,8 @@ define([
                     serverTimeOffset = new Date().getTime() - root.servertime;
                     return auth2Client.getLoginChoice();
                 })
-                .then(function (choice) {
-                    var stateParams = getStateParam(choice);
+                .then((choice) => {
+                    const stateParams = getStateParam(choice);
 
                     if (stateParams.origin === 'signup') {
                         const params = {};
@@ -360,27 +361,27 @@ define([
                         return null;
                     }
 
-                    var policies = Policies.make({
-                        runtime: runtime
+                    const policies = Policies.make({
+                        runtime
                     });
 
                     return policies
                         .start()
-                        .then(function () {
+                        .then(() => {
                             if (choice.login && choice.login.length === 1) {
                                 return policies.evaluatePolicies(choice.login[0].policyids);
                             } else if (choice.create && choice.create.length === 1) {
                                 // just pass empty policy ids, since this user has none yet.
                                 return policies.evaluatePolicies([]);
-                            } else {
-                                // should never gethere.
-                                throw new Error('Neither login nor signup available for this sign-up account');
                             }
-                        })
-                        .then(function (policiesToResolve) {
-                            var step;
+                            // should never gethere.
+                            throw new Error('Neither login nor signup available for this sign-up account');
 
-                            var provider = providersMap[choice.provider];
+                        })
+                        .then((policiesToResolve) => {
+                            let step;
+
+                            const provider = providersMap[choice.provider];
 
                             // If no policies to resolve and auth provider does not require signin
                             // confirmation, then just auto-signin.
@@ -392,8 +393,8 @@ define([
                                 return doSignIn(choice, stateParams.nextrequest);
                             }
                             clock = (function (container, expires) {
-                                var clockId = html.genId();
-                                container.innerHTML = div(
+                                const clockId = html.genId();
+                                setInnerHTML(container, div(
                                     {
                                         dataBind: {
                                             if: 'clockTime'
@@ -425,27 +426,28 @@ define([
                                             div('After this you will be returned to the sign-in page.')
                                         ]
                                     )
-                                );
+                                ));
                                 return createClock(document.getElementById(clockId), expires);
                             })(mounts.clock, choice.expires);
 
                             // Called by child components if they have either finished or cancelled
                             // the login choice session.
 
-                            var done = ko.observable(false);
+                            const done = ko.observable(false);
 
                             koSubscriptions.add(
-                                done.subscribe(function (newDone) {
+                                done.subscribe((newDone) => {
                                     if (newDone) {
                                         if (clock) {
                                             clock.stop();
-                                            mounts.clock.innerHTML = '';
+                                            clearInnerHTML(mounts.clock);
                                         }
                                     }
                                 })
                             );
 
-                            mounts.main.innerHTML = div({
+                            // xss safe
+                            setInnerHTML(mounts.main,  div({
                                 dataBind: {
                                     component: {
                                         name: SigninViewComponent.quotedName(),
@@ -460,21 +462,21 @@ define([
                                         }
                                     }
                                 }
-                            });
-                            var viewModel = {
+                            }));
+                            const viewModel = {
                                 runtime: config.runtime,
-                                step: step,
+                                step,
                                 nextRequest: stateParams.nextrequest,
-                                choice: choice,
-                                policiesToResolve: policiesToResolve,
-                                done: done
+                                choice,
+                                policiesToResolve,
+                                done
                             };
                             ko.applyBindings(viewModel, mounts.main);
                         });
                 })
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     // transform error message
-                    var nextErr;
+                    let nextErr;
                     switch (err.code) {
                     case '10010':
                         nextErr = {
@@ -508,13 +510,14 @@ define([
                     console.error('Auth Error', err);
                     // This is most likely due to an expired token.
                     // When token expiration detection is implemented, we should rarely see this.
-                    var viewModel = {
+                    const viewModel = {
                         code: nextErr.code,
                         message: nextErr.message,
                         detail: nextErr.detail,
                         data: nextErr.data
                     };
-                    mounts.error.innerHTML = div({
+                    // xss safe
+                    setInnerHTML(mounts.error, div({
                         dataBind: {
                             component: {
                                 name: ErrorViewComponent.quotedName(),
@@ -526,18 +529,18 @@ define([
                                 }
                             }
                         }
-                    });
+                    }));
                     ko.applyBindings(viewModel, mounts.error);
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('Error', err);
-                    var viewModel = {
-                        code: err.code,
+                    const viewModel = {
+                        code: err.code || 'n/a',
                         message: err.message,
-                        detail: err.detail || '',
+                        detail: err.detail || 'n/a',
                         data: err.data || null
                     };
-                    mounts.error.innerHTML = div({
+                    setInnerHTML(mounts.error, div({
                         dataBind: {
                             component: {
                                 name: ErrorViewComponent.quotedName(),
@@ -549,13 +552,13 @@ define([
                                 }
                             }
                         }
-                    });
+                    }));
                     ko.applyBindings(viewModel, mounts.error);
                 });
         }
 
         function stop() {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 koSubscriptions.dispose();
                 if (clock) {
                     clock.stop();
@@ -564,7 +567,7 @@ define([
         }
 
         function detach() {
-            return Promise.try(function () {
+            return Promise.try(() => {
                 if (hostNode && container) {
                     hostNode.removeChild(container);
                 }
@@ -572,15 +575,15 @@ define([
         }
 
         return {
-            attach: attach,
-            start: start,
-            stop: stop,
-            detach: detach
+            attach,
+            start,
+            stop,
+            detach
         };
     }
 
     return {
-        make: function (config) {
+        make(config) {
             return factory(config);
         }
     };
