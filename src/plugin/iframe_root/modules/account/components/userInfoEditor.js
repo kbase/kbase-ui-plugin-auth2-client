@@ -4,23 +4,12 @@ define([
     'kb_knockout/lib/generators',
     'kb_lib/html',
     'kb_common/format'
-], function (
-    ko,
+], (ko,
     reg,
     gen,
     html,
-    Format
-) {
-    'use strict';
-
-    const t = html.tag,
-        div = t('div'),
-        h3 = t('h3'),
-        span = t('span'),
-        label = t('label'),
-        p = t('p'),
-        input = t('input'),
-        button = t('button');
+    Format) => {
+    const t = html.tag, div = t('div'), h3 = t('h3'), span = t('span'), label = t('label'), p = t('p'), input = t('input'), button = t('button');
 
     const fields = {
         realname: {
@@ -88,7 +77,7 @@ define([
     };
 
     class UserInfoEditor {
-        constructor({ doSave, email, realname, username, created, lastLogin }) {
+        constructor({doSave, email, realname, username, created, lastLogin}) {
             this.doSave = doSave;
 
             this.email = ko.observable(email)
@@ -137,10 +126,10 @@ define([
                 return Format.niceTime(this.created());
             });
             this.lastLoginAt = ko.pureComputed(() => {
-                return Format.niceElapsedTime(this.lastLogin()) +
-                    ' (' +
-                    Format.niceTime(this.lastLogin()) +
-                    ')';
+                return `${Format.niceElapsedTime(this.lastLogin())
+                } (${
+                    Format.niceTime(this.lastLogin())
+                })`;
             });
 
             this.more = {};
@@ -201,7 +190,7 @@ define([
                 })
                 .catch((err) => {
                     console.error('boo', err);
-                    this.message('Error Saving! ' + err.message);
+                    this.message(`Error Saving! ${  err.message}`);
                     this.messageType({
                         'alert-danger': true,
                         hidden: false
@@ -222,7 +211,7 @@ define([
                     },
                     dataElement: 'button',
                     dataBind: {
-                        click: 'showMore.bind($data, "' + name + '")'
+                        click: `showMore.bind($data, "${  name  }")`
                     }
                 }, span({
                     dataElement: 'label'
@@ -235,15 +224,15 @@ define([
                         },
                         dataBind: {
                             css: {
-                                '"fa-caret-right"': 'more.' + name + '()',
-                                '"fa-caret-down"': '!more.' + name + '()'
+                                '"fa-caret-right"': `more.${  name  }()`,
+                                '"fa-caret-down"': `!more.${  name  }()`
                             }
                         }
                     })
                 ]))
             ]),
             div({
-                dataBind: 'css: {hidden: more.' + name + '()}',
+                dataBind: `css: {hidden: more.${  name  }()}`,
                 dataElement: 'content',
                 style: {
                     border: '1px silver dashed',
@@ -254,11 +243,11 @@ define([
     }
 
     function wrapString(s) {
-        return '"' + s + '"';
+        return `"${  s  }"`;
     }
 
     function buildInput(field) {
-        var id = html.genId();
+        const id = html.genId();
         return div({
             class: 'form-group'
         }, [
@@ -280,10 +269,13 @@ define([
                     input({
                         type: 'text',
                         class: 'form-control',
-                        id: id,
+                        id,
                         placeholder: field.placeholder,
                         dataBind: {
                             value: field.vmId || field.name,
+                            attr: {
+                                'data-testid': `"${field.name}"`
+                            },
                             valueUpdate: wrapString('afterkeydown')
                         }
                     }),
@@ -293,11 +285,11 @@ define([
                             validationMessage: field.vmId || field.name
                         }
                     }),
-                    gen.if(field.name + '.constraint.isValid() === false',
+                    gen.if(`${field.name}.constraint.isValid() === false`,
                         div({
                             class: 'alert alert-danger',
                             dataBind: {
-                                html: field.name + '.constraint.message'
+                                html: `${field.name  }.constraint.message`
                             }
                         }))
                     // gen.if(field.name + '.constraint.state() === "invalid"',
@@ -318,7 +310,7 @@ define([
     }
 
     function buildDisplay(field) {
-        var id = html.genId();
+        const id = html.genId();
         return div({
             class: 'form-group'
         }, [
@@ -338,7 +330,13 @@ define([
                     class: 'col-md-6'
                 }, [
                     div({
-                        dataBind: 'text: ' + (field.vmId || field.name)
+                        dataBind: {
+                            attr: {
+                                id: `"${id}"`,
+                                'data-testid': `"${field.name}"`
+                            },
+                            text: field.vmId || field.name
+                        }
                     })
                 ]),
                 div({
@@ -373,7 +371,7 @@ define([
     }
 
     function buildForm() {
-        var content = div({
+        const content = div({
             dataBind: {
                 validationOptions: {
                     insertMessages: 'false'
@@ -408,6 +406,5 @@ define([
         };
     }
     // return ko.kb.registerComponent(component);
-
     return reg.registerComponent(component);
 });
