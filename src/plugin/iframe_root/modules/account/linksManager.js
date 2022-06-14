@@ -15,6 +15,8 @@ define([
         ul = t('ul'),
         li = t('li'),
         table = t('table'),
+        thead = t('thead'),
+        tbody = t('tbody'),
         tr = t('tr'),
         th = t('th'),
         td = t('td'),
@@ -354,10 +356,11 @@ define([
                                 title: 'Currently Linked Accounts',
                                 body: table(
                                     {
-                                        class: 'table table-striped'
+                                        class: 'table'
                                     },
-                                    [tr([th('Provider'), th('Username'), th('Action')])].concat(
-                                        this.vm.identities.value.map((identity) => {
+                                    [
+                                        thead([tr([th('Provider'), th('Username'), th('Action')])]),
+                                        tbody(this.vm.identities.value.map((identity) => {
                                             let tooltip;
                                             if (canUnlink) {
                                                 tooltip =
@@ -388,8 +391,8 @@ define([
                                                     )
                                                 )
                                             ]);
-                                        })
-                                    )
+                                        }))
+                                    ]
                                 )
                             }),
                             BS.buildPanel({
