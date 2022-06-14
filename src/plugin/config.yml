@@ -35,7 +35,7 @@ services:
   menu:
     items:
       - name: account
-        path: auth2/account
+        path: account
         label: Account
         icon: drivers-license
   coreServices:
