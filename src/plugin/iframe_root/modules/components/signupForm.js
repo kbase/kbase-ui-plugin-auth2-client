@@ -14,7 +14,7 @@ define([
     './typeaheadInput',
     './errorView',
     'yaml!../../resources/data/referralSources.yaml',
-], function (
+], (
     ko,
     reg,
     SubscriptionManager,
@@ -30,10 +30,8 @@ define([
     TypeaheadInputComponent,
     ErrorViewComponent,
     referralSourceData
-) {
-    'use strict';
-
-    var t = html.tag,
+) => {
+    const t = html.tag,
         h1 = t('h1'),
         div = t('div'),
         a = t('a'),
@@ -48,8 +46,8 @@ define([
         input = t('input');
 
     function memoize(fun) {
-        var run = false;
-        var value;
+        let run = false;
+        let value;
         return function () {
             if (run) {
                 return value;
@@ -61,26 +59,26 @@ define([
     }
 
     function viewModel(params) {
-        var subscriptions = new SubscriptionManager();
-        var choice = params.choice;
-        var done = params.done;
-        var create = choice.create[0];
-        var runtime = params.runtime;
-        var nextRequest = params.nextRequest;
+        const subscriptions = new SubscriptionManager();
+        const choice = params.choice;
+        const done = params.done;
+        const create = choice.create[0];
+        const runtime = params.runtime;
+        const nextRequest = params.nextRequest;
 
         const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
         });
 
-        var auth2Session = new MAuth2Session.Auth2Session({
+        const auth2Session = new MAuth2Session.Auth2Session({
             cookieName: runtime.config('ui.services.session.cookie.name'),
             extraCookies: [],
             baseUrl: runtime.config('services.auth2.url'),
             providers: runtime.config('services.auth2.providers')
         });
 
-        var dataSource = DataSource({
-            path: runtime.pluginResourcePath + '/dataSources/',
+        const dataSource = DataSource({
+            path: `${runtime.pluginResourcePath  }/dataSources/`,
             sources: {
                 // Raw data source
                 institutions: {
@@ -103,18 +101,18 @@ define([
                             translate: false
                         },
                         nationalLabs: {
-                            translate: function (item) {
+                            translate(item) {
                                 return {
                                     value: item.name,
-                                    label: item.name + ' (' + item.initials + ')'
+                                    label: `${item.name  } (${  item.initials  })`
                                 };
                             }
                         },
                         otherLabs: {
-                            translate: function (item) {
+                            translate(item) {
                                 return {
                                     value: item.name,
-                                    label: item.name + ' (' + item.initials + ')'
+                                    label: `${item.name  } (${  item.initials  })`
                                 };
                             }
                         }
@@ -127,7 +125,7 @@ define([
         // TODO: move to knockout-plus?
 
         ko.validation.rules['realnameCannotStartWithSpace'] = {
-            validator: function (val) {
+            validator(val) {
                 if (/^\s+/.test(val)) {
                     return false;
                 }
@@ -138,7 +136,7 @@ define([
         };
 
         ko.validation.rules['usernameValidChars'] = {
-            validator: function (val) {
+            validator(val) {
                 if (!/^[a-z0-9_]+$/.test(val)) {
                     return false;
                 }
@@ -158,7 +156,7 @@ define([
         //     message: 'A username must start with an alphabetic letter'
         // };
         ko.validation.rules['usernameCannotStartWithNumber'] = {
-            validator: function (val) {
+            validator(val) {
                 if (/^[0-9]+/.test(val)) {
                     return false;
                 }
@@ -168,7 +166,7 @@ define([
             message: 'A username may not begin with a number'
         };
         ko.validation.rules['usernameCannotStartWithUnderscore'] = {
-            validator: function (val) {
+            validator(val) {
                 if (/^_+/.test(val)) {
                     return false;
                 }
@@ -178,7 +176,7 @@ define([
             message: 'A username may not start with the underscore character _'
         };
         ko.validation.rules['usernameNoSpaces'] = {
-            validator: function (val) {
+            validator(val) {
                 if (/\s/.test(val)) {
                     return false;
                 }
@@ -190,16 +188,16 @@ define([
 
         ko.validation.rules['usernameMustBeUnique'] = {
             async: true,
-            validator: function (val, params, callback) {
+            validator(val, params, callback) {
                 auth2Client
                     .loginUsernameSuggest(username())
-                    .then(function (results) {
+                    .then((results) => {
                         if (results.availablename !== username()) {
                             callback({
                                 isValid: results.available,
                                 message:
-                                    'This username is not available: a suggested available username is ' +
-                                    results.availablename
+                                    `This username is not available: a suggested available username is ${
+                                        results.availablename}`
                             });
                         } else {
                             callback({
@@ -207,11 +205,11 @@ define([
                             });
                         }
                     })
-                    .catch(function (err) {
+                    .catch((err) => {
                         console.error('err', err);
                         callback({
                             isValid: false,
-                            message: 'Error checking for username: ' + err.message
+                            message: `Error checking for username: ${  err.message}`
                         });
                     });
             },
@@ -224,7 +222,7 @@ define([
             if (!config) {
                 return;
             }
-            var fieldBorder = ko.pureComputed(function () {
+            const fieldBorder = ko.pureComputed(() => {
                 if (target.isValidating()) {
                     // return '1px solid yellow';
                     return 'bs-border-warning';
@@ -233,21 +231,21 @@ define([
                     if (target.isValid()) {
                         // return '1px solid transparent';
                         return 'bs-border-invisible';
-                    } else {
-                        // return '1px solid red';
-                        return 'bs-border-danger';
                     }
-                } else {
-                    // return '1px solid transparent';
-                    return 'bs-border-invisible';
+                    // return '1px solid red';
+                    return 'bs-border-danger';
+
                 }
+                // return '1px solid transparent';
+                return 'bs-border-invisible';
+
             });
             target.validationFieldBorder = fieldBorder;
         };
 
         // SIGNUP FORM
 
-        var realname = ko.observable(create.provfullname).extend({
+        const realname = ko.observable(create.provfullname).extend({
             required: true,
             minLength: 2,
             maxLength: 100,
@@ -278,31 +276,31 @@ define([
         //     return n + 'th';
         // }
 
-        var fixedUsername = ko.pureComputed(function () {
-            var un = username();
+        const fixedUsername = ko.pureComputed(() => {
+            const un = username();
 
             if (!un) {
                 return null;
             }
 
-            var upperRe = /[A-Z]/;
-            var spaceRe = /[ ]/;
-            var digitRe = /\d/;
-            var validCharsRe = /[a-z0-9_]/;
-            var underscoreRe = /_/;
+            const upperRe = /[A-Z]/;
+            const spaceRe = /[ ]/;
+            const digitRe = /\d/;
+            const validCharsRe = /[a-z0-9_]/;
+            const underscoreRe = /_/;
 
-            var isCorrected = false;
+            let isCorrected = false;
 
-            var initialSkipped = 0;
+            let initialSkipped = 0;
 
-            var fixed = un.split('').map(function (char, index) {
+            const fixed = un.split('').map((char, index) => {
                 // initial character is a number, remove it
                 const position = index + 1;
                 if (index - initialSkipped === 0 && digitRe.test(char)) {
                     isCorrected = true;
                     initialSkipped += 1;
                     return {
-                        position: position,
+                        position,
                         original: char,
                         // there really is not valid replacement, this has the effect of removing the character
                         // this is weird in the case of just two character input, because accepting the correction
@@ -318,7 +316,7 @@ define([
                     isCorrected = true;
                     initialSkipped += 1;
                     return {
-                        position: position,
+                        position,
                         original: char,
                         // no useful replacement for an initial underscore, so just remove it for the correction.
                         replacement: '',
@@ -330,7 +328,7 @@ define([
                 if (upperRe.test(char)) {
                     isCorrected = true;
                     return {
-                        position: position,
+                        position,
                         original: char,
                         replacement: char.toLowerCase(),
                         reason: 'uppercase',
@@ -341,7 +339,7 @@ define([
                 if (spaceRe.test(char)) {
                     isCorrected = true;
                     return {
-                        position: position,
+                        position,
                         original: char,
                         replacement: '_',
                         reason: 'space',
@@ -355,7 +353,7 @@ define([
                     if (charCode < 32) {
                         isCorrected = true;
                         return {
-                            position: position,
+                            position,
                             original: char,
                             replacement: '_',
                             reason: 'control',
@@ -364,25 +362,25 @@ define([
                     } else if (char.charCodeAt(0) > 127) {
                         isCorrected = true;
                         return {
-                            position: position,
+                            position,
                             original: char,
                             replacement: '_',
                             reason: 'noncompliant',
                             message: 'non-ascii characters are not allowed'
                         };
-                    } else {
-                        isCorrected = true;
-                        return {
-                            position: position,
-                            original: char,
-                            replacement: '_',
-                            reason: 'symbol',
-                            message: 'symbols other than hyphen and underscore are not allowed'
-                        };
                     }
+                    isCorrected = true;
+                    return {
+                        position,
+                        original: char,
+                        replacement: '_',
+                        reason: 'symbol',
+                        message: 'symbols other than hyphen and underscore are not allowed'
+                    };
+
                 }
                 return {
-                    position: position,
+                    position,
                     original: char,
                     replacement: char,
                     reason: false,
@@ -392,9 +390,9 @@ define([
 
             if (isCorrected) {
                 return {
-                    fixed: fixed,
+                    fixed,
                     replacement: fixed
-                        .map(function (fix) {
+                        .map((fix) => {
                             return fix.replacement;
                         })
                         .join('')
@@ -408,27 +406,27 @@ define([
             if (!fixedUsername()) {
                 username(null);
             }
-            var fixed = fixedUsername()
-                .fixed.map(function (corrected) {
+            const fixed = fixedUsername()
+                .fixed.map((corrected) => {
                     return corrected.replacement;
                 })
                 .join('');
             username(fixed);
         }
 
-        var email = ko.observable(create.provemail).extend({
+        const email = ko.observable(create.provemail).extend({
             required: true,
             email: true,
             validationFieldBorder: true
         });
 
-        var organization = ko.observable().extend({
+        const organization = ko.observable().extend({
             required: true,
             dirty: false,
             validationFieldBorder: true
         });
-        var organizationDataSource = dataSource.getFilter('organizations');
-        var department = ko.observable().extend({
+        const organizationDataSource = dataSource.getFilter('organizations');
+        const department = ko.observable().extend({
             required: true,
             validationFieldBorder: true
         });
@@ -459,8 +457,8 @@ define([
                 })
         );
 
-        var allValid = ko.pureComputed(function () {
-            var valid =
+        const allValid = ko.pureComputed(() => {
+            const valid =
                 realname.isValid() &&
                 email.isValid() &&
                 username.isValid() &&
@@ -470,15 +468,15 @@ define([
             return valid;
         });
 
-        var error = {
+        const error = {
             code: ko.observable(),
             message: ko.observable(),
             detail: ko.observable(),
             data: ko.observable()
         };
 
-        var policiesToResolve = {
-            missing: params.policiesToResolve.missing.map(function (item) {
+        const policiesToResolve = {
+            missing: params.policiesToResolve.missing.map((item) => {
                 return {
                     id: item.id,
                     version: item.version,
@@ -487,7 +485,7 @@ define([
                     agreed: ko.observable(false)
                 };
             }),
-            outdated: params.policiesToResolve.outdated.map(function (item) {
+            outdated: params.policiesToResolve.outdated.map((item) => {
                 return {
                     id: item.id,
                     version: item.version,
@@ -499,16 +497,16 @@ define([
             })
         };
 
-        var canSubmit = ko.pureComputed(function () {
+        const canSubmit = ko.pureComputed(() => {
             if (!allValid()) {
                 return false;
             }
 
             if (
-                policiesToResolve.missing.some(function (item) {
+                policiesToResolve.missing.some((item) => {
                     return !item.agreed();
                 }) ||
-                policiesToResolve.outdated.some(function (item) {
+                policiesToResolve.outdated.some((item) => {
                     return !item.agreed();
                 })
             ) {
@@ -518,7 +516,7 @@ define([
         });
 
         subscriptions.add(
-            canSubmit.subscribe(function (newCanSubmit) {
+            canSubmit.subscribe((newCanSubmit) => {
                 if (newCanSubmit) {
                     signupState('complete');
                 } else {
@@ -532,11 +530,11 @@ define([
 
         function createProfile(response) {
             return auth2Client.getMe(response.token.token)
-                .then(function (accountInfo) {
-                    var userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
+                .then((accountInfo) => {
+                    const userProfileClient = new UserProfileService(runtime.config('services.user_profile.url'), {
                         token: response.token.token
                     });
-                    var newProfile = {
+                    const newProfile = {
                         user: {
                             username: accountInfo.user,
                             realname: realname()
@@ -574,10 +572,10 @@ define([
                         .set_user_profile({
                             profile: newProfile
                         })
-                        .catch(function (err) {
+                        .catch((err) => {
                             if (err.status === 500) {
                             // TODO: return fancy error.
-                                throw new Error('Profile creation failed: ' + err.error.message);
+                                throw new Error(`Profile creation failed: ${  err.error.message}`);
                             } else {
                                 throw err;
                             }
@@ -586,9 +584,9 @@ define([
         }
 
         function submitSignup() {
-            var agreementsToSubmit = [];
+            const agreementsToSubmit = [];
             // missing policies
-            policiesToResolve.missing.forEach(function (policy) {
+            policiesToResolve.missing.forEach((policy) => {
                 if (!policy.agreed()) {
                     throw new Error('Cannot submit with some policies not agreed to');
                 }
@@ -598,7 +596,7 @@ define([
                 });
             });
             // outdated policies.
-            policiesToResolve.outdated.forEach(function (policy) {
+            policiesToResolve.outdated.forEach((policy) => {
                 if (!policy.agreed()) {
                     throw new Error('Cannot submit with some policies not agreed to');
                 }
@@ -609,25 +607,25 @@ define([
                 });
             });
 
-            var data = {
+            const data = {
                 id: create.id,
                 user: username(),
                 display: realname(),
                 email: email(),
                 linkall: false,
-                policyids: agreementsToSubmit.map(function (a) {
+                policyids: agreementsToSubmit.map((a) => {
                     return [a.id, a.version].join('.');
                 })
             };
 
             return auth2Client
                 .loginCreate(data)
-                .then(function (result) {
-                    return createProfile(result).then(function () {
+                .then((result) => {
+                    return createProfile(result).then(() => {
                         return auth2Session.initializeSession(result.token);
                     });
                 })
-                .then(function () {
+                .then(() => {
                     signupState('success');
                 });
         }
@@ -639,7 +637,7 @@ define([
         function doSubmitSignup() {
             // validateAll();
             submitSignup()
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     console.error('auth error signing up', err);
                     error.code(err.code);
                     error.message(err.message);
@@ -647,7 +645,7 @@ define([
                     error.data(err.data);
                     signupState('error');
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('error signing up', err);
                     signupState('error');
                     if (err.status === 500) {
@@ -661,7 +659,7 @@ define([
                         error.message(err.message);
                     }
                 })
-                .finally(function () {
+                .finally(() => {
                     done(true);
                 });
         }
@@ -678,27 +676,27 @@ define([
 
         // EXPIRATION
 
-        var timeOffset = runtime.service('session').serverTimeOffset();
+        const timeOffset = runtime.service('session').serverTimeOffset();
 
-        var now = ko.observable(new Date().getTime());
+        const now = ko.observable(new Date().getTime());
 
         // var servertime = choice.servertime;
-        var expiresIn = ko.pureComputed(function () {
+        const expiresIn = ko.pureComputed(() => {
             if (!choice.expires) {
                 return '';
             }
             // for testing: return choice.expires - now() - timeOffset - (27 * 60 * 1000);
             return choice.expires - now() - timeOffset;
         });
-        var expiresMessage = ko.pureComputed(function () {
+        const expiresMessage = ko.pureComputed(() => {
             return format.niceDuration(expiresIn());
         });
-        var expired = ko.pureComputed(function () {
+        const expired = ko.pureComputed(() => {
             return expiresIn() <= 0;
         });
 
         subscriptions.add(
-            expired.subscribe(function (newExpired) {
+            expired.subscribe((newExpired) => {
                 if (newExpired) {
                     signupState('expired');
                 }
@@ -708,12 +706,12 @@ define([
         function doCancelChoiceSession() {
             auth2Client
                 .loginCancel()
-                .then(function () {
+                .then(() => {
                     runtime.send('app', 'navigate', {
                         path: 'login'
                     });
                 })
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     console.error('ERROR1', err);
                     // Setting the error triggers the error component to be
                     // displayed and populated.
@@ -727,8 +725,8 @@ define([
                         data: err.data
                     });
                 })
-                .catch(function (err) {
-                    console.error('ERROR2', err);
+                .catch((err) => {
+                    console.error('[doCancelChoiceSession]', err);
                     error({
                         code: err.name,
                         message: err.message,
@@ -736,7 +734,7 @@ define([
                         data: ko.observable({})
                     });
                 })
-                .finally(function () {
+                .finally(() => {
                     done(true);
                 });
         }
@@ -746,54 +744,54 @@ define([
         }
 
         return {
-            choice: choice,
-            create: create,
-            username: username,
+            choice,
+            create,
+            username,
             // usernameFieldBorder: usernameFieldBorder,
-            fixedUsername: fixedUsername,
-            realname: realname,
-            email: email,
+            fixedUsername,
+            realname,
+            email,
             // role: role,
             // roles: roles,
-            organization: organization,
-            organizationDataSource: organizationDataSource,
-            department: department,
-            referralSources: referralSources,
-            referralSourceCopy: referralSourceCopy,
-            selectedReferralSources:selectedReferralSources,
-            policiesToResolve: policiesToResolve,
-            error: error,
+            organization,
+            organizationDataSource,
+            department,
+            referralSources,
+            referralSourceCopy,
+            selectedReferralSources,
+            policiesToResolve,
+            error,
 
             signupState: params.signupState,
 
-            canSubmit: canSubmit,
-            doHandleSubmit: doHandleSubmit,
-            doSubmitSignup: doSubmitSignup,
-            doSignupSuccess: doSignupSuccess,
-            doCancelChoiceSession: doCancelChoiceSession,
+            canSubmit,
+            doHandleSubmit,
+            doSubmitSignup,
+            doSignupSuccess,
+            doCancelChoiceSession,
             //expiration, clock, etc.
-            expired: expired,
-            expiresIn: expiresIn,
-            expiresMessage: expiresMessage,
+            expired,
+            expiresIn,
+            expiresMessage,
 
             // ACTIONS
-            doUseFixedUsername: doUseFixedUsername,
+            doUseFixedUsername,
             // fieldBorder: fieldBorder
 
-            dispose: dispose
+            dispose
         };
     }
 
     function requiredIcon(fieldName) {
-        var result = span({
+        const result = span({
             class: 'glyphicon',
             dataBind: {
                 css:
-                    '{"glyphicon-asterisk text-danger": ' +
-                    fieldName +
-                    '.isValid() === false, "glyphicon-ok text-success":' +
-                    fieldName +
-                    '.isValid()}'
+                    `{"glyphicon-asterisk text-danger": ${
+                        fieldName
+                    }.isValid() === false, "glyphicon-ok text-success":${
+                        fieldName
+                    }.isValid()}`
             },
             style: {
                 marginLeft: '4px'
@@ -802,7 +800,7 @@ define([
         return result;
     }
 
-    var buildRealnameField = memoize(function () {
+    const buildRealnameField = memoize(() => {
         return {
             field: div(
                 {
@@ -867,7 +865,7 @@ define([
         };
     });
 
-    var buildUsernameField = memoize(function () {
+    const buildUsernameField = memoize(() => {
         return {
             field: div(
                 {
@@ -1036,7 +1034,7 @@ define([
         };
     });
 
-    var buildEmailField = memoize(function () {
+    const buildEmailField = memoize(() => {
         return {
             field: div(
                 {
@@ -1095,7 +1093,7 @@ define([
         };
     });
 
-    var buildOrganizationField = memoize(function () {
+    const buildOrganizationField = memoize(() => {
         return {
             field: div(
                 {
@@ -1135,7 +1133,7 @@ define([
         };
     });
 
-    var buildDepartmentField = memoize(function () {
+    const buildDepartmentField = memoize(() => {
         return {
             field: div(
                 {
@@ -1172,7 +1170,7 @@ define([
         };
     });
 
-    var buildReferralField = memoize(function () {
+    const buildReferralField = memoize(() => {
         return {
             field: div(
                 {
@@ -1186,7 +1184,7 @@ define([
                 },
                 [
                     label([
-                        span({ dataBind: { text: 'referralSourceCopy' } }),
+                        span({dataBind: {text: 'referralSourceCopy'}}),
                         requiredIcon('selectedReferralSources'),
                     ]),
                     p([small(['(select all that apply)'])]),
@@ -1200,7 +1198,7 @@ define([
                         },
                     }),
                     '<!-- ko foreach: referralSources -->',
-                    div({ class: 'checkbox' }, [
+                    div({class: 'checkbox'}, [
                         label([
                             input({
                                 type: 'checkbox',
@@ -1209,7 +1207,7 @@ define([
                                     checked: '$component.selectedReferralSources',
                                 },
                             }),
-                            span({ dataBind: { text: '$data.name' } }),
+                            span({dataBind: {text: '$data.name'}}),
                             '<!-- ko if: $data.textinput -->',
                             ' ',
                             div({
@@ -1221,7 +1219,7 @@ define([
                                     validationMessage: '$data.value',
                                 },
                             }),
-                            div({ class: 'form-inline' }, [
+                            div({class: 'form-inline'}, [
                                 input({
                                     class: 'form-control',
                                     placeholder: 'Please specify',
@@ -1231,7 +1229,7 @@ define([
                                         textInput: '$data.value',
                                     },
                                 }),
-                                span({ dataBind: { visible: '$data.selected' } }, [requiredIcon('$data.value')]),
+                                span({dataBind: {visible: '$data.selected'}}, [requiredIcon('$data.value')]),
                             ]),
                             '<!-- /ko -->',
                         ]),
@@ -1270,7 +1268,7 @@ define([
                                     [
                                         p([
                                             'Some field values have been pre-populated from your ',
-                                            span({ dataBind: 'text: choice.provider' }),
+                                            span({dataBind: 'text: choice.provider'}),
                                             ' account.'
                                         ])
                                     ]
@@ -1609,7 +1607,7 @@ define([
 
     function component() {
         return {
-            viewModel: viewModel,
+            viewModel,
             template: template()
         };
     }

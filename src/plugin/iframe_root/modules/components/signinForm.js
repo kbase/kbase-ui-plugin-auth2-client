@@ -8,10 +8,8 @@ define([
     'kb_common_ts/Auth2Session',
     './policyResolver',
     '../lib/provider'
-], function (ko, reg, html, BS, Auth2Error, auth2, MAuth2Session, PolicyResolverComponent, provider) {
-    'use strict';
-
-    var t = html.tag,
+], (ko, reg, html, BS, Auth2Error, auth2, MAuth2Session, PolicyResolverComponent, provider) => {
+    const t = html.tag,
         div = t('div'),
         span = t('span'),
         p = t('p'),
@@ -448,9 +446,9 @@ define([
     }
 
     function getAgreements(policiesToResolve) {
-        var agreementsToSubmit = [];
+        const agreementsToSubmit = [];
         // missing policies
-        policiesToResolve.missing.forEach(function (policy) {
+        policiesToResolve.missing.forEach((policy) => {
             if (!policy.agreed()) {
                 throw new Error('Cannot submit with missing policies not agreed to');
             }
@@ -460,7 +458,7 @@ define([
             });
         });
         // outdated policies.
-        policiesToResolve.outdated.forEach(function (policy) {
+        policiesToResolve.outdated.forEach((policy) => {
             if (!policy.agreed()) {
                 throw new Error('Cannot submit with missing policies not agreed to');
             }
@@ -473,18 +471,18 @@ define([
     }
 
     function viewModel(params) {
-        var runtime = params.runtime;
-        var choice = params.choice;
-        var login = choice.login[0];
-        var nextRequest = params.nextRequest;
-        var source = params.source;
+        const runtime = params.runtime;
+        const choice = params.choice;
+        const login = choice.login[0];
+        const nextRequest = params.nextRequest;
+        const source = params.source;
 
         const auth2Client = new auth2.Auth2({
             baseUrl: runtime.config('services.auth.url')
         });
 
-        var policiesToResolve = {
-            missing: params.policiesToResolve.missing.map(function (item) {
+        const policiesToResolve = {
+            missing: params.policiesToResolve.missing.map((item) => {
                 return {
                     id: item.id,
                     version: item.version,
@@ -493,7 +491,7 @@ define([
                     agreed: ko.observable(false)
                 };
             }),
-            outdated: params.policiesToResolve.outdated.map(function (item) {
+            outdated: params.policiesToResolve.outdated.map((item) => {
                 return {
                     id: item.id,
                     version: item.version,
@@ -505,12 +503,12 @@ define([
             })
         };
 
-        var canSignin = ko.pureComputed(function () {
+        const canSignin = ko.pureComputed(() => {
             if (
-                policiesToResolve.missing.some(function (item) {
+                policiesToResolve.missing.some((item) => {
                     return !item.agreed();
                 }) ||
-                policiesToResolve.outdated.some(function (item) {
+                policiesToResolve.outdated.some((item) => {
                     return !item.agreed();
                 })
             ) {
@@ -520,23 +518,23 @@ define([
         });
 
         function doSigninSubmit() {
-            var auth2Session = new MAuth2Session.Auth2Session({
+            const auth2Session = new MAuth2Session.Auth2Session({
                 cookieName: runtime.config('ui.services.session.cookie.name'),
                 extraCookies: [],
                 baseUrl: runtime.config('services.auth2.url'),
                 providers: runtime.config('services.auth2.providers')
             });
-            var agreements = getAgreements(policiesToResolve);
+            const agreements = getAgreements(policiesToResolve);
             auth2Session
                 .loginPick({
                     identityId: login.id,
                     linkAll: false,
-                    agreements: agreements
+                    agreements
                 })
-                .then(function (pickResult) {
+                .then((pickResult) => {
                     doSigninSuccess(pickResult.token);
                 })
-                .catch(function (err) {
+                .catch((err) => {
                     console.error('Error', err);
                     // showError(err);
                 });
@@ -552,7 +550,7 @@ define([
             } else {
                 const defaultPath = runtime.config('ui.defaults.loginPath', 'dashboard');
                 runtime.send('app', 'auth-navigate', {
-                    nextRequest: { path: defaultPath },
+                    nextRequest: {path: defaultPath},
                     tokenInfo
                 });
             }
@@ -561,7 +559,7 @@ define([
         function doRetrySignup() {
             auth2Client
                 .loginCancel()
-                .then(function () {
+                .then(() => {
                     runtime.send('app', 'navigate', {
                         path: 'signup',
                         params: {
@@ -569,7 +567,7 @@ define([
                         }
                     });
                 })
-                .catch(Auth2Error.AuthError, function (err) {
+                .catch(Auth2Error.AuthError, (err) => {
                     console.error('ERROR1', err);
                     // Setting the error triggers the error component to be
                     // displayed and populated.
@@ -583,8 +581,8 @@ define([
                     //     data: err.data
                     // });
                 })
-                .catch(function (err) {
-                    console.error('ERROR2', err);
+                .catch((err) => {
+                    console.error('[doRetrySignup]', err);
                     // error({
                     //     code: err.name,
                     //     message: err.message,
@@ -594,30 +592,30 @@ define([
                 });
         }
 
-        var providers = new provider.Providers({ runtime: runtime }).get();
+        const providers = new provider.Providers({runtime}).get();
 
-        var providersMap = {};
-        providers.forEach(function (provider) {
+        const providersMap = {};
+        providers.forEach((provider) => {
             providersMap[provider.id] = provider;
         });
 
         return {
-            runtime: runtime,
-            choice: choice,
-            login: login,
-            providersMap: providersMap,
-            canSignin: canSignin,
-            doSigninSubmit: doSigninSubmit,
-            doSigninSuccess: doSigninSuccess,
-            doRetrySignup: doRetrySignup,
-            policiesToResolve: policiesToResolve,
-            source: source
+            runtime,
+            choice,
+            login,
+            providersMap,
+            canSignin,
+            doSigninSubmit,
+            doSigninSuccess,
+            doRetrySignup,
+            policiesToResolve,
+            source
         };
     }
 
     function component() {
         return {
-            viewModel: viewModel,
+            viewModel,
             template: template()
         };
     }

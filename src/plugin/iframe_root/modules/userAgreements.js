@@ -26,10 +26,10 @@ define([
         });
         const currentUserToken = runtime.service('session').getAuthToken();
 
-        function getPolicyFile(arg) {
+        function getPolicyFile({id, version}) {
             const http = new M_HttpClient.HttpClient();
-            const policyVersion = getPolicyVersion(arg.id, arg.version);
-            const url = [window.location.origin + runtime.pluginResourcePath, 'agreements', arg.id, policyVersion.file].join('/');
+            const policyVersion = getPolicyVersion(id, version);
+            const url = [window.location.origin + runtime.pluginResourcePath, 'agreements', policyVersion.file].join('/');
             return http
                 .request({
                     method: 'GET',
@@ -49,43 +49,31 @@ define([
                 });
         }
 
-        function loadPolicies() {
+        async function loadPolicies() {
             const url = [window.location.origin + runtime.pluginResourcePath, 'agreements', 'policies.json'].join('/');
-            const http = new M_HttpClient.HttpClient();
-            return http
-                .request({
-                    method: 'GET',
-                    url
-                })
-                .then((result) => {
-                    if (result.status === 200) {
-                        return JSON.parse(result.response);
-                    }
-                    throw new Error(`Error fetching index: ${  result.status}`);
 
-                });
+            const response = await fetch(url);
+            if (response.status === 200) {
+                return JSON.parse(await response.text());
+            }
+
+            throw new Error(`Error fetching index: ${response.status}`);
         }
 
         function getLatestPolicies() {
-            return policies.map((policy) => {
+            return policies.map(({id, title, versions}) => {
                 const latestVersionId = Math.max.apply(
                     null,
-                    policy.versions.map((version) => {
+                    versions.map((version) => {
                         return version.version;
                     })
                 );
-                // Array.from not supported in IE
-                // TODO: use es6 polyfill lib
-                const latestVersion = policy.versions.filter((version) => {
+                const {version, date, file} = versions.filter((version) => {
                     return version.version === latestVersionId;
                 })[0];
 
                 return {
-                    id: policy.id,
-                    title: policy.title,
-                    version: latestVersion.version,
-                    date: latestVersion.date,
-                    file: latestVersion.file
+                    id, title, version, date, file
                 };
             });
         }

@@ -5,8 +5,8 @@
         "versions": [
             {
                 "version": 1,
-                "file": "v1.md",
-                "date": "2015-01-01"
+                "file": "kbase-user/v1.md",
+                "date": "2015-01-01T00:00:00Z"
             }
         ]
     },
@@ -16,8 +16,8 @@
         "versions": [
             {
                 "version": 1,
-                "file": "v1.md",
-                "date": "2015-01-01"
+                "file": "data-policy/v1.md",
+                "date": "2015-01-01T08:00:00Z"
             }
         ]
     }
