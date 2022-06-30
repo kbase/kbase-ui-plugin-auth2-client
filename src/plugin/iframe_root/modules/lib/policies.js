@@ -1,12 +1,10 @@
 define([
     'bluebird',
     'marked',
-    'dompurify',
     'kb_common_ts/HttpClient'
 ], (
     Promise,
     marked,
-    DOMPurify,
     M_HttpClient
 ) => {
     function factory({runtime}) {
@@ -15,7 +13,7 @@ define([
         function getPolicyFile(arg) {
             const http = new M_HttpClient.HttpClient();
             const policyVersion = getPolicyVersion(arg.id, arg.version);
-            const url = [window.location.origin + runtime.pluginResourcePath, 'agreements', arg.id, policyVersion.file].join('/');
+            const url = [window.location.origin + runtime.pluginResourcePath, 'agreements', policyVersion.file].join('/');
             return http
                 .request({
                     method: 'GET',
@@ -118,7 +116,7 @@ define([
                 const outdatedPolicies = [];
                 latestPolicies.forEach((latestPolicy) => {
                     const userAgreement = userAgreementMap[latestPolicy.id];
-                    const userAgreementVersion = userAgreementVersionMap[`${latestPolicy.id  }.${  latestPolicy.version}`];
+                    const userAgreementVersion = userAgreementVersionMap[`${latestPolicy.id}.${latestPolicy.version}`];
                     if (!userAgreement) {
                         missingPolicies.push({
                             policy: latestPolicy,

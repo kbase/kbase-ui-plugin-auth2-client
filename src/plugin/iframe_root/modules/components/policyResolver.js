@@ -1,12 +1,10 @@
-define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrapBuilders'], function (
+define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrapBuilders'], (
     ko,
     reg,
     html,
     BS
-) {
-    'use strict';
-
-    var t = html.tag,
+) => {
+    const t = html.tag,
         p = t('p'),
         div = t('div'),
         span = t('span'),
@@ -93,8 +91,6 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
                                             input({
                                                 type: 'checkbox',
                                                 name: 'agreed',
-                                                // TODO: this is just for prototyping -- this needs to evolve
-                                                // in to a viewmodel-based widget.
                                                 dataBind: {
                                                     checked: 'agreed'
                                                 }
@@ -219,7 +215,12 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
                                         'Published on: ',
                                         span({
                                             dataBind: {
-                                                text: 'policy.date'
+                                                // text: 'policy.date'
+                                                typedText: {
+                                                    value: 'policy.date',
+                                                    type: '"date"',
+                                                    format: '"MM-DD-YYYY @ HH:mm Z"'
+                                                }
                                             }
                                         })
                                     ]
@@ -304,8 +305,9 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
                                             }
                                         },
                                         [
-                                            p(['You have agreed to this policy.']),
-                                            p(['To show the agreement again, uncheck the agreement above.'])
+                                            p({style: {fontWeight: 'bold'}}, ['You have agreed to this policy.']),
+                                            p(['To view the agreement again, uncheck the checkbox to the left.']),
+                                            p(['You will be able to view all agreed-to policies from the "Account Manager" after you log in'])
                                         ]
                                     )
                                 ])
@@ -343,7 +345,7 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
                                     'The following KBase account policies have not yet been agreed to by this account. '
                                 ]),
                                 p([
-                                    'You may log into this account after you have agreed to these policies by checking the box at the top of each.'
+                                    'You may log into this account after you have agreed to these policies by checking the box next to each.'
                                 ]),
                                 div(
                                     {
@@ -374,7 +376,7 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
                                         'The following KBase Use Agreements have been updated and you need to re-agree to them. '
                                     ]),
                                     p([
-                                        'You may log into this account after you have agreed to these policies by checking the box at the top of each.'
+                                        'You may log into this account after you have agreed to these policies by checking the box next to each.'
                                     ]),
                                     div(
                                         {
@@ -394,12 +396,12 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
     }
 
     function viewModel(params) {
-        var policiesToResolve = params.policiesToResolve;
+        const policiesToResolve = params.policiesToResolve;
 
-        var haveMissing = ko.observable(params.policiesToResolve.missing.length > 0);
-        var haveOutdated = ko.observable(params.policiesToResolve.outdated.length > 0);
+        const haveMissing = ko.observable(params.policiesToResolve.missing.length > 0);
+        const haveOutdated = ko.observable(params.policiesToResolve.outdated.length > 0);
 
-        var doViewPolicy = function (item) {
+        const doViewPolicy = function (item) {
             if (item.viewPolicy()) {
                 item.viewPolicy(false);
             } else {
@@ -408,17 +410,17 @@ define(['knockout', 'kb_knockout/registry', 'kb_lib/html', 'kb_lib/htmlBootstrap
         };
 
         return {
-            policiesToResolve: policiesToResolve,
-            doViewPolicy: doViewPolicy,
-            haveMissing: haveMissing,
-            haveOutdated: haveOutdated
+            policiesToResolve,
+            doViewPolicy,
+            haveMissing,
+            haveOutdated
         };
     }
 
     function component() {
         return {
             template: buildTemplate(),
-            viewModel: viewModel
+            viewModel
         };
     }
     return reg.registerComponent(component);

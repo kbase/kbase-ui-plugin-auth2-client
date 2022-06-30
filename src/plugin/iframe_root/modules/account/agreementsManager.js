@@ -69,7 +69,7 @@ define([
                 },
                 tabs: [{
                     name: 'main',
-                    label: 'Your Current User Policy Agreements',
+                    label: 'Your Current Use Policy Agreements',
                     body: div({
                         class: 'container-fluid'
                     }, [
@@ -147,8 +147,6 @@ define([
             ]));
         }
 
-        // HERE
-
         renderAgreements() {
             const events = DomEvents.make({
                 node: this.container
@@ -200,8 +198,6 @@ define([
                         return 1;
                     }
                     return 0;
-
-
                 })
                 .map((agreement) => {
                     return div({
@@ -234,9 +230,9 @@ define([
                                     fontWeight: 'bold'
                                 }
                             }, agreement.policy.title),
-                            div({}, `version: ${  agreement.version.version}`),
-                            div({}, `published: ${  this.niceDate(agreement.version.date)}`),
-                            div({}, `agreed: ${  this.niceDate(agreement.agreement.date)}`)
+                            div({}, `version: ${agreement.version.version}`),
+                            div({}, `published: ${this.niceDate(agreement.version.date)}`),
+                            div({}, `agreed: ${this.niceDate(agreement.agreement.date)}`)
                         ])
                     ]);
                 }).join('\n')));
