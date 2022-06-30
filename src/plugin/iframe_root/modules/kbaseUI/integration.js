@@ -1,8 +1,8 @@
 define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
-    'use strict';
+
 
     class Integration {
-        constructor({ rootWindow, pluginConfig }) {
+        constructor({rootWindow, pluginConfig}) {
             this.rootWindow = rootWindow;
             this.container = rootWindow.document.body;
             // channelId, frameId, hostId, parentHost
@@ -43,29 +43,43 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             if (this.navigationListeners.length === 1) {
                 const queue = this.navigationQueue;
                 this.navigationQueue = [];
-                queue.forEach(({ path, params, view }) => {
+                queue.forEach(({path, params, view}) => {
                     this.navigationListeners.forEach((listener) => {
-                        listener({ path, params, view });
+                        listener({path, params, view});
                     });
                 });
             }
         }
 
-        handleNavigation({ path, params, view }) {
+        handleNavigation({path, params, view}) {
             // If no listeners yet, queue up the navigation.
             if (this.navigationListeners.length === 0) {
-                this.navigationQueue.push({ path, params, view });
+                this.navigationQueue.push({path, params, view});
             } else {
                 this.navigationListeners.forEach((listener) => {
-                    listener({ path, params, view });
+                    listener({path, params, view});
                 });
             }
         }
 
         setupListeners() {
             this.channel.on('navigate', (message) => {
-                const { path, params, view } = message;
-                this.handleNavigation({ path, params , view });
+                const {path, params, view} = message;
+                this.handleNavigation({path, params , view});
+            });
+            this.channel.on('loggedin', (message) => {
+                this.runtime.messenger.send({
+                    channel: 'session',
+                    message: 'loggedin',
+                    data: message
+                });
+            });
+            this.channel.on('loggedout', () => {
+                this.runtime.messenger.send({
+                    channel: 'session',
+                    message: 'loggedout',
+                    data: null
+                });
             });
         }
 
@@ -80,7 +94,7 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             this.runtime.messenger.receive({
                 channel: 'app',
                 message: 'auth-navigate',
-                handler: ({ nextRequest, tokenInfo }) => {
+                handler: ({nextRequest, tokenInfo}) => {
                     this.channel.send('ui-auth-navigate', {
                         nextRequest,
                         tokenInfo
@@ -90,15 +104,15 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
             this.runtime.messenger.receive({
                 channel: 'app',
                 message: 'post-form',
-                handler: ({ action, params }) => {
-                    this.channel.send('post-form', { action, params });
+                handler: ({action, params}) => {
+                    this.channel.send('post-form', {action, params});
                 }
             });
             this.runtime.messenger.receive({
                 channel: 'ui',
                 message: 'setTitle',
                 handler: (title) => {
-                    this.channel.send('set-title', { title });
+                    this.channel.send('set-title', {title});
                 }
             });
             // TODO: should be a way to simply forward messages to the ui...
@@ -130,13 +144,13 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                 // ready message, is itself ready, and is ready for
                 // the iframe app to start running.
                 this.channel.on('start', (payload) => {
-                    const { authorization, config} = payload;
+                    const {authorization, config} = payload;
                     this.authorization = authorization || null;
                     const {token, username} = authorization;
                     this.token = token;
                     this.username = username;
                     this.config = config;
-                    this.authorized = token ? true : false;
+                    this.authorized = !!token;
 
                     this.runtime = new Runtime({
                         config,

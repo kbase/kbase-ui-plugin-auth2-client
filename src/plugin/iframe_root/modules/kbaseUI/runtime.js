@@ -5,25 +5,25 @@ define([
     './services/session',
     './services/rpc'
 ], (Promise, props, Messenger, SessionService, RPCService) => {
-    'use strict';
+
 
     class Runtime {
-        constructor({ token, username, config }) {
+        constructor({token, username, config}) {
             this.token = token;
             this.username = username;
 
-            this.configDb = new props.Props({ data: config });
+            this.configDb = new props.Props({data: config});
 
             this.pluginPath = '/modules/plugins/auth2-client/iframe_root';
-            this.pluginResourcePath = this.pluginPath + '/resources';
+            this.pluginResourcePath = `${this.pluginPath  }/resources`;
 
             this.messenger = new Messenger();
 
             this.heartbeatTimer = null;
 
             this.services = {
-                session: new SessionService({ runtime: this }),
-                rpc: new RPCService({ runtime: this })
+                session: new SessionService({runtime: this}),
+                rpc: new RPCService({runtime: this})
             };
 
             this.featureSwitches = {};
@@ -42,7 +42,7 @@ define([
 
         service(name) {
             if (!(name in this.services)) {
-                throw new Error('The UI service "' + name + '" is not defined');
+                throw new Error(`The UI service "${  name  }" is not defined`);
             }
             return this.services[name];
         }
@@ -54,11 +54,11 @@ define([
         // COMM
 
         send(channel, message, data) {
-            this.messenger.send({ channel, message, data });
+            this.messenger.send({channel, message, data});
         }
 
         receive(channel, message, handler) {
-            return this.messenger.receive({ channel, message, handler });
+            return this.messenger.receive({channel, message, handler});
         }
 
         recv(channel, message, handler) {
@@ -74,7 +74,7 @@ define([
         featureEnabled(id, defaultValue = false) {
             const featureSwitch = this.featureSwitches[id];
             if (!featureSwitch) {
-                throw new Error('Feature switch "' + id + '" not defined');
+                throw new Error(`Feature switch "${  id  }" not defined`);
             }
 
             const enabledFeatureSwitches = this.configDb.getItem('ui.featureSwitches.enabled');
@@ -87,7 +87,7 @@ define([
         start() {
             return Promise.try(() => {
                 this.heartbeatTimer = window.setInterval(() => {
-                    this.send('app', 'heartbeat', { time: new Date().getTime() });
+                    this.send('app', 'heartbeat', {time: new Date().getTime()});
                 }, 1000);
                 return this.services.session.start();
             });
