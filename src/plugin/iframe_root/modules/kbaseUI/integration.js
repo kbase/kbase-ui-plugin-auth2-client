@@ -123,6 +123,24 @@ define(['./windowChannel', './runtime'], (WindowChannel, Runtime) => {
                     this.channel.send('reload-profile', {});
                 }
             });
+
+            /*
+              this.runtime.send('notification', 'notify', {
+            type: 'success',
+            id: 'connection',
+            icon: 'check',
+            message: message.message,
+            description: message.description,
+            autodismiss: INTERVAL_OK_AUTODISMISS,
+        });
+            */
+            this.runtime.messenger.receive({
+                channel: 'notification',
+                message: 'notify',
+                handler: (notification) => {
+                    this.channel.send('notification', notification);
+                }
+            });
         }
 
         started() {

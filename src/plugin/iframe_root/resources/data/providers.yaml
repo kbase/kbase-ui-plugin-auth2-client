@@ -10,7 +10,7 @@
         Any Google account may be used to access KBase.
 - 
     id: OrcID
-    label: ORCiD
+    label: ORCID
     logoutUrl: https://www.orcid.org/signout
     priority: 1
     confirmSignin: true
@@ -23,6 +23,4 @@
     priority: 2
     confirmSignin: true
     description: |
-        Use your existing Globus ID or [create a new one](https://www.globusid.org/create). 
-        
-        KBase accounts created before 6/17/2017 utilized Globus ID exclusively.
+        Use your Globus ID to access KBase.

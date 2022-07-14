@@ -1,0 +1,9 @@
+.UseAgreements {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.UseAgreements .-agreements {
+    padding: 4px;
+}

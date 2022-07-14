@@ -1,7 +1,5 @@
 define([], () => {
-    'use strict';
-
-    class CountDownClock {
+    class CountdownClock {
         constructor(config) {
             this.targetTime = null;
             // Either countdown until a specific time ...
@@ -24,7 +22,7 @@ define([], () => {
             try {
                 this.onTick(remaining);
             } catch (ex) {
-                console.error('clock onRun: ' + ex.message);
+                console.error(`clock onRun: ${ex.message}`);
             }
             if (remaining > 0) {
                 this.tock();
@@ -53,5 +51,5 @@ define([], () => {
             }
         }
     }
-    return CountDownClock;
+    return CountdownClock;
 });

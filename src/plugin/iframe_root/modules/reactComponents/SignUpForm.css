@@ -1,0 +1,18 @@
+/* .SignUpForm .has-error input.-checkbox {
+    outline: 1px #a94442 solid;
+} */
+
+.SignUpForm  .-hearAbout {
+    border: 1px solid rgba(200, 200, 200, 0.5);
+    padding: 0.25em;
+    border-radius: 0.25em;
+}
+
+.SignUpForm .has-error .-hearAbout {
+    border-color: #a94442;
+}
+
+.SignUpForm hr {
+    margin: 0 0 0.5em 0;
+    border-color: rgba(200, 200, 200, 1);
+}

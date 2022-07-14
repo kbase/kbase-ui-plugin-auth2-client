@@ -22,6 +22,9 @@ define(['kb_common_ts/Auth2'], (auth2) => {
         isAuthorized() {
             return !!this.runtime.token;
         }
+        isAuthenticated() {
+            return !!this.runtime.token;
+        }
         getClient() {
             return this.auth2Client;
         }

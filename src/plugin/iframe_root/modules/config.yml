@@ -11,20 +11,6 @@ source:
     - file: main.css
 install:
   widgets: []
-  # widgets:
-  #   - module: login
-  #     id: auth2_login
-  #     css: true
-  #     type: factory
-  #   - module: loginContinue
-  #     id: auth2LoginContinue
-  #     type: factory
-  #   - module: account/panel
-  #     id: auth2Account
-  #     type: es6
-  #   - module: signedout
-  #     id: auth2_signedout
-  #     type: factory
   coreServices:
     dependencies:
       auth2:
@@ -36,23 +22,23 @@ install:
           minimum: 0.2.0
 views:
   - view: account 
-    module: account/panel
+    module: accountManager
   -
     view: signedout
     module: signedout
   -
     view: login
-    module: login
-    type: factory
+    module: signin
+    type: es6
   -
     view: loginContinue
-    module: loginContinue
-    type: factory
+    module: signinContinue
+    type: es6
   -
     view: linkContinue 
     module: linkContinue
-    type: factory
+    type: es6
   -
     view: signup 
     module: signup
-    type: factory
+    type: es6

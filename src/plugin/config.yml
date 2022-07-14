@@ -18,7 +18,7 @@ services:
         view: signedout
         authorization: false
         reentrant: false
-      - path: auth2/login/continue?:-nextrequest&:-in-process-login-token
+      - path: auth2/login/continue?:-nextrequest&:-in-process-login-token&:-override-source
         view: loginContinue
         authorization: false
       - path: login?:-nextrequest&:-source

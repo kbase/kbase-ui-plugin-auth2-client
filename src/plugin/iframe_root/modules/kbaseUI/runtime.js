@@ -82,6 +82,48 @@ define([
             return enabled || defaultValue;
         }
 
+        // Convenience
+
+        notifyError(message, autodismiss) {
+            this.send('notification', 'notify', {
+                type: 'error',
+                message,
+                icon: 'exclamation',
+                autodismiss
+            });
+        }
+
+        notifyWarning(message, autodismiss) {
+            this.send('notification', 'notify', {
+                type: 'warning',
+                message,
+                icon: 'exclamation-triangle',
+                autodismiss
+            });
+        }
+
+        notifyInfo(message, autodismiss) {
+            this.send('notification', 'notify', {
+                type: 'info',
+                message,
+                icon: 'info',
+                autodismiss
+            });
+        }
+
+        notifySuccess(message, autodismiss) {
+            this.send('notification', 'notify', {
+                type: 'success',
+                message,
+                icon: 'check',
+                autodismiss
+            });
+        }
+
+        navigate(to) {
+            this.send('app', 'navigate',to);
+        }
+
         // LIFECYCLE
 
         start() {
