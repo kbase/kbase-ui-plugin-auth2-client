@@ -1,0 +1,38 @@
+.LinkedAccounts {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.LinkedAccounts .-providerLabel {
+    display: flex;
+    flex-direction: row
+}
+
+.LinkedAccounts .-providerLabel > .-logo {
+    flex: 0 0 3em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+
+.LinkedAccounts .-providerLabel > .-label {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content:  flex-start
+}
+
+.LinkedAccounts .dropdown-item {
+    cursor: pointer;
+    /* to match bs button */
+    padding: 6px 12px;
+}
+
+
+.LinkedAccounts .dropdown-item:hover {
+    background-color: rgba(200, 200, 200, 0.3);
+}

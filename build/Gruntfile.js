@@ -15,6 +15,12 @@ module.exports = function (grunt) {
                 src: 'node_modules/dompurify/dist/purify.js',
                 dest: '../src/plugin/iframe_root/modules/vendor/dompurify'
             },
+            htm: {
+                expand: true,
+                flatten: true,
+                src: 'node_modules/htm/dist/htm.umd.js',
+                dest: '../src/plugin/iframe_root/modules/vendor/htm'
+            },
             preact: {
                 expand: true,
                 flatten: true,

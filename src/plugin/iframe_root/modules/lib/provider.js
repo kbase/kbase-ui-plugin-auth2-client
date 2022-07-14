@@ -1,26 +1,24 @@
 define([
     'yaml!../../resources/data/providers.yaml',
-], function (
+], (
     providersData
-) {
-    'use strict';
-
+) => {
     class Providers {
-        constructor({ runtime }) {
+        constructor({runtime}) {
             this.providerWhitelist = runtime.config('services.auth2.providers');
             this.providers = providersData
                 .filter((provider) => {
                     if (this.providerWhitelist) {
                         return this.providerWhitelist.includes(provider.id);
-                    } else {
-                        return true;
                     }
+                    return true;
+
                 });
             this.sortByPriority();
         }
 
         sortByPriority() {
-            this.providers.sort(function (a, b) {
+            this.providers.sort((a, b) => {
                 const priorityOrder = a.priority - b.priority;
                 if (priorityOrder !== 0) {
                     return priorityOrder;
@@ -36,5 +34,5 @@ define([
         }
     }
 
-    return { Providers };
+    return {Providers};
 });

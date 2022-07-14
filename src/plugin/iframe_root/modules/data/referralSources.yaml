@@ -1,0 +1,36 @@
+# Referral Sources for HDYHAU Question
+---
+-
+  label: Journal Publication # Text to show user
+  value: journal-publication # fixed id in collected response
+-
+  label: Conference Presentation
+  value: conference-presentation
+-
+  label: Workshop/Webinar
+  value: workshop-webinar
+-
+  label: Colleague
+  value: colleague
+-
+  label: Course/Instructor
+  value: course
+-
+  label: Newsletter/Email
+  value: newsletter-email
+-
+  label: YouTube
+  value: youtube
+-
+  label: Twitter
+  value: twitter
+-
+  label: Search Engine
+  value: search-engine
+-
+  label: Online Advertisement
+  value: online-ad
+-
+  label: Other...
+  value: other
+  customText: true

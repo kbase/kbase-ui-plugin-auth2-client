@@ -1,0 +1,7 @@
+.TypeaheadInput .-row.-active {  
+    background-color: silver; 
+}
+
+.TypeaheadInput .-row:hover {
+    background-color: rgba(200, 200, 200, 0.5);
+}

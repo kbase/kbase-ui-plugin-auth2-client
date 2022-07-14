@@ -38,11 +38,7 @@
                 }
             ],
             "pure-uuid": "bower_components/pure-uuid/uuid.js",
-            "kbase-knockout-extensions-es6": "bower_components/kbase-knockout-extensions-es6/src/**",
-            "knockout-arraytransforms": "bower_components/knockout-arraytransforms/dist/knockout-arraytransforms.js",
-            "knockout-switch-case": "bower_components/knockout-switch-case/knockout-switch-case.js",
-            "kbase-common-ts": "bower_components/kbase-common-ts/dist/*.js",
-            "knockout-projections": "bower_components/knockout-projections/dist/knockout-projections.js"
+            "kbase-common-ts": "bower_components/kbase-common-ts/dist/*.js"
         }
     },
     "dependencies": {
@@ -56,13 +52,6 @@
         "kbase-common-js": "2.18.1",
         "kbase-common-es6": "0.10.23",
         "kbase-common-ts": "0.19.0",
-        "kbase-knockout-extensions-es6": "0.6.16",
-        "knockout": "3.5.1",
-        "knockout-arraytransforms": "2.1.1",
-        "bower-knockout-mapping": "2.6.0",
-        "knockout-projections": "eapearson/knockout-projections#1.1.1",
-        "knockout-switch-case": "2.1.0",
-        "knockout-validation": "2.0.4",
         "js-yaml": "3.13.1",
         "marked": "0.6.3",
         "moment": "2.24.0",

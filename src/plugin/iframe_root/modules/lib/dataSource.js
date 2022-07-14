@@ -1,23 +1,21 @@
-define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, yaml, HttpClient) {
-    'use strict';
-
+define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], (Promise, yaml, HttpClient) => {
     function factory(config) {
-        var db = {};
+        const db = {};
 
-        var sources = config.sources;
-        var sourcesPath = config.path;
+        const sources = config.sources;
+        const sourcesPath = config.path;
 
         function load(file) {
-            var client = new HttpClient.HttpClient();
-            var url = window.location.origin + '/' + sourcesPath + file;
+            const client = new HttpClient.HttpClient();
+            const url = `${window.location.origin  }/${  sourcesPath  }${file}`;
             return client
                 .request({
                     method: 'GET',
-                    url: url
+                    url
                 })
-                .then(function (result) {
+                .then((result) => {
                     if (result.status !== 200) {
-                        throw new Error('Cannot load data file: ' + result.status);
+                        throw new Error(`Cannot load data file: ${  result.status}`);
                     }
                     return result.response;
                 });
@@ -31,17 +29,17 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, ya
 
         function loadData(source) {
             return load(source.file)
-                .then(function (textData) {
+                .then((textData) => {
                     switch (source.type) {
                     case 'json':
                         return JSON.parse(textData);
                     case 'yaml':
                         return yaml.safeLoad(textData);
                     default:
-                        throw new Error('Data type not supported: ' + source.type);
+                        throw new Error(`Data type not supported: ${  source.type}`);
                     }
                 })
-                .then(function (data) {
+                .then((data) => {
                     if (source.translate) {
                         return data.map(source.translate);
                     }
@@ -50,10 +48,10 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, ya
         }
 
         function getData(name) {
-            return Promise.try(function () {
-                var source = sources[name];
+            return Promise.try(() => {
+                const source = sources[name];
                 if (!source) {
-                    throw new Error('Unrecognized data source: ' + name);
+                    throw new Error(`Unrecognized data source: ${  name}`);
                 }
 
                 if (db[name]) {
@@ -63,18 +61,18 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, ya
                     return loadData(source);
                 } else if (source.sources) {
                     return Promise.all(
-                        Object.keys(source.sources).map(function (sourceId) {
-                            var translation = source.sources[sourceId].translate;
-                            return getData(sourceId).then(function (data) {
+                        Object.keys(source.sources).map((sourceId) => {
+                            const translation = source.sources[sourceId].translate;
+                            return getData(sourceId).then((data) => {
                                 if (translation) {
                                     return data.map(translation);
-                                } else {
-                                    return data;
                                 }
+                                return data;
+
                             });
                         })
-                    ).then(function (sources) {
-                        return sources.reduce(function (acc, value) {
+                    ).then((sources) => {
+                        return sources.reduce((acc, value) => {
                             return acc.concat(value);
                         }, []);
                     });
@@ -83,17 +81,17 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, ya
         }
 
         function dataFilter(arg) {
-            var cached = null;
-            var source = arg.source;
+            let cached = null;
+            const source = arg.source;
 
             // Add lower-case version of label
             function get() {
-                return Promise.try(function () {
+                return Promise.try(() => {
                     if (cached) {
                         return cached;
                     }
-                    return getData(source).then(function (data) {
-                        data.forEach(function (item, index) {
+                    return getData(source).then((data) => {
+                        data.forEach((item, index) => {
                             item.order = index;
                             item.searchable = {
                                 label: item.label.toLowerCase()
@@ -106,27 +104,27 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, ya
             }
 
             function totalCount() {
-                return Promise.try(function () {
-                    return get().then(function (data) {
+                return Promise.try(() => {
+                    return get().then((data) => {
                         return data.length;
                     });
                 });
             }
 
             function search(term) {
-                return Promise.try(function () {
+                return Promise.try(() => {
                     if (term) {
-                        var searchTerm = term.toLowerCase();
-                        return get().then(function (data) {
-                            return data.filter(function (item) {
+                        const searchTerm = term.toLowerCase();
+                        return get().then((data) => {
+                            return data.filter((item) => {
                                 // Just do a substring search.
                                 return item.searchable.label.indexOf(searchTerm) >= 0;
                                 // return regex.test(item.label);
                             });
                         });
-                    } else {
-                        return [];
                     }
+                    return [];
+
                 });
             }
 
@@ -135,9 +133,9 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, ya
             }
 
             return {
-                totalCount: totalCount,
-                search: search,
-                getAll: getAll
+                totalCount,
+                search,
+                getAll
             };
         }
 
@@ -149,7 +147,7 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], function (Promise, ya
 
         return {
             get: getData,
-            getFilter: getFilter
+            getFilter
         };
     }
     return factory;

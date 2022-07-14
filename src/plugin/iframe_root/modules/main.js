@@ -3,14 +3,13 @@ require([
     'dompurify',
     'kbaseUI/integration',
     'kbaseUI/dispatcher',
-    'kb_knockout/load',
     'lib/domUtils',
     'yaml!./config.yml',
 
     // for effect
     'bootstrap',
     'css!font_awesome'
-], (Promise, DOMPurify, Integration, Dispatcher, knockoutLoader, {setInnerHTML}, pluginConfig) => {
+], (Promise, DOMPurify, Integration, Dispatcher, {setInnerHTML}, pluginConfig) => {
     const SHOW_LOADER_AFTER = 1000;
 
     DOMPurify.setConfig({ADD_ATTR: ['target'], ADD_URI_SAFE_ATTR: ['target']});
@@ -53,18 +52,7 @@ require([
         let dispatcher = null;
         let loadingTimer = null;
 
-        return knockoutLoader
-            .load()
-            .then((ko) => {
-                // For more efficient ui updates.
-                // This was introduced in more recent knockout releases,
-                // and in the past introduced problems which were resolved
-                // in knockout 3.5.0.
-                ko.options.deferUpdates = true;
-            })
-            .then(() => {
-                return integration.start();
-            })
+        return integration.start()
             .then(() => {
                 // place a loader.
                 loadingTimer = window.setTimeout(() => {
