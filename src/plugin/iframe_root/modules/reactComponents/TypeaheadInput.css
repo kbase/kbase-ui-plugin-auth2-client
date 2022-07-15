@@ -42,3 +42,7 @@
     max-height: 10em;
     overflow: auto
 }
+
+.TypeaheadInput .-search-button {
+    cursor: pointer;
+}
