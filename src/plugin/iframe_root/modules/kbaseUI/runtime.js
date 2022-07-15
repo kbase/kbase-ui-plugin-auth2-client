@@ -51,6 +51,10 @@ define([
             return this.service(name);
         }
 
+        setTitle(title) {
+            this.send('ui', 'setTitle', title);
+        }
+
         // COMM
 
         send(channel, message, data) {

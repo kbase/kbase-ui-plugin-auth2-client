@@ -10,3 +10,7 @@ _attic
 vendor/
 
 .idea
+
+# OS
+
+.DS_Store
