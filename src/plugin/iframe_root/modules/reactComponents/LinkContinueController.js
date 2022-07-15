@@ -7,6 +7,7 @@ define([
     './Loading',
     './LinkContinue',
     './TextSpan',
+    './Alert',
 
     'bootstrap'
 ], (
@@ -17,7 +18,8 @@ define([
     ErrorAlert,
     Loading,
     LinkContinue,
-    TextSpan
+    TextSpan,
+    Alert
 ) => {
 
     const {h, Component} = preact;
@@ -39,11 +41,13 @@ define([
                 baseUrl: this.props.runtime.config('services.auth.url')
             });
             try {
-                const id = this.state.value.choice.id;
+                const id = this.state.choice.id;
                 await auth2Client.linkCancel(id);
-                this.props.runtime.notifyInfo(message);
+                if (message) {
+                    this.props.runtime.notifyInfo(message);
+                }
                 this.props.runtime.navigate({
-                    path: 'auth2/account',
+                    path: 'account',
                     params: {
                         tab: 'links'
                     }
@@ -67,7 +71,7 @@ define([
             });
 
             try {
-                await auth2.linkPick(authToken, this.state.value.choice.id);
+                await auth2.linkPick(authToken, this.state.choice.id);
                 this.props.runtime.notifySuccess('Successfully linked identity', 3000);
                 this.props.runtime.navigate({
                     path: 'account',
@@ -140,11 +144,11 @@ define([
                             </div>
                         `;
                         this.setState({
-                            status: 'ERROR',
-                            error: {
-                                title: 'Sign-in account already linked',
-                                message
-                            }
+                            status: 'HALTED',
+                            choice,
+                            title: 'Sign-in account already linked',
+                            message
+
                         });
                         return;
                     }
@@ -174,29 +178,24 @@ define([
                             </div>
                         `;
                     this.setState({
-                        status: 'ERROR',
-                        error: {
-                            title: 'Sign-in account already linked',
-                            message
-                        }
+                        status: 'HALTED',
+                        choice,
+                        title: 'Sign-in account already linked',
+                        message
                     });
                     return;
                 }
 
                 this.setState({
                     status: 'SUCCESS',
-                    value: {
-                        choice,
-                        serverTimeOffset
-                    }
+                    choice,
+                    serverTimeOffset
                 });
             } catch (ex) {
                 console.error(ex);
                 this.setState({
                     status: 'ERROR',
-                    error: {
-                        message: ex.message
-                    }
+                    message: ex.message
                 });
             }
         }
@@ -211,7 +210,7 @@ define([
                 const {
                     choice,
                     serverTimeOffset
-                } = this.state.value;
+                } = this.state;
                 return html`
                     <${LinkContinue} 
                         runtime=${this.props.runtime}
@@ -222,9 +221,13 @@ define([
                     />
                 `;
             }
+            case 'HALTED':
+                return html`
+                    <${Alert} type="warning" title=${this.state.title} message=${this.state.message} />
+                `;
             case 'ERROR':
                 return html`
-                    <${ErrorAlert} message=${this.state.error.message} />
+                    <${ErrorAlert} message=${this.state.message} />
                 `;
             }
         }
