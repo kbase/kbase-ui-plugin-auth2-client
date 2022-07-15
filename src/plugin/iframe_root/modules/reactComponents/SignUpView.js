@@ -553,8 +553,6 @@ define([
                         path: 'dashboard'
                     });
                 }
-
-                // console.log('onSubmitSignUp', account, profile, survey, agreements);
             } catch (ex) {
                 console.error(ex);
             }

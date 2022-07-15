@@ -1,7 +1,44 @@
+
+
 .TypeaheadInput .-row.-active {  
     background-color: silver; 
 }
 
 .TypeaheadInput .-row:hover {
-    background-color: rgba(200, 200, 200, 0.5);
+    background-color: rgba(200; 200; 200; 0.5);
+}
+
+.TypeaheadInput .-message {
+    font-style: italic;
+    padding: 1em;
+}
+
+.TypeaheadInput {
+    border: 4px solid rgba(200; 200; 200; 1);
+}
+
+.TypeaheadInput .-dropdown-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.TypeaheadInput .-dropdown-wrapper > .-dropdown {
+    position: relative;
+    border-top: 1px silver solid;
+    border-left: 1px silver solid;
+    border-right: 1px silver solid;
+    box-shadow: 4px;
+    background-color: #EEE;
+    z-index: 100;
+    padding: 4px;
+    width: 100%
+}
+.TypeaheadInput .-dropdown-wrapper > .-dropdown-items {
+    border: 1px silver solid;
+    background-color: white;
+    z-index: 100;
+    position: absolute;
+    width: 100%;
+    max-height: 10em;
+    overflow: auto
 }

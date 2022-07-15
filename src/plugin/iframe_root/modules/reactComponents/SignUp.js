@@ -57,7 +57,6 @@ define([
                 const serverTimeOffset = await this.getServerTimeOffset();
 
                 const {choice, policiesToResolve} = await this.getChoice();
-                console.log('success!', choice);
                 this.setState({
                     status: 'SUCCESS',
                     value: {
@@ -80,7 +79,7 @@ define([
                         return;
                     }
                 }
-                console.log(ex);
+
                 this.setState({
                     status: 'ERROR',
                     error: {

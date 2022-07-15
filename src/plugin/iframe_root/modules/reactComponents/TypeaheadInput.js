@@ -6,12 +6,10 @@ define([
     'bootstrap',
     'css!./TypeaheadInput.css',
 ], (
-    preact,
+    {Component, h, createRef},
     htm,
     ErrorAlert
 ) => {
-
-    const {h, Component} = preact;
     const html = htm.bind(h);
 
     const MAX_RESULT_SIZE = 100;
@@ -20,11 +18,28 @@ define([
     class TypeaheadInput extends Component {
         constructor(props) {
             super(props);
+            this.bodyListener = null;
+            // we need a handle in order to focus
+            // on the input at times.
+            this.inputRef = createRef();
             this.state = {
                 status: 'INITIAL',
                 inputValue: '',
                 userOpenedSearch: false
             };
+        }
+
+        componentDidMount() {
+            this.bodyListener = () => {
+                this.setState({
+                    userOpenedSearch: false
+                });
+            };
+            document.addEventListener('click', this.bodyListener);
+        }
+
+        componentWillUnmount() {
+            document.removeEventListener('click', this.bodyListener);
         }
 
         renderLoading() {
@@ -77,9 +92,7 @@ define([
             };
         }
 
-        async onInput(e) {
-            const value = e.target.value;
-            // this.props.onUpdate(value);
+        async inputUpdated(value) {
             const resultState = await this.searchDataSource(value);
             this.setState({
                 ...resultState,
@@ -87,6 +100,11 @@ define([
                 userHasModified: true,
                 userOpenedSearch: true
             });
+        }
+
+        async onInput(e) {
+            const value = e.target.value;
+            this.inputUpdated(value);
         }
 
         onKeyDown(event) {
@@ -97,20 +115,27 @@ define([
             }
         }
 
-        onKeyUp() {
-            // this.setState({
-            //     ...this.state,
-            //     userOpenedSearch: true
-            // });
-            // if (!this.state.userOpenedSearch) {
-            //     return;
-            // }
-
-            // console.log('key keyup', e);
-        }
-
-        doToggleSearch() {
-            console.log('TOGGLE SEARCH');
+        async doToggleSearch(e) {
+            e.stopPropagation();
+            this.inputRef.current.focus();
+            if (this.state.status !== 'SUCCESS') {
+                const dataSource = this.props.dataSource;
+                const totalCount = await dataSource.totalCount();
+                this.setState({
+                    status: 'SUCCESS',
+                    value: {
+                        totalCount,
+                        searchCount: 0,
+                        searchedValues: []
+                    },
+                    userHasModified: true,
+                    userOpenedSearch: true
+                });
+                return;
+            }
+            this.setState({
+                userOpenedSearch: !this.state.userOpenedSearch
+            });
         }
 
         renderSearchButton() {
@@ -126,8 +151,10 @@ define([
             `;
         }
 
-        doCancelSearch() {
-            console.log('DO CANCEL SEARCH');
+        doClearSearch(e) {
+            e.stopPropagation();
+            this.inputRef.current.focus();
+            this.inputUpdated('');
         }
 
         closeDropdown() {
@@ -158,7 +185,7 @@ define([
             return html`
                 <span className="input-group-addon fa fa-times"
                     style=${{cursor: 'pointer'}}
-                    onClick=${this.doCancelSearch.bind(this)} />
+                    onClick=${this.doClearSearch.bind(this)} />
             `;
         }
 
@@ -171,14 +198,13 @@ define([
                 inputValue: value,
                 userOpenedSearch: false
             });
-            console.log('selecting...', value);
             this.props.onSelect(value);
         }
 
         renderDropdownItems() {
             if (this.state.value.tooManyResults) {
                 return html`
-                    <div className="text-warning" style=${{fontStyle: 'italic'}}>
+                    <div className="text-warning -message" >
                         Too many matches (
                         <span>${this.state.value.searchCount}</span>
                         ) to display -- please enter more in order to narrow your results.
@@ -186,13 +212,20 @@ define([
                 `;
             } else if (this.state.value.searchedValues.length > 0 && this.state.inputValue.length > 0 && this.state.inputValue.length < 2) {
                 return html`
-                    <div className="text-info" style=${{fontStyle: 'italic'}}>
+                    <div className="text-info -message">
                         Please enter two or more letters above to search for your research or educational organization.
                     </div>
                 `;
             } else if (this.state.value.searchedValues.length === 0 && this.state.userHasModified) {
+                if (this.state.inputValue.length === 0) {
+                    return html`
+                        <div className="text-info -message">
+                            Please enter two or more letters above to search for your research or educational organization.
+                        </div>
+                    `;
+                }
                 return html`
-                    <div className="text-info" style=${{fontStyle: 'italic'}}>
+                    <div className="text-info -message">
                         Nothing matched your search.<br />
                         You may leave it as is to use this value in your profile,
                         or try different text to match your organization.
@@ -200,8 +233,6 @@ define([
                 `;
             }
 
-            // onMouseOver=${this.doActivate.bind(this)}
-            // onMouseOut=${this.doDeactivate.bind(this)}
             return this.state.value.searchedValues.map(({label}) => {
                 return html`
                 <div className="-row" 
@@ -222,78 +253,37 @@ define([
             if (!this.state.userOpenedSearch) {
                 return;
             }
-            return html`
-                <div style=${{
-        position: 'relative',
-        width: '100%'
-    }}>
-                    <div style=${{
-        position: 'relative',
-        borderTop: '1px silver solid',
-        borderLeft: '1px silver solid',
-        borderRight: '1px silver solid',
-        backgroundColor: '#EEE',
-        zIndex: '100',
-        padding: '4px',
-        width: '100%'
-    }}>
+            const foundMessage = (() => {
+                if (!this.state.inputValue) {
+                    return;
+                }
+                return html`
+                    <div>
                         Found
                         <span style=${{padding: '0 0.25em'}}>${this.state.value.searchCount}</span>
                         out of
                         <span style=${{padding: '0 0.25em'}}>${Intl.NumberFormat('en-US', {useGrouping: true}).format(this.state.value.totalCount)}</span>
                     </div>
-                    <div style=${{
-        border: '1px silver solid',
-        backgroundColor: 'white',
-        zIndex: '100',
-        position: 'absolute',
-        width: '100%',
-        maxHeight: '10em',
-        overflow: 'auto'
-    }}>
+                `;
+            })();
+            return html`
+                <div className="-dropdown-wrapper">
+                    <div className="-dropdown">
+                       ${foundMessage}
+                    </div>
+                    <div className="-dropdown-items">
                         ${this.renderDropdownItems()}
                     </div>
                 </div>
             `;
         }
 
-        // renderSuccess({}) {
-        //     return html`
-        //         <div>
-        //             <div className="input-group">
-        //                 <input
-        //                     className="form-control"
-        //                     value=${this.props.value}
-        //                     placeholder=${this.props.placeholder}
-        //                     onInput=${this.onInput.bind(this)}
-        //                     onKeyUp=${this.onKeyUp.bind(this)}
-        //                 />
-        //                 ${this.renderSearchButton()}
-        //                 ${this.renderCancelSearchButton()}
-        //             </div>
-        //             ${this.renderDropdown()}
-        //         </div>
-        //     `;
-        // }
-
-
-        // renderState() {
-        //     switch (this.state.status) {
-        //     case 'INITIAL':
-        //     case 'PENDING':
-        //         return this.renderLoading();
-        //     case 'ERROR':
-        //         return this.renderError(this.state.error);
-        //     case 'SUCCESS':
-        //         return this.renderSuccess(this.state.value);
-        //     }
-        // }
-
         render() {
             return html`
                 <div className="TypeaheadInput">
                     <div className="input-group">
                         <input 
+                            ref=${this.inputRef}
                             className="form-control"
                             value=${this.state.inputValue}
                             placeholder=${this.props.placeholder}
@@ -302,8 +292,9 @@ define([
                             onKeyDown=${this.onKeyDown.bind(this)}
                             onBlur=${this.onBlur.bind(this)}
                         />
-                        ${this.renderSearchButton()}
+
                         ${this.renderCancelSearchButton()}
+                        ${this.renderSearchButton()}
                     </div>
                     ${this.renderDropdown()}
                 </div>

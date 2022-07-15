@@ -73,6 +73,7 @@ define([
                     <${AccountManager} 
                         runtime=${this.props.runtime}
                         roles=${roles}
+                        params=${this.props.params}
                     />
                 `;
             }

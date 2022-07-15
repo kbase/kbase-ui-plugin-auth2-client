@@ -1,0 +1,17 @@
+.Alert {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.Alert-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-weight: bold;
+    font-size: 130%;
+    margin-bottom: 1em;
+}
+
+.Alert-title .fa {
+    margin-right: 4px;
+}

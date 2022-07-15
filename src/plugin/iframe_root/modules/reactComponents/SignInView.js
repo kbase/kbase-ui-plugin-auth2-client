@@ -70,17 +70,12 @@ define([
             // or the nexturl, or dashboard.
             const nextRequest = this.getNextRequest();
 
-            // const source = this.props.params.source;
-
-            console.log('possibly', nextRequest);
             if (this.props.runtime.service('session').isLoggedIn()) {
-                console.log('possibly, redirecting');
                 this.doRedirect(nextRequest);
                 return true;
             }
             this.listeners.push(
                 this.props.runtime.recv('session', 'loggedin', () => {
-                    console.log('possibly, logged in??');
                     this.doRedirect(nextRequest);
                 })
             );
@@ -108,9 +103,7 @@ define([
                 baseUrl: this.props.runtime.config('services.auth.url')
             });
             const currentUserToken = this.props.runtime.service('session').getAuthToken();
-            console.log('provider', provider);
-            // alert(`hmm: ${provider.id}`);
-            // return;
+
             return auth2Client
                 .loginCancel(currentUserToken)
                 .catch(Auth2Error.AuthError, (err) => {
