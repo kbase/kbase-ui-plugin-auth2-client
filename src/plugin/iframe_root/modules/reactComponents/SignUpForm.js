@@ -4,6 +4,8 @@ define([
     '../lib/dataSource',
     './TypeaheadInput',
     './UseAgreements',
+    'reactComponents/Panel',
+    'reactComponents/Well',
     'kb_common_ts/Auth2Error',
     'kb_common_ts/Auth2',
     'yaml!data/referralSources.yaml',
@@ -16,75 +18,15 @@ define([
     DataSource,
     TypeaheadInput,
     UseAgreements,
+    Panel,
+    Well,
     Auth2Error,
     auth2,
     referralSources
 ) => {
     const {Component} = preact;
     const html = htm.bind(preact.h);
-
-    function buildIcon(arg) {
-        const klasses = ['fa'],
-            style = {verticalAlign: 'middle'};
-        klasses.push(`fa-${  arg.name}`);
-        if (arg.rotate) {
-            klasses.push(`fa-rotate-${  String(arg.rotate)}`);
-        }
-        if (arg.flip) {
-            klasses.push(`fa-flip-${  arg.flip}`);
-        }
-        if (arg.size) {
-            if (typeof arg.size === 'number') {
-                klasses.push(`fa-${  String(arg.size)  }x`);
-            } else {
-                klasses.push(`fa-${  arg.size}`);
-            }
-        }
-        if (arg.classes) {
-            arg.classes.forEach((klass) => {
-                klasses.push(klass);
-            });
-        }
-        if (arg.style) {
-            Object.keys(arg.style).forEach((key) => {
-                style[key] = arg.style[key];
-            });
-        }
-        if (arg.color) {
-            style.color = arg.color;
-        }
-
-        return html`
-            <span style=${style} className=${klasses.join(' ')} />
-        `;
-    }
-
-    function renderPanel(args) {
-        const type = args.type || 'primary',
-            style = args.style || {};
-        let icon, classes = ['panel', `panel-${  type}`];
-        if (args.classes) {
-            classes = classes.concat(args.classes);
-        }
-        if (args.icon) {
-            icon = [' ', buildIcon(args.icon)];
-        }
-        return html`<div className=${classes.join(' ')} style=${{style}}>
-            <div className="panel-heading">
-                <div className="panel-title">
-                    <span>
-                        ${args.title} ${icon}
-                    </span>
-                </div>
-            </div>
-            <div className="panel-body">
-                ${args.body}
-            </div>
-        </div>`;
-    }
-
     class SignUpForm extends Component {
-
         constructor(props) {
             super(props);
 
@@ -893,14 +835,8 @@ define([
         }
 
         renderSignupForm() {
-            if (!['incomplete', 'complete'].includes(this.props.signupState.status)) {
-                return;
-            }
-            return renderPanel({
-                type: 'default',
-                title: 'Sign up for KBase',
-                body: html`
-                    <div>
+            return html`
+                    <div className="container-fluid" style=${{width: '100%'}}>
                         <div className="row">
                             <div className="col-md-12">
                                 <p>
@@ -928,14 +864,35 @@ define([
                             ${this.renderFormButtons()}
                         </form>
                     </div>
-                `
-            });
+                `;
+        }
+
+
+        renderSignupPanel() {
+            if (!['incomplete', 'complete'].includes(this.props.signupState.status)) {
+                return;
+            }
+
+            return html`
+                <${Well} type="primary">
+                    ${this.renderSignupForm()}
+                </>
+            `;
+
+            // return html`
+            //     <${Panel}
+            //         type="default"
+            //         classes=${['kb-panel-light']}
+            //         title="Sign up for KBase">
+            //         ${this.renderSignupForm()}
+            //     </>
+            // `;
         }
 
         render() {
             return html`
                 <div className="SignUpForm">
-                    ${this.renderSignupForm()}
+                    ${this.renderSignupPanel()}
                 </div>
             `;
         }

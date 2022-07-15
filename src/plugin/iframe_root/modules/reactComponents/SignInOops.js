@@ -1,15 +1,16 @@
 define([
     'preact',
     'htm',
-    './CollapsiblePanel',
-    '../lib/provider',
+    'reactComponents/CollapsiblePanel',
+    'reactComponents/Well',
+    'lib/provider',
 
-    'bootstrap',
-    'css!./SignInContinueForm.css',
+    'bootstrap'
 ], (
     preact,
     htm,
     CollapsiblePanel,
+    Well,
     provider,
 ) => {
 
@@ -74,7 +75,7 @@ define([
                      collapsed=${true}
                      classes=${['kb-panel-help']}
                 >
-                    <div>
+                    <${Well} type="warning">
                         ${explanation}
                         <div style=${{marginBottom: '5px'}}>
                             
