@@ -14,18 +14,18 @@ define([
     function buildIcon(arg) {
         const klasses = ['fa'],
             style = {verticalAlign: 'middle'};
-        klasses.push(`fa-${  arg.name}`);
+        klasses.push(`fa-${arg.name}`);
         if (arg.rotate) {
-            klasses.push(`fa-rotate-${  String(arg.rotate)}`);
+            klasses.push(`fa-rotate-${String(arg.rotate)}`);
         }
         if (arg.flip) {
-            klasses.push(`fa-flip-${  arg.flip}`);
+            klasses.push(`fa-flip-${arg.flip}`);
         }
         if (arg.size) {
             if (typeof arg.size === 'number') {
-                klasses.push(`fa-${  String(arg.size)  }x`);
+                klasses.push(`fa-${String(arg.size)}x`);
             } else {
-                klasses.push(`fa-${  arg.size}`);
+                klasses.push(`fa-${arg.size}`);
             }
         }
         if (arg.classes) {
