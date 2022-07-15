@@ -146,7 +146,7 @@ define([
                 return 'fa-search';
             })();
             return html`
-                <span className=${`input-group-addon fa ${iconClass}`} 
+                <span className=${`input-group-addon fa ${iconClass} -search-button`} 
                     onClick=${this.doToggleSearch.bind(this)}/>
             `;
         }
