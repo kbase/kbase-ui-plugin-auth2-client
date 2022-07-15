@@ -1,7 +1,7 @@
 define([
     'preact',
     'htm',
-    'lib/countdownClock',
+    'lib/CountdownClock',
 
     'bootstrap',
     'css!./CountdownAlarmClock.css',
