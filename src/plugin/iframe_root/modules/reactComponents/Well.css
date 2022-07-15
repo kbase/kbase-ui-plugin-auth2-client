@@ -1,0 +1,38 @@
+.Well {
+    border: 2px solid transparent;
+    border-radius: 1em;
+    padding: 1em;
+}
+
+/*
+ const dangerColor = '#a94442';
+            const successColor = '#3c763d';
+            const warningColor = '#8a6d3b';
+            const infoColor = '#31708f';
+            const primaryColor = '##337ab7';
+            const mutedColor = '#777'
+*/
+
+.Well.-primary {
+    border-color: #337ab7;
+}
+
+.Well.-info {
+    border-color: #31708f;
+}
+
+.Well.-warning {
+    border-color: #8a6d3b;
+}
+
+.Well.-danger {
+    border-color: #a94442;
+}
+
+.Well.-success {
+    border-color: #3c763d;
+}
+
+.Well.-muted {
+    border-color: #777;
+}
