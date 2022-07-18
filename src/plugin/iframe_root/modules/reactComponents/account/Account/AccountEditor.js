@@ -4,6 +4,7 @@ define([
     'md5',
     'kb_common_ts/Auth2',
     'lib/Form',
+    'kb_service/client/userProfile',
 
     'bootstrap',
     'css!./AccountEditor.css',
@@ -11,8 +12,9 @@ define([
     preact,
     htm,
     md5,
-    auth2,
-    Form
+    {Auth2},
+    Form,
+    UserProfileService
 ) => {
 
     const {h, Component} = preact;
@@ -62,9 +64,33 @@ define([
                     name: this.props.fields.realname,
                     email: this.props.fields.email
                 },
-                onUpdate: ({form}) => {
+                onUpdate: ({form: {fields}}) => {
+                    const isValid = (() => {
+                        const fieldList = Object.values(fields);
+                        if (fieldList.length === 0) {
+                            return null;
+                        }
+                        return !fieldList.some(({status}) => {
+                            return status !== 'VALID';
+                        });
+                    })();
+
+                    const isModified = (() => {
+                        const fieldList = Object.values(fields);
+                        if (fieldList.length === 0) {
+                            return null;
+                        }
+                        return fieldList.some(({isModified}) => {
+                            return isModified;
+                        });
+                    })();
+
                     this.setState({
-                        form
+                        form: {
+                            fields,
+                            isValid,
+                            isModified
+                        }
                     });
                 }
             });
@@ -102,7 +128,8 @@ define([
             // };
             this.state = {
                 form: {
-                    fields: this.form.getAllFields()
+                    fields: this.form.getAllFields(),
+                    isValid: false
                 }
             };
         }
@@ -190,18 +217,18 @@ define([
                 case 'INVALID':
                     if (isRequired) {
                         return html`
-                            <span style=${{color: dangerColor, display: 'inline'}} className="fa fa-asterisk" />
+                            <span className="fa fa-asterisk text-danger -label-flag" />
                         `;
                     }
                     return;
                 case 'REQUIRED_MISSING':
                     return html`
-                        <span style=${{color: dangerColor, display: 'inline'}} className="fa fa-asterisk" />
+                        <span className="fa fa-asterisk text-danger -label-flag" />
                     `;
                 case 'VALID':
                     if (isRequired) {
                         return html`
-                            <span style=${{color: successColor, display: 'inline'}} className="fa fa-check" />
+                            <span className="fa fa-check text-success -label-flag" />
                         `;
                     }
                     return;
@@ -251,8 +278,58 @@ define([
             `;
         }
 
+        async saveForm() {
+            try {
+                const token = this.props.runtime.service('session').getAuthToken();
+                const userProfileClient = new UserProfileService(this.props.runtime.config('services.user_profile.url'), {
+                    token
+                });
+                const authClient = new Auth2({
+                    baseUrl: this.props.runtime.config('services.auth.url')
+                });
+
+                const username = this.props.runtime.service('session').getUsername();
+
+                const profile = (await userProfileClient.get_user_profile([username]))[0];
+
+                // Extract field values from form
+                const email = this.form.getFieldState('email').value;
+                const realName = this.form.getFieldState('name').value;
+
+                const hashedEmail = md5.hash(email.trim().toLowerCase());
+                profile.profile.synced.gravatarHash = hashedEmail;
+                profile.user.realname = realName;
+
+                // // Auth2 params
+                const meData = {
+                    email, display: realName
+                };
+
+                await Promise.all([
+                    authClient.putMe(token, meData),
+                    userProfileClient.set_user_profile({
+                        profile
+                    })
+                ]);
+
+                // TODO: is this still implemented?
+                this.props.runtime.send('profile', 'reload');
+
+                this.props.runtime.notifySuccess(
+                    'Successfully updated your account and user profile',
+                    3000
+                );
+            } catch (ex) {
+                console.error(ex);
+                this.props.runtime.notifyError(
+                    `Error updating account or profile: ${ex.message}`
+                );
+            }
+        }
+
         onSubmit(e) {
             e.preventDefault();
+            this.saveForm();
         }
 
         render() {
@@ -265,6 +342,7 @@ define([
                         ${this.renderFormRow('email')}
                         <div>
                             <button className="btn btn-primary"
+                                disabled=${!(this.state.form.isValid && this.state.form.isModified)}
                                 type="submit">
                                 Save
                             </button>

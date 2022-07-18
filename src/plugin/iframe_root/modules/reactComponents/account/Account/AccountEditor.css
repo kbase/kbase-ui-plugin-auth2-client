@@ -4,3 +4,6 @@
     flex-direction: column;
 }
 
+.AccountEditor .-label-flag {
+    margin-left: 0.25em;
+}

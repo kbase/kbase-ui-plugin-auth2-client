@@ -15,6 +15,7 @@ define([], () => {
                 const value = initialValues[name];
                 fieldStates[name] = {
                     status: 'INITIAL',
+                    initialValue: value,
                     value
                 };
                 return fieldStates;
@@ -94,8 +95,9 @@ define([], () => {
             if (fieldDefinition.isRequired) {
                 if (value.length === 0) {
                     return {
+                        ...fieldState,
                         value,
-                        isModified: true,
+                        isModified: fieldState.initialValue !== value,
                         status: 'REQUIRED_MISSING',
                         message: `"${fieldDefinition.label}" is required`
                     };
@@ -105,8 +107,9 @@ define([], () => {
             const {isValid, message} = this.validateField(parsedValue, fieldDefinition);
             if (!isValid) {
                 return {
+                    ...fieldState,
                     value,
-                    isModified: true,
+                    isModified: fieldState.initialValue !== value,
                     status: 'INVALID',
                     message
                 };
@@ -117,8 +120,9 @@ define([], () => {
                     const {isValid, message} = await rule.validate(value);
                     if (!isValid) {
                         return {
+                            ...fieldState,
                             value,
-                            isModified: true,
+                            isModified: fieldState.initialValue !== value,
                             status: 'INVALID',
                             message
                         };
@@ -126,9 +130,11 @@ define([], () => {
                 }
             }
 
+
             return {
+                ...fieldState,
                 value,
-                isModified: true,
+                isModified: fieldState.initialValue !== value,
                 status: 'VALID'
             };
         }
