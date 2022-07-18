@@ -171,6 +171,20 @@ define([], () => {
             }, {});
         }
 
+        commit() {
+            for (const [, fieldState] of Object.entries(this.fieldStates)) {
+                if (fieldState.status !== 'VALID') {
+                    throw new Error('Cannot commit if any field is invalid');
+                }
+                fieldState.initialValue = fieldState.value;
+                fieldState.isModified = false;
+            }
+            this.onUpdate({
+                form: {
+                    fields: this.fieldStates
+                }
+            });
+        }
 
     }
 

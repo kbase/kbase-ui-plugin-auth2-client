@@ -3,6 +3,7 @@ define([
     'htm',
     'md5',
     'kb_common_ts/Auth2',
+    'kb_service/client/userProfile',
     'reactComponents/ErrorAlert',
     'reactComponents/Loading',
     './AccountEditor',
@@ -13,7 +14,8 @@ define([
     preact,
     htm,
     md5,
-    auth2,
+    {Auth2},
+    UserProfileService,
     ErrorAlert,
     Loading,
     AccountEditor
@@ -34,40 +36,51 @@ define([
             this.loadData();
         }
 
-        // doSave({email, realname}) {
-        //     const client = new UserProfileService(this.runtime.config('services.user_profile.url'), {
-        //         token: this.runtime.service('session').getAuthToken()
-        //     });
+        async save({email, realName}) {
+            const token = this.props.runtime.service('session').getAuthToken();
+            const userProfileClient = new UserProfileService(this.props.runtime.config('services.user_profile.url'), {
+                token
+            });
+            const authClient = new Auth2({
+                baseUrl: this.props.runtime.config('services.auth.url')
+            });
 
-        //     return client.get_user_profile([account.user]).then((result) => {
-        //         // User profile params
-        //         const profile = result[0];
-        //         const hashedEmail = md5.hash(email.trim().toLowerCase());
-        //         profile.profile.synced.gravatarHash = hashedEmail;
-        //         profile.user.realname = realname;
+            const username = this.props.runtime.service('session').getUsername();
 
-        //         // Auth2 params
-        //         const meData = {
-        //             email, display: realname
-        //         };
+            const profile = (await userProfileClient.get_user_profile([username]))[0];
 
-        //         const currentUserToken = this.runtime.service('session').getAuthToken();
-        //         return Promise.all([
-        //             this.auth2.putMe(currentUserToken, meData),
-        //             client.set_user_profile({
-        //                 profile
-        //             })
-        //         ]).then(() => {
-        //             this.runtime.send('profile', 'reload');
-        //         });
-        //     });
-        // }
+            // Extract field values from form
+
+            const hashedEmail = md5.hash(email.trim().toLowerCase());
+            profile.profile.synced.gravatarHash = hashedEmail;
+            profile.user.realname = realName;
+
+            // Auth2 params
+            const meData = {
+                email, display: realName
+            };
+
+            await Promise.all([
+                authClient.putMe(token, meData),
+                userProfileClient.set_user_profile({
+                    profile
+                })
+            ]);
+
+            // TODO: is this still implemented?
+            this.props.runtime.send('profile', 'reload');
+
+            this.props.runtime.notifySuccess(
+                'Successfully updated your account and user profile',
+                3000
+            );
+        }
 
         async loadData() {
             this.setState({
                 status: 'PENDING'
             });
-            this.auth2 = new auth2.Auth2({
+            this.auth2 = new Auth2({
                 baseUrl: this.props.runtime.config('services.auth.url')
             });
             const authToken = this.props.runtime.service('session').getAuthToken();
@@ -107,7 +120,8 @@ define([
                     <${AccountEditor} 
                         runtime=${this.props.runtime} 
                         fields=${this.state.value}
-                        params=${this.props.params} />
+                        params=${this.props.params} 
+                        save=${this.save.bind(this)} />
                 `;
             case 'ERROR':
                 return html`
