@@ -1,20 +1,16 @@
 define([
     'preact',
     'htm',
-    'md5',
-    'kb_common_ts/Auth2',
     'lib/Form',
-    'kb_service/client/userProfile',
+    'lib/constants',
 
     'bootstrap',
     'css!./AccountEditor.css',
 ], (
     preact,
     htm,
-    md5,
-    {Auth2},
     Form,
-    UserProfileService
+    {DANGER_COLOR, WARNING_COLOR}
 ) => {
 
     const {h, Component} = preact;
@@ -94,38 +90,6 @@ define([
                     });
                 }
             });
-
-            // this.fieldDefinitions = {
-            //     name: {
-            //         label: 'Name',
-            //         isRequired: true,
-            //         minLength: 2,
-            //         maxLength: 100,
-            //         rules: [],
-            //         help: 'Your real name, displayed to other KBase users'
-            //     },
-            //     email: {
-            //         label: 'E-Mail',
-            //         minLength: 5,
-            //         maxLength: 100,
-            //         rules: [],
-            //         help: 'Your email address may be used by KBase staff to contact you.'
-            //     }
-            // };
-            // this.state = {
-            //     form: {
-            //         fields: {
-            //             name: {
-            //                 value: this.props.fields.realname,
-            //                 status: 'INITIAL'
-            //             },
-            //             email: {
-            //                 value: this.props.fields.email,
-            //                 status: 'INITIAL'
-            //             }
-            //         }
-            //     }
-            // };
             this.state = {
                 form: {
                     fields: this.form.getAllFields(),
@@ -137,45 +101,6 @@ define([
         componentDidMount() {
             this.form.initialize();
         }
-
-        // validateField(value, fieldDefinition) {
-        //     if (fieldDefinition.minLength) {
-        //         if (value.length < fieldDefinition.minLength) {
-        //             return {
-        //                 isValid: false,
-        //                 message: `"${fieldDefinition.label}" must have ${fieldDefinition.minLength} or more characters.`
-        //             };
-        //         }
-        //     }
-
-        //     if (fieldDefinition.maxLength) {
-        //         if (value.length > fieldDefinition.maxLength) {
-        //             return {
-        //                 isValid: false,
-        //                 message: `"${fieldDefinition.label}" must have fewer than ${fieldDefinition.maxLength} characters.`
-        //             };
-        //         }
-        //     }
-
-        //     return {
-        //         isValid: true
-        //     };
-        // }
-
-        // updateField(name, value) {
-        //     this.setState({
-        //         ...this.state,
-        //         form: {
-        //             ...this.state.form,
-        //             fields: {
-        //                 ...this.state.form.fields,
-        //                 [name]: {
-        //                     value
-        //                 }
-        //             }
-        //         }
-        //     });
-        // }
 
         renderFormRow(name) {
             const {label, help, isRequired} = this.form.getFieldDefinition(name);
@@ -205,11 +130,6 @@ define([
                 }
             })(status, message);
 
-            const dangerColor = '#a94442';
-            const successColor = '#3c763d';
-            const warningColor = '#8a6d3b';
-            const infoColor = '#31708f';
-
             const labelFlag = ((status, message, isRequired) => {
                 switch (status) {
                 case 'INITIAL':
@@ -235,20 +155,20 @@ define([
                 }
             })(status, message, isRequired);
 
-            const controlStyle = ((status, message, isRequired) => {
+            const controlStyle = ((status) => {
                 const style = {};
                 switch (status) {
                 case 'INITIAL':
-                    style.borderColor = warningColor;
+                    style.borderColor = WARNING_COLOR;
                     break;
                 case 'INVALID':
-                    style.borderColor = dangerColor;
+                    style.borderColor = DANGER_COLOR;
                     break;
                 case 'REQUIRED_MISSING':
-                    style.borderColor = dangerColor;
+                    style.borderColor = DANGER_COLOR;
                 }
                 return style;
-            })(status, message, isRequired);
+            })(status);
 
             return html`
                 <div className="FlexRowGroup" style=${{marginBottom: '1em'}}>
@@ -280,45 +200,12 @@ define([
 
         async saveForm() {
             try {
-                const token = this.props.runtime.service('session').getAuthToken();
-                const userProfileClient = new UserProfileService(this.props.runtime.config('services.user_profile.url'), {
-                    token
-                });
-                const authClient = new Auth2({
-                    baseUrl: this.props.runtime.config('services.auth.url')
-                });
-
-                const username = this.props.runtime.service('session').getUsername();
-
-                const profile = (await userProfileClient.get_user_profile([username]))[0];
-
-                // Extract field values from form
                 const email = this.form.getFieldState('email').value;
                 const realName = this.form.getFieldState('name').value;
-
-                const hashedEmail = md5.hash(email.trim().toLowerCase());
-                profile.profile.synced.gravatarHash = hashedEmail;
-                profile.user.realname = realName;
-
-                // // Auth2 params
-                const meData = {
-                    email, display: realName
-                };
-
-                await Promise.all([
-                    authClient.putMe(token, meData),
-                    userProfileClient.set_user_profile({
-                        profile
-                    })
-                ]);
-
-                // TODO: is this still implemented?
-                this.props.runtime.send('profile', 'reload');
-
-                this.props.runtime.notifySuccess(
-                    'Successfully updated your account and user profile',
-                    3000
-                );
+                await this.props.save({
+                    email, realName
+                });
+                this.form.commit();
             } catch (ex) {
                 console.error(ex);
                 this.props.runtime.notifyError(
