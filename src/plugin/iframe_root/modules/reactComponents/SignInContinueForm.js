@@ -34,7 +34,7 @@ define([
         `;
     }
 
-    function provisionalUserName(choice, type) {
+    function providerUserName(choice, type) {
         if ('provusername' in choice[type][0]) {
             return choice[type][0].provusername;
         }
@@ -84,6 +84,11 @@ define([
         renderSignInControl() {
             return html`
                 <${Panel} title="Sign In to KBase"
+                    style="kb-light"
+                    icon=${{
+        name: 'sign-in',
+        size: 2
+    }}
                     xclasses=${['kb-panel-light']}
                     type="primary">
 
@@ -105,7 +110,6 @@ define([
                                             style=${{textWeight: 'bold'}}>
                                             ${this.props.choice.login[0].user}
                                         </span>
-
                                     </button>
                                 </div>
                             </form>
@@ -236,12 +240,13 @@ define([
             return html`
                 <div className="SignInContinueForm">
                     <p>
-                        This
+                        You are ready to sign into
+                        KBase account
+                        ${spanText(this.props.choice.login[0].user, true)},
+                        via the linked 
                         ${spanText(this.renderProviderLabel(this.props.choice.provider), true)}
                         account
-                        ${spanText(provisionalUserName(this.props.choice, 'login'), true)}
-                        is associated with the KBase account
-                        ${spanText(this.props.choice.login[0].user, true)}
+                        ${spanText(providerUserName(this.props.choice, 'login'), true)}
                     </p>
                    
                     <${SignInOops} runtime=${this.props.runtime} choice=${this.props.choice} source=${this.props.source} />

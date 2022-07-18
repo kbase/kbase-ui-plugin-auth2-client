@@ -34,13 +34,13 @@ define([
                 return html`
                         <${Fragment}>
                             <p>
-                                If this browser is already signed in to ${provider.label}, a sign-in attempt 
-                                from KBase will route you to ${provider.label} and back again without any warning.
+                                If this browser is already signed in to <b>${provider.label}</b >, a sign-in attempt 
+                                from KBase will route you to <b>${provider.label}</b> and back again without any warning.
                             </p>
                             <p>
                                 If this just happened to you, and the account you see above is not 
                                 the one you want, you should use the logout link below to log out  
-                                of ${provider.label}, and then try again.
+                                of <b>${provider.label}</b>, and then try again.
                             </p>
                         </Fragment>
                     `;
@@ -48,17 +48,17 @@ define([
             return html`
                     <${Fragment}>
                         <p>
-                            If this browser is already signed in to ${provider.label}, a sign-in attempt 
-                            from KBase will route you to ${provider.label} and back again without any warning.
+                            If this browser is already signed in to <b>${provider.label}</b>, a sign-in attempt 
+                            from KBase will route you to <b>${provider.label}</b> and back again without any warning.
                         </p>
                         <p>
                             If this just happened to you, and the account you see above is not 
                             the one you want, you should use the link below to log out 
-                            of ${provider.label}, and then try again.
+                            of <b>${provider.label}</b>, and then try again.
                         </p>
                         <p>
-                        If you have signed in with a ${provider.label} account already linked to a KBase account, 
-                        you will be unable to create a new KBase account using that ${provider.label} account.
+                        If you have signed in with a <b>${provider.label}</b> account already linked to a KBase account, 
+                        you will be unable to create a new KBase account using that <b>${provider.label}</b> account.
                         </p>
                     </>
                 `;
