@@ -64,10 +64,18 @@ define([
             try {
                 await this.policyAndAgreement.start();
 
+                const firstAgreement = this.policyAndAgreement.useAgreements[0];
+                const {id, version} = firstAgreement;
+                const document = await this.policyAndAgreement.getPolicyFile({id, version});
+
                 this.setState({
                     status: 'SUCCESS',
                     value: {
-                        useAgreements: this.policyAndAgreement.useAgreements
+                        useAgreements: this.policyAndAgreement.useAgreements,
+                        selectedPolicy: {
+                            ref: {id, version},
+                            document
+                        }
                     }
                 });
             } catch (ex) {

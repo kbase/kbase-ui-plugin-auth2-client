@@ -39,7 +39,7 @@ define([
                 },
                 {
                     id: 'links',
-                    title: 'Linked Sign In Accounts',
+                    title: 'Linked Sign-In Accounts',
                     component: LinkedAccounts
                 }
             ];
@@ -62,7 +62,7 @@ define([
 
             tabs.push({
                 id: 'loginTokens',
-                title: 'Sign Ins',
+                title: 'Sign-Ins',
                 component: LoginTokens
             });
 

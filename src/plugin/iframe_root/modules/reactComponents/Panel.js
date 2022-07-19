@@ -58,15 +58,15 @@ define([
             if (this.props.icon) {
                 icon = [' ', buildIcon(this.props.icon)];
             }
-            return html`<div className=${classes.join(' ')} style=${{style}}>
-            <div className="panel-heading">
+            return html`<div className=${classes.join(' ')} style=${{style}} role="article">
+            <div className="panel-heading" role="heading">
                 <div className="panel-title">
                     <span>
                         ${this.props.title} ${icon}
                     </span>
                 </div>
             </div>
-            <div className="panel-body">
+            <div className="panel-body" role="main">
                 ${this.props.children}
             </div>
         </div>`;

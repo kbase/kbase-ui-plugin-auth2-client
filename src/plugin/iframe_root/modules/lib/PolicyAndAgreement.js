@@ -100,7 +100,6 @@ define([
             return policyVersion;
         }
 
-
         parsePolicyAgreements(policyIds) {
             return policyIds.map((policyId) => {
                 const id = policyId.id.split('.');
@@ -143,10 +142,7 @@ define([
             })
                 .filter((useAgreement) => {return !!useAgreement;});
 
-
             this.useAgreements = useAgreements;
-
-
         }
 
         stop() {

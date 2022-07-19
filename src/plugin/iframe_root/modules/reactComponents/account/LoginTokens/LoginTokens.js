@@ -103,13 +103,14 @@ define([
                         </span>
                     `;
                 };
+
                 return html`
                     <tr>
                         <td>
                             ${niceTime(new Date(created))}
                         </td>
                         <td>
-                            ${niceDuration(expires - (new Date().getTime() - this.props.serverTimeBias))}
+                            ${niceDuration(expires - (Date.now() - this.props.serverTimeBias))}
                         </td>
                         <td>
                             ${renderBrowser()}

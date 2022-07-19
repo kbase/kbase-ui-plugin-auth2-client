@@ -219,7 +219,7 @@ define([
             const tabs = [
                 {
                     id: 'linkedAccounts',
-                    title: 'Manage Your Linked Sign In Accounts',
+                    title: 'Manage Your Linked Sign-In Accounts',
                     render: this.renderBody.bind(this)
                 }, {
                     id: 'help',

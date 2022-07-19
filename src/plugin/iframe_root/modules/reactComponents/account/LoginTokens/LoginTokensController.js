@@ -156,13 +156,15 @@ define([
 
             try {
                 const {tokens, current} = await auth2.getTokens(authToken);
+                const serverTimeBias = await this.utils.getTimeBias();
                 this.setState({
                     status: 'SUCCESS',
                     value: {
                         tokens: tokens.filter((token) => {
                             return token.type === 'Login';
                         }),
-                        current
+                        current,
+                        serverTimeBias
                     }
                 });
             } catch (ex) {
@@ -189,6 +191,7 @@ define([
                         runtime=${this.props.runtime} 
                         tokens=${this.state.value.tokens} 
                         current=${this.state.value.current}
+                        serverTimeBias=${this.state.value.serverTimeBias}
                         revokeToken=${this.revokeToken.bind(this)}
                         revokeAllTokens=${this.revokeAllTokens.bind(this)}
                         revokeAllTokensAndLogout=${this.revokeAllTokensAndLogout.bind(this)}

@@ -1,10 +1,12 @@
 define([
     'preact',
     'htm',
-    'css!./Tabs.css',
+
+    // for effect
+    'css!./Tabs.css'
 ], (
     preact,
-    htm,
+    htm
 ) => {
 
     const {h, Component} = preact;
@@ -35,7 +37,10 @@ define([
                 }
                 return html`
                     <div className=${className.join(' ')}
-                         data-tab=${id} onClick=${() => {
+                        role="tab"
+                        id=${id}
+                        aria-selected=${this.state.selectedTab === id ? 'true' : 'false'}
+                        data-tab=${id} onClick=${() => {
     this.onSelectTab(id);
 }}>
                         ${title}
@@ -48,17 +53,9 @@ define([
         }
 
         renderTabBody() {
-            return html`
-                <div className="-body" data-k-b-testhook-element="tab-pane" style=${this.props.bodyStyle || {}}>
-                    ${this.renderTabContent()}
-                </div>
-            `;
-        }
-
-        renderTabContent() {
             if (!this.state.selectedTab) {
                 return html`
-                    No Body
+                    <div>NO BODY</div>
                 `;
             }
 
@@ -66,6 +63,14 @@ define([
                 return tab.id === this.state.selectedTab;
             })[0];
 
+            return html`
+                <div className="-body" role="tabpanel" aria-labeledby=${selectedTab.id} style=${this.props.bodyStyle || {}}>
+                    ${this.renderTabContent(selectedTab)}
+                </div>
+            `;
+        }
+
+        renderTabContent(selectedTab) {
             if (!selectedTab) {
                 return html`
                     No Tab
@@ -75,14 +80,14 @@ define([
                 return selectedTab.render();
             }
             return html`
-                <${selectedTab.component} ...${this.props.tabProps} data-tab-pane=${selectedTab.id}/>
+                <${selectedTab.component} ...${this.props.tabProps} data-tab-pane=${selectedTab.id} />
             `;
         }
 
         render() {
             return html`
                 <div className='Tabs'>
-                    <div className="-tabs">
+                    <div className="-tabs" role="tablist">
                         ${this.renderTabs()}
                     </div>
                     ${this.renderTabBody()}
