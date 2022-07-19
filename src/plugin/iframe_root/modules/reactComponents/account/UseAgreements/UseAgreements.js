@@ -10,7 +10,7 @@ define([
     preact,
     htm,
     Tabs,
-    {standardDateTime}
+    {standardDateTime, standardDate}
 ) => {
 
     const {h, Component} = preact;
@@ -29,6 +29,9 @@ define([
                 })();
                 return html`
                     <div className="btn btn-default agreement ${isActive ? 'active' : ''}" 
+                        role="tab"
+                        aria-selected=${isActive ? 'true' : 'false'}
+                        id=${`${id}.${version}`}
                         onClick=${() => {this.selectPolicyVersion(id, version);}}
                         style=${{
         width: '100%',
@@ -42,7 +45,7 @@ define([
                             version: ${version}
                         </div>
                         <div>
-                            published: ${standardDateTime(publishedAt)}
+                            published: ${standardDate(publishedAt)}
                         </div>
                         <div>
                             agreed: ${standardDateTime(agreedAt)}
@@ -51,7 +54,7 @@ define([
                 `;
             });
             return html`
-                <div>
+                <div role="tablist">
                     ${menu}
                 </div>
             `;
@@ -64,8 +67,9 @@ define([
                 </div>
             `;
             }
+            const {id, version} = this.props.selectedPolicy.ref;
             return html`
-                <div dangerouslySetInnerHTML=${{__html: this.props.selectedPolicy.document}} />
+                <div  role="tabpanel" aria-labeledby=${`${id}.${version}`} dangerouslySetInnerHTML=${{__html: this.props.selectedPolicy.document}} />
             `;
         }
         renderBody() {

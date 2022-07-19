@@ -41,7 +41,7 @@ define([
                         <span style=${{
         fontWeight: 'bold'
     }}
-                            data-k-b-testhook-field: 'requested-path'>
+                            data-k-b-testhook-field="requested-path">
                             ${' '}
                             ${this.props.nextRequest.path.join('/')}
                         </span>

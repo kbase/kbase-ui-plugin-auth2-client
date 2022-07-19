@@ -1,6 +1,7 @@
 define([
     'preact',
     'htm',
+    'uuid',
     'kb_common/format',
 
     'bootstrap',
@@ -8,6 +9,7 @@ define([
 ], (
     preact,
     htm,
+    Uuid,
     format
 ) => {
 
@@ -16,17 +18,18 @@ define([
 
     class AccountInfo extends Component {
         renderInfoTableRow({label, value, help, render}) {
+            const textId = new Uuid(4).format();
             return html`
                 <div className="FlexRowGroup" style=${{marginBottom: '1em'}}>
                     <div className="FlexRow">
                         <div className="FlexRow">
-                            <b>${label}</b>
+                            <label for=${textId} role="label">${label}</b>
                         </div>
                         <div className="FlexCol">
                         </div>
                     </div>
                     <div className="FlexRow">
-                        <div className="FlexCol">
+                        <div className="FlexCol" id=${textId}>
                            ${render ? render(value) : value}
                         </div>
                         <div className="FlexCol">
@@ -56,7 +59,7 @@ define([
                 // },
                 {
                     name: 'created',
-                    label: 'Account creation date',
+                    label: 'Account Created',
                     help: 'The date and time at which you signed up for KBase',
                     render: (value) => {
                         return format.niceTime(value);
@@ -64,7 +67,7 @@ define([
                 },
                 {
                     name: 'lastLogin',
-                    label: 'Last sign in time',
+                    label: 'Last Sign In',
                     help: 'The date and time you last signed in to KBase',
                     render: (value) => {
                         return `${format.niceElapsedTime(value)

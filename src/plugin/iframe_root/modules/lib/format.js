@@ -130,8 +130,16 @@ define([
         }).format(new Date(time));
     }
 
+    function standardDate(time) {
+        return Intl.DateTimeFormat('en-US', {
+            dateStyle: 'short',
+            hour12: true
+        }).format(new Date(time));
+    }
+
     return {
         niceDuration,
-        standardDateTime
+        standardDateTime,
+        standardDate
     };
 });

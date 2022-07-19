@@ -17,9 +17,7 @@ define([
             const providerLinksList = this.props.providers.map(({logoutUrl, label}) => {
                 return html`
                     <li>
-                        <a href=${logoutUrl} target="_blank">
-                            Log out from ${label}
-                        </a>
+                        <a href=${logoutUrl} target="_blank" role="link">Log out from ${label}</a>
                     </li>
                 `;
             });

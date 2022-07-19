@@ -150,7 +150,7 @@ define([
         }
 
         onDone() {
-            console.log('DONE!');
+            // TODO: Currently handled by the view, but should be handled here.
         }
 
         async startItUp() {

@@ -1,6 +1,7 @@
 define([
     'preact',
     'htm',
+    'uuid',
     'lib/Form',
     'lib/constants',
 
@@ -9,6 +10,7 @@ define([
 ], (
     preact,
     htm,
+    Uuid,
     Form,
     {DANGER_COLOR, WARNING_COLOR}
 ) => {
@@ -170,11 +172,13 @@ define([
                 return style;
             })(status);
 
+            const inputId = new Uuid(4).format();
+
             return html`
                 <div className="FlexRowGroup" style=${{marginBottom: '1em'}}>
                     <div className="FlexRow">
                         <div className="FlexRow">
-                            <b>${label}</b> ${labelFlag}
+                            <label for=${inputId} role="label">${label}</label> ${labelFlag}
                         </div>
                         <div className="FlexCol">
                         </div>
@@ -184,6 +188,8 @@ define([
                             <input className="form-control" 
                                 style=${controlStyle}
                                 value=${value} 
+                                role="input"
+                                id=${inputId}
                                 onInput=${(e) => {
         this.form.updateField(name, e.target.value);
     }} />

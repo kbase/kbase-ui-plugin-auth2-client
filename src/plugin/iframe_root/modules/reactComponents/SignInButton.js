@@ -69,8 +69,9 @@ define([
         }
 
         render() {
+            const buttonLabel = `Sign In button for the ${this.props.provider.label} identity provider`;
             return html`
-                <div className="SignInButton">
+                <div className="SignInButton" role="button" aria-label=${buttonLabel} title=${buttonLabel}>
                     <img onClick=${this.doSignIn.bind(this)}
                          onMouseOver=${this.doMouseOver.bind(this)}
                          onMouseOut=${this.doMouseOut.bind(this)}
