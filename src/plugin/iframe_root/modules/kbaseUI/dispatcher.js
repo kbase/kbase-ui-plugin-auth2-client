@@ -53,9 +53,9 @@ define(['require', 'lib/domUtils'], (require, {clearInnerHTML}) => {
                 return Promise.resolve();
             }
             return promiseTry(() => {
-                return this.currentPanel.widget.stop();
+                return this.currentPanel.widget.stop && this.currentPanel.widget.stop();
             }).then(() => {
-                return this.currentPanel.widget.detach();
+                return this.currentPanel.widget.detach && this.currentPanel.widget.detach();
             });
         }
 
