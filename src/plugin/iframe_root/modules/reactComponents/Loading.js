@@ -11,6 +11,7 @@ define([
     const {h, Component} = preact;
     const html = htm.bind(h);
 
+    const INITIAL_DELAY = 200;
     const SLOW_TIME = 3000;
     const VERY_SLOW_TIME = 10000;
 
@@ -18,17 +19,31 @@ define([
         constructor(props) {
             super(props);
             this.state = {
-                status: 'started',
+                status: 'initial',
             };
         }
 
         componentDidMount() {
+            this.startWithDelay();
+        }
+
+        startWithDelay() {
+            this.delayTimer = window.setTimeout(() => {
+                this.delayTimer = null;
+                this.reallyStart();
+            }, INITIAL_DELAY);
+        }
+
+        reallyStart() {
             if (this.props.detectSlow) {
                 this.startWatchingSlow();
             }
         }
 
         componentWillUnmount() {
+            if (this.delayTimer) {
+                window.clearTimeout(this.delayTimer);
+            }
             this.stopWatching();
         }
 
@@ -67,13 +82,18 @@ define([
         }
 
         render() {
-            const message = (() => {
-                switch (this.state.status) {
-                case 'started':
-                    return this.renderLoadingMessage();
-                case 'slow':
-                    return html`
-                        <div>
+            switch (this.state.status) {
+            case 'initial':
+                return '';
+            case 'started':
+                return html`
+                        <div className="well" style=${{width: '50%', margin: '0 auto'}}>
+                        ${this.renderLoadingMessage()}
+                        </div>
+                    `;
+            case 'slow':
+                return html`
+                        <div className="well" style=${{width: '50%', margin: '0 auto'}}>
                             ${this.renderLoadingMessage()}
                             <p className="text text-warning" style=${{marginTop: '1em'}}>
                                 <span className="fa fa-exclamation-triangle"></span>
@@ -81,9 +101,9 @@ define([
                             </p>
                         </div>
                     `;
-                case 'veryslow':
-                    return html`
-                        <div>
+            case 'veryslow':
+                return html`
+                        <div className="well" style=${{width: '50%', margin: '0 auto'}}>
                             ${this.renderLoadingMessage()}
                             <p className="text text-danger" style=${{marginTop: '1em'}}>
                                 <span className="fa fa-exclamation-triangle"></span>
@@ -91,13 +111,7 @@ define([
                             </p>
                         </div>
                     `;
-                }
-            })();
-            return html`
-                <div className="well" style=${{width: '50%', margin: '0 auto'}}>
-                    ${message}
-                </div>
-            `;
+            }
         }
     }
 
