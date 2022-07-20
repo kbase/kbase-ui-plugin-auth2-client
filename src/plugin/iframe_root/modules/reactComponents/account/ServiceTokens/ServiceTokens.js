@@ -4,6 +4,7 @@ define([
     'reactComponents/Tabs',
     'reactComponents/Panel',
     'reactComponents/Empty',
+    'reactComponents/Clock',
     'kb_common/format',
     'lib/format',
     '../AddTokenForm',
@@ -17,6 +18,7 @@ define([
     Tabs,
     Panel,
     Empty,
+    Clock,
     {niceTime},
     {niceDuration},
     AddTokenForm,
@@ -145,7 +147,9 @@ define([
                             ${niceTime(new Date(created))}
                         </td>
                         <td>
-                            ${niceDuration(expires - (new Date().getTime() - this.props.serverTimeBias))}
+                          <${Clock} tick=${1000} render=${() => {
+    return html`${niceDuration(expires - (new Date().getTime() - this.props.serverTimeBias))}`;
+}} />
                         </td>
                         <td>
                             ${name || 'n/a'}

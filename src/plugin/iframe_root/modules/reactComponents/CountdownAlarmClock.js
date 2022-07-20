@@ -4,7 +4,6 @@ define([
     'lib/CountdownClock',
 
     'bootstrap',
-    'css!./CountdownAlarmClock.css',
 ], (
     preact,
     htm,
@@ -54,7 +53,7 @@ define([
             });
         }
 
-        renderState() {
+        render() {
             switch (this.state.status) {
             case 'NONE':
                 return html`<div>NONE</div>`;
@@ -63,14 +62,6 @@ define([
             case 'DONE':
                 return this.props.render(0);
             }
-        }
-
-        render() {
-            return html`
-                <div className="CountdownClock ">
-                    ${this.renderState()}
-                </div>
-            `;
         }
     }
 
