@@ -23,7 +23,7 @@ define([
             return html`
                 <div className="ErrorAlert alert alert-danger">
                     <p className="ErrorAlert-title">
-                        <span className="fa fa-exclamation-circle"></span>
+                        <span className="fa fa-exclamation-triangle"></span>
                         ${this.props.title || 'Error'}
                     </p>
                     ${content}
