@@ -3,6 +3,8 @@ define([
     'htm',
     'reactComponents/Tabs',
     'reactComponents/Panel',
+    'reactComponents/Empty',
+    'reactComponents/Clock',
     'kb_common/format',
     'lib/format',
     '../AddTokenForm',
@@ -15,6 +17,8 @@ define([
     htm,
     Tabs,
     Panel,
+    Empty,
+    Clock,
     {niceTime},
     {niceDuration},
     AddTokenForm,
@@ -61,6 +65,11 @@ define([
         }
 
         renderTokenBrowser() {
+            if (this.props.tokens.length === 0) {
+                return html`
+                    <${Empty} message="No developer tokens found" />
+                `;
+            }
             const revokeAllButton = (() => {
                 if (this.props.tokens.length > 1) {
                     return html`
@@ -71,27 +80,31 @@ define([
                     `;
                 }
             })();
-            const rows = this.props.tokens.map(({id, created, expires, name}) => {
+
+            const rows =  this.props.tokens.map(({id, created, expires, name}) => {
                 return html`
-                    <tr>
-                        <td>
-                            ${niceTime(new Date(created))}
-                        </td>
-                        <td>
-                            ${niceDuration(expires - (new Date().getTime() - this.props.serverTimeBias))}
-                        </td>
-                        <td>
-                            ${name || 'n/a'}
-                        </td>
-                        <td>
-                            <button className="btn btn-danger"
-                                type="button"
-                                onClick=${() => {this.props.revokeToken(id);}}>
-                                Revoke
-                            </button>
-                        </td>
-                    </tr>
-                `;
+                        <tr>
+                            <td>
+                                ${niceTime(new Date(created))}
+                            </td>
+                            <td>
+                                <${Clock} tick=${1000} render=${() => {
+    return html`${niceDuration(expires - (new Date().getTime() - this.props.serverTimeBias))}`;
+}} />
+                                
+                            </td>
+                            <td>
+                                ${name || 'n/a'}
+                            </td>
+                            <td>
+                                <button className="btn btn-danger"
+                                    type="button"
+                                    onClick=${() => {this.props.revokeToken(id);}}>
+                                    Revoke
+                                </button>
+                            </td>
+                        </tr>
+                    `;
             });
             return html`
                 <table className="table table-striped -allTokensTable"

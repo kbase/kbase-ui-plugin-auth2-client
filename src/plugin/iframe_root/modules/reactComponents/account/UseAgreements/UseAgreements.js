@@ -74,12 +74,12 @@ define([
         }
         renderBody() {
             return html`
-                <div className="container-fluid" style=${{width: '100%'}}>
-                    <div className="row">
-                        <div className="col-md-3">
+                <div className="-grid">
+                    <div className="-row">
+                        <div className="-col1">
                             ${this.renderAgreementsMenu()}
                         </div>
-                        <div className="col-md-9 -policy-markdown">
+                        <div className="-col2">
                             ${this.renderSelectedAgreement()}
                         </div>
                     </div>

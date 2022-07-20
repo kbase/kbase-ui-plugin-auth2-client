@@ -63,7 +63,7 @@ define([
     }}
                         serverTimeOffset=${this.props.serverTimeOffset}
                     />
-                    <${Panel} title="Ready to Link">
+                    <${Panel} title=${html`<span>Ready to Link <span className="fa fa-link" /></span>`}>
                         ${this.renderContinueDialog()}
                     </>
                 </div>

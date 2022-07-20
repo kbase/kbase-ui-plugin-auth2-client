@@ -2,8 +2,35 @@
     flex: 1 1 0;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 .UseAgreements .-agreements {
     padding: 4px;
+}
+
+.UseAgreements .-grid {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.UseAgreements .-grid .-row {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+}
+
+.UseAgreements .-grid .-row > .-col1 {
+    flex: 0 0 16em;
+    overflow-y: auto;
+}
+
+
+.UseAgreements .-grid .-row > .-col2 {
+    flex: 1 1 0;
+    margin-left: 1em;
+    overflow-y: auto;
 }

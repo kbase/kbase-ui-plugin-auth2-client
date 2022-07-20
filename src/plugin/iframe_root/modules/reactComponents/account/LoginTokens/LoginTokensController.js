@@ -101,15 +101,19 @@ define([
             });
             const authToken = this.props.runtime.service('session').getAuthToken();
             try {
-                const {tokens, current} = await auth2.getTokens(authToken);
+                const {tokens: currentTokens, current} = await auth2.getTokens(authToken);
 
                 // All others
-                for (const {id} of tokens) {
-                    await auth2.revokeToken(authToken, id);
-                }
+                await Promise.all(currentTokens
+                    .filter(({type}) => {
+                        return type=== 'Login';
+                    })
+                    .map(({id}) => {
+                        return auth2.revokeToken(authToken, id);
+                    }));
 
                 // Current session
-                await auth2.revokeToken(current.id);
+                await auth2.revokeToken(authToken, current.id);
 
                 await this.props.runtime.service('session').getClient().logout(authToken);
 

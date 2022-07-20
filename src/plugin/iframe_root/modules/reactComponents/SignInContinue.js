@@ -251,13 +251,46 @@ define([
                 });
             } catch (ex) {
                 console.error(ex);
-                this.setState({
-                    status: 'ERROR',
-                    error: {
-                        message: ex.message
-                    }
-                });
+                if (ex.code && ex.code === '10010') {
+                    const message = html`
+                        <p>A sign-in session was not found. This may be due to the expiration of the sign-in or sign-up session, 
+                        which is valid for 30 minutes. Or it may be because you have visited this path from your browser history.</p>
+                        <p>If you wish to sign-in or sign-up, please  ${this.renderSignInButton('visit the sign in page')}.</p>
+                    `;
+                    this.setState({
+                        status: 'ERROR',
+                        error: {
+                            title: 'Sign-In Session Expired',
+                            message
+                        }
+                    });
+                } else {
+                    this.setState({
+                        status: 'ERROR',
+                        error: {
+                            message: ex.message
+                        }
+                    });
+                }
             }
+        }
+
+
+        returnToSignIn() {
+            this.props.runtime.navigate({
+                path: 'login'
+            });
+        }
+
+        renderSignInButton(message) {
+            return html`
+                <button 
+                    type="button"
+                    class="btn btn-default"
+                    onClick=${this.returnToSignIn.bind(this)}>
+                    ${message}
+                </button>
+            `;
         }
 
         async cancelLogin(message) {
@@ -314,7 +347,7 @@ define([
             }
             case 'ERROR':
                 return html`
-                    <${ErrorAlert} message=${this.state.error.message} />
+                    <${ErrorAlert} title=${this.state.error.title} message=${this.state.error.message} />
                 `;
             }
         }

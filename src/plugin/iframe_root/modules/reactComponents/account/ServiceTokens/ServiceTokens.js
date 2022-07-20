@@ -3,6 +3,8 @@ define([
     'htm',
     'reactComponents/Tabs',
     'reactComponents/Panel',
+    'reactComponents/Empty',
+    'reactComponents/Clock',
     'kb_common/format',
     'lib/format',
     '../AddTokenForm',
@@ -15,6 +17,8 @@ define([
     htm,
     Tabs,
     Panel,
+    Empty,
+    Clock,
     {niceTime},
     {niceDuration},
     AddTokenForm,
@@ -121,6 +125,11 @@ define([
         }
 
         renderTokenBrowser() {
+            if (this.props.tokens.length === 0) {
+                return html`
+                    <${Empty} message="No service tokens found" />
+                `;
+            }
             const revokeAllButton = (() => {
                 if (this.props.tokens.length > 1) {
                     return html`
@@ -138,7 +147,9 @@ define([
                             ${niceTime(new Date(created))}
                         </td>
                         <td>
-                            ${niceDuration(expires - (new Date().getTime() - this.props.serverTimeBias))}
+                          <${Clock} tick=${1000} render=${() => {
+    return html`${niceDuration(expires - (new Date().getTime() - this.props.serverTimeBias))}`;
+}} />
                         </td>
                         <td>
                             ${name || 'n/a'}
@@ -153,6 +164,7 @@ define([
                     </tr>
                 `;
             });
+
             return html`
                 <table className="table table-striped -allTokensTable"
                     style=${{width: '100%'}}>

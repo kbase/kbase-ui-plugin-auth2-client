@@ -46,12 +46,7 @@ define([
                 if (message) {
                     this.props.runtime.notifyInfo(message);
                 }
-                this.props.runtime.navigate({
-                    path: 'account',
-                    params: {
-                        tab: 'links'
-                    }
-                });
+                this.returnToLinkingTab();
             } catch (ex) {
                 console.error(ex);
                 if (ex instanceof Auth2Error.AuthError) {
@@ -62,6 +57,15 @@ define([
                     }
                 }
             }
+        }
+
+        returnToLinkingTab() {
+            this.props.runtime.navigate({
+                path: 'account',
+                params: {
+                    tab: 'links'
+                }
+            });
         }
 
         async linkIdentity() {
@@ -87,18 +91,33 @@ define([
             }
         }
 
+        renderCancelAndReturnButton() {
+            return html`
+                <button 
+                    type="button"
+                    class="btn btn-default"
+                    onClick=${this.cancelLink.bind(this)}>
+                    cancel this session and return to the linking tab
+                </button>
+            `;
+        }
+
+        renderReturnButton() {
+            return html`
+                <button 
+                    type="button"
+                    class="btn btn-default"
+                    onClick=${this.returnToLinkingTab.bind(this)}>
+                    return to the linking tab
+                </button>
+            `;
+        }
+
         async start() {
             try {
                 this.setState({
                     status: 'PENDING'
                 });
-
-                // if (this.props.runtime.service('session').isLoggedIn()) {
-                //     this.props.runtime.send('app', 'navigate', {
-                //         path: 'dashboard'
-                //     });
-                //     return;
-                // }
 
                 this.props.runtime.send('ui', 'setTitle', 'Link a Provider');
 
@@ -132,13 +151,7 @@ define([
                                     A sign-in account may only be linked once to any KBase account.
                                 </p>
                                 <p>
-                                    You may 
-                                    <button 
-                                        type="button"
-                                        class="btn btn-default"
-                                        onClick=${this.cancelLink.bind(this)}>
-                                        return to the linking tab
-                                    </button>
+                                    You may ${this.renderCancelAndReturnButton()} \
                                     and start again, this time choosing a different sign-in account to link to.
                                 </p>
                             </div>
@@ -148,7 +161,6 @@ define([
                             choice,
                             title: 'Sign-in account already linked',
                             message
-
                         });
                         return;
                     }
@@ -166,13 +178,8 @@ define([
                                     A sign-in account may only be linked once to any KBase account.
                                 </p>
                                 <p>
-                                    You may 
-                                    <button 
-                                        type="button"
-                                        class="btn btn-default"
-                                        onClick=${this.cancelLink.bind(this)}>
-                                        return to the linking tab
-                                    </button>
+                                    You may \
+                                   ${this.renderCancelAndReturnButton()} \
                                     and start again, this time choosing a different sign-in account to link to.
                                 </p>
                             </div>
@@ -193,12 +200,32 @@ define([
                 });
             } catch (ex) {
                 console.error(ex);
-                this.setState({
-                    status: 'ERROR',
-                    message: ex.message
-                });
+                if (ex.code && ex.code === '10010') {
+                    const message = html`
+                        <p>A linking session was not found. This may be due to the expiration of the linking session, 
+                        which is valid for 10 minutes. Or it may be because you have visited this path from your browser history.</p>
+                        <p>You may ${this.renderReturnButton()} and try to link again.</p>
+                    `;
+                    this.setState({
+                        status: 'ERROR',
+                        title: 'Link Session Expired or Missing',
+                        message
+                    });
+                } else {
+                    this.setState({
+                        status: 'ERROR',
+                        message: ex.message
+                    });
+                }
             }
         }
+
+        renderReturnTolinkingTab() {
+            return html`
+                <a href="
+            `;
+        }
+
         render() {
             switch (this.state.status) {
             case 'NONE':
@@ -227,7 +254,7 @@ define([
                 `;
             case 'ERROR':
                 return html`
-                    <${ErrorAlert} message=${this.state.message} />
+                    <${ErrorAlert} title=${this.state.title} message=${this.state.message} />
                 `;
             }
         }
