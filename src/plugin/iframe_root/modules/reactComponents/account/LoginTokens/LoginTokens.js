@@ -191,7 +191,7 @@ define([
                     <div className="btn-group pull-right"
                         role="group">
                         <button type="button"
-                            onClick=${this.doRevokeAllTokens.bind(this)}
+                            onClick=${this.doRevokeAllTokensAndLogout.bind(this)}
                             className="btn btn-danger"
                             data-toggle="tooltip"
                             data-placement="left"
