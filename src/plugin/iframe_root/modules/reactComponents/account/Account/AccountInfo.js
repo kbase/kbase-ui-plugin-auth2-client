@@ -85,7 +85,7 @@ define([
         render() {
             return html`
                 <div className="AccountInfo">
-                    <h3>Account Info (Non-Editable)</h3>
+                    <h3>Account Info</h3>
                     <div >
                         ${this.renderInfoTable()}
                     </div>
