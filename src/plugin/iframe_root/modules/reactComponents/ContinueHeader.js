@@ -49,7 +49,6 @@ define([
             return html`
                 <div className="ContinueHeader">
                     <div className="-col1">
-                        ${title}
                     </div>
                     <div className="-col2">
                         <${CountdownAlarmClock} 
