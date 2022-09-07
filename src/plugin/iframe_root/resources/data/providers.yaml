@@ -19,8 +19,9 @@
 - 
     id: Globus
     label: Globus
-    logoutUrl: https://www.globus.org/app/logout
+    logoutUrl: https://app.globus.org/logout
     priority: 2
     confirmSignin: true
     description: |
         Use your Globus ID to access KBase.
+ 
