@@ -112,8 +112,7 @@ define([
     }} />
                             <a href=${provider.logoutUrl} 
                                 target="_blank">
-                                Logout from 
-                                <${TextSpan} bold=${true}>${provider.label}</>
+                                Logout from <${TextSpan} bold=${true}>${provider.label}</>
                             </a>
                         </div>
                         <p>
