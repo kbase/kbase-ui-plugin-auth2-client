@@ -53,7 +53,8 @@ define([
             });
 
             this.state = {
-                canSignIn: false
+                canSignIn: false,
+                agreements: []
             };
 
             this.onAgree([]);
@@ -77,7 +78,8 @@ define([
             });
 
             this.setState({
-                canSignIn: missing.length === 0 && outdated.length === 0
+                canSignIn: missing.length === 0 && outdated.length === 0,
+                agreements
             });
         }
 
@@ -94,7 +96,6 @@ define([
 
                     <${UseAgreements} policiesToResolve=${this.props.policiesToResolve} 
                         onAgree=${this.onAgree.bind(this)}/>
-
                     <div>
                         <div style=${{
         margin: '4px',
@@ -122,11 +123,13 @@ define([
 
         getAgreements() {
             const agreementsToSubmit = [];
-            // missing policies
-            // TODO: refactor to use the value returned by the
-            // policy resolver component.
+            const agreements = this.state.agreements;
             this.props.policiesToResolve.missing.forEach((policy) => {
-                if (!policy.agreed()) {
+                const agreed = agreements.find(({id, version}) => {
+                    return id === policy.id &&
+                           version === policy.version;
+                });
+                if (!agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
                 agreementsToSubmit.push({
@@ -136,7 +139,11 @@ define([
             });
             // outdated policies.
             this.props.policiesToResolve.outdated.forEach((policy) => {
-                if (!policy.agreed()) {
+                const agreed = agreements.find(({id, version}) => {
+                    return id === policy.id &&
+                           version === policy.version;
+                });
+                if (!agreed) {
                     throw new Error('Cannot submit with missing policies not agreed to');
                 }
                 agreementsToSubmit.push({
@@ -156,8 +163,8 @@ define([
                 providers: this.props.runtime.config('services.auth2.providers')
             });
             // TODO: enable
-            // const agreements = this.getAgreements();
-            const agreements = [];
+            const agreements = this.getAgreements();
+            // const agreements = [];
             try {
                 const pickResult = await auth2Session.loginPick({
                     identityId: this.props.choice.login[0].id,

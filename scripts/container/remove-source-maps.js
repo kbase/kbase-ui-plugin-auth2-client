@@ -1,5 +1,3 @@
-/*eslint-env node */
-/*eslint strict: ["error", "global"] */
 const bluebird = require('bluebird');
 const glob = bluebird.promisify(require('glob').Glob);
 const fs = bluebird.promisifyAll(require('fs-extra'));
@@ -72,7 +70,6 @@ async function removeSourceMappingJS(rootDir) {
 
 function main() {
     const cwd = process.cwd().split('/');
-    cwd.push('..');
     const projectPath = path.normalize(cwd.join('/'));
     removeSourceMappingCSS(projectPath);
     removeSourceMappingJS(projectPath);
