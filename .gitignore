@@ -1,16 +1,25 @@
-node_modules
-bower_components
-dist
+# macOS
+.DS_Store
 
-# this directory is a good place to stash files you think you don't need
-# during development, e.g. refactored away, but for convenience you don't
-# want to delete them only to have to restore them.
-_attic
+# Build and Developer tools.
+node_modules/
+bower_components/
+_trash/
 
+# The dist directory is created during a build and left in place; it can be used in side-by-side development with
+# kbase-ui.
+/dist/
+dist.tgz
+# Used for XDG_CONFIG_HOME target (when we can get that to work!)
+__xdg__
+
+# We don't check the vendor directory in; the vendor deps are only installed during
+# development, are captured in the dist.tgz.
 vendor/
 
+# Support procrastination!
+/_attic/
+
+# IDEs
 .idea
-
-# OS
-
-.DS_Store
+.vscode

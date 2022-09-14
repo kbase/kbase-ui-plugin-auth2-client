@@ -7,32 +7,32 @@ module.exports = function (grunt) {
                 expand: true,
                 flatten: true,
                 src: 'node_modules/pure-uuid/uuid.js',
-                dest: '../src/plugin/iframe_root/modules/vendor/pure-uuid'
+                dest: './src/plugin/iframe_root/modules/vendor/pure-uuid'
             },
             dompurify: {
                 expand: true,
                 flatten: true,
                 src: 'node_modules/dompurify/dist/purify.js',
-                dest: '../src/plugin/iframe_root/modules/vendor/dompurify'
+                dest: './src/plugin/iframe_root/modules/vendor/dompurify'
             },
             htm: {
                 expand: true,
                 flatten: true,
                 src: 'node_modules/htm/dist/htm.umd.js',
-                dest: '../src/plugin/iframe_root/modules/vendor/htm'
+                dest: './src/plugin/iframe_root/modules/vendor/htm'
             },
             preact: {
                 expand: true,
                 flatten: true,
                 src: 'node_modules/preact/dist/preact.umd.js',
-                dest: '../src/plugin/iframe_root/modules/vendor/preact'
+                dest: './src/plugin/iframe_root/modules/vendor/preact'
             }
         },
         clean: {
             options: {
                 force: true
             },
-            vendor: '../src/plugin/iframe_root/modules/vendor/*',
+            vendor: './src/plugin/iframe_root/modules/vendor/*',
             bower: './bower_components/',
             npm: './node_modules/'
         }
