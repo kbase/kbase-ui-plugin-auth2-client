@@ -1,17 +1,12 @@
 define([
     'preact',
-    'htm',
-    'lib/CountdownClock',
 
     'bootstrap',
 ], (
-    preact,
-    htm,
-    CountdownClock
+    preact
 ) => {
 
-    const {h, Component} = preact;
-    const html = htm.bind(h);
+    const {Component} = preact;
 
     class Clock extends Component {
         constructor(props) {
