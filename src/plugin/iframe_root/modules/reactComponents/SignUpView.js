@@ -537,21 +537,11 @@ define([
 
                 await this.createProfile(tokenInfo.token, account.realname, profile, survey);
 
-                const auth2Session = new MAuth2Session.Auth2Session({
-                    cookieName: this.props.runtime.config('ui.services.session.cookie.name'),
-                    extraCookies: [],
-                    baseUrl: this.props.runtime.config('services.auth2.url'),
-                    providers: this.props.runtime.config('services.auth2.providers')
-                });
-                await auth2Session.initializeSession(tokenInfo);
-
                 const nextRequest = this.getNextRequest();
                 if (nextRequest) {
-                    this.props.runtime.send('app', 'navigate', nextRequest);
+                    this.props.runtime.send('app', 'auth-navigate', {nextRequest, tokenInfo});
                 } else {
-                    this.props.runtime.send('app', 'navigate', {
-                        path: 'dashboard'
-                    });
+                    this.props.runtime.send('app', 'auth-navigate', {nextRequest: {path: 'dashboard'}, tokenInfo});
                 }
             } catch (ex) {
                 console.error(ex);
