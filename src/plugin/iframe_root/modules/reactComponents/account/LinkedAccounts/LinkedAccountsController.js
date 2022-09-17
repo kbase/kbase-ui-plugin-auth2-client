@@ -24,6 +24,7 @@ define([
     class LinkedAccountsController extends Component {
         constructor(props) {
             super(props);
+            this.currentUserToken = props.runtime.service('session').getAuthToken();
             this.state = {
                 status: 'NONE'
             };
