@@ -105,6 +105,7 @@ define([
         async onInput(e) {
             const value = e.target.value;
             this.inputUpdated(value);
+            this.props.onSelect(value);
         }
 
         onKeyDown(event) {
@@ -292,7 +293,6 @@ define([
                             onKeyDown=${this.onKeyDown.bind(this)}
                             onBlur=${this.onBlur.bind(this)}
                         />
-
                         ${this.renderCancelSearchButton()}
                         ${this.renderSearchButton()}
                     </div>

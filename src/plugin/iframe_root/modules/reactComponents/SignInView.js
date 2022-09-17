@@ -145,11 +145,14 @@ define([
                 })
                 .finally(() => {
                     // don't care whether it succeeded or failed.
+                    const params = {};
+                    const nextRequest = this.getNextRequest();
+                    if (nextRequest) {
+                        params.nextrequest = JSON.stringify(nextRequest);
+                    }
                     this.props.runtime.send('app', 'navigate', {
                         path: 'signup',
-                        params: {
-                            nextrequest: JSON.stringify(this.getNextRequest())
-                        }
+                        params
                     });
                 });
         }
