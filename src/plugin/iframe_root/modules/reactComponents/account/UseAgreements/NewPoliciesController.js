@@ -3,11 +3,10 @@ define([
     'htm',
     'kb_common_ts/Auth2',
     'lib/utils',
-    'lib/format',
     'reactComponents/ErrorAlert',
     'reactComponents/Loading',
-    './UseAgreements',
     'lib/PolicyAndAgreement',
+    './NewPolicies',
 
     'bootstrap'
 ], (
@@ -15,17 +14,16 @@ define([
     htm,
     auth2,
     Utils,
-    format,
     ErrorAlert,
     Loading,
-    UseAgreements,
-    PolicyAndAgreement
+    PolicyAndAgreement,
+    NewPolicies
 ) => {
 
     const {h, Component} = preact;
     const html = htm.bind(h);
 
-    class UseAgreementsController extends Component {
+    class NewPoliciesController extends Component {
         constructor(props) {
             super(props);
             // Okay, weirdo.
@@ -61,21 +59,62 @@ define([
                 baseUrl: this.props.runtime.config('services.auth.url')
             });
 
+            const now = Date.now();
+
             try {
                 await this.policyAndAgreement.start();
 
-                const firstAgreement = this.policyAndAgreement.useAgreements[0];
-                const {id, version} = firstAgreement;
-                const document = await this.policyAndAgreement.getPolicyFile({id, version});
+                const agreementsMap = this.policyAndAgreement.agreements.reduce((agreementsMap, {id, version, date}) => {
+                    if (!(id in agreementsMap)) {
+                        agreementsMap[id] = {};
+                    }
+                    agreementsMap[id][String(version)] = date;
+                    return agreementsMap;
+                }, {});
+
+                const newPolicies = this.policyAndAgreement.policies
+                    .map(({id, title, versions}) => {
+
+                        // Handle the case in which the policy has never been agreed to.
+                        if (!(id in agreementsMap)) {
+                            // Filter out any version that is not yet effective, or has already
+                            // expired.
+                            return {id, title, versions: versions.filter(({begin, end}) => {
+                                return now >= begin.getTime() && (end === null || now < end.getTime());
+                            })};
+                        }
+                        const agreement = agreementsMap[id];
+
+                        // Handle the case in which a new version has been published, and the user has
+                        // not yet agreed to it. We also ensure the version is in effect.
+                        return {
+                            id, title, versions: versions.filter(({version, begin, end}) => {
+                                return now >= begin.getTime() && (end === null || now < end.getTime()) && !(String(version) in agreement);
+                            })
+                        };
+                    })
+                    .filter(({versions}) => {
+                        return versions.length > 0;
+                    });
+
+                const selectedPolicy = await (async () => {
+                    if (newPolicies.length === 0) {
+                        return null;
+                    }
+                    const {id, versions: [{version}]} = newPolicies[0];
+                    const document = await this.policyAndAgreement.getPolicyFile({id, version});
+                    return {
+                        ref: {id, version},
+                        document
+                    };
+                })();
 
                 this.setState({
                     status: 'SUCCESS',
                     value: {
-                        useAgreements: this.policyAndAgreement.useAgreements,
-                        selectedPolicy: {
-                            ref: {id, version},
-                            document
-                        }
+                        // useAgreements: this.policyAndAgreement.useAgreements,
+                        newPolicies,
+                        selectedPolicy
                     }
                 });
             } catch (ex) {
@@ -112,13 +151,12 @@ define([
                 `;
             case 'SUCCESS':
                 return html`
-                    <${UseAgreements} 
+                    <${NewPolicies} 
                         runtime=${this.props.runtime} 
-                        useAgreements=${this.state.value.useAgreements} 
+                        newPolicies=${this.state.value.newPolicies}
                         selectedPolicy=${this.state.value.selectedPolicy || null}
                         selectPolicyVersion=${this.selectPolicyVersion.bind(this)}
                     />
-
                 `;
             case 'ERROR':
                 return html`
@@ -128,5 +166,5 @@ define([
         }
     }
 
-    return UseAgreementsController;
+    return NewPoliciesController;
 });

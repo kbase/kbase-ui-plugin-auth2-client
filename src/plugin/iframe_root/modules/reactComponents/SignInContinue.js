@@ -7,7 +7,7 @@ define([
     './Loading',
     './SignInContinueView',
     '../lib/provider',
-    '../lib/policies',
+    '../lib/PolicyAndAgreement',
 ], (
     preact,
     htm,
@@ -17,7 +17,7 @@ define([
     Loading,
     SignInContinueView,
     provider,
-    Policies
+    PolicyAndAgreement
 ) => {
     const {Component} = preact;
     const html = htm.bind(preact.h);
@@ -203,42 +203,39 @@ define([
                     return null;
                 }
 
-                const policies = Policies.make({
+                const policies = new PolicyAndAgreement({
                     runtime: this.props.runtime
                 });
 
-                await policies.start();
 
-                const policiesToResolve = await (async () => {
+                const policyIds = await (async () => {
                     if (choice.login && choice.login.length === 1) {
-                        return policies.evaluatePolicies(choice.login[0].policyids);
-                    } else if (choice.create && choice.create.length === 1) {
-                        // If we get here, this is a sign up, not sign in.
+                        return choice.login[0].policyids;
 
-                        return policies.evaluatePolicies([]);
-                        // return policies.evaluatePolicies([]);
-                        // throw new Error('Hmm, didn\'t expect the Spanish Inquisition!');
+                    } else if (choice.create && choice.create.length === 1) {
+                        // just pass empty policy ids, since this user has none yet.
+                        return [];
                     }
                     // should never get here.
                     throw new Error('Neither login nor signup available for this sign-up account');
                 })();
+
+                await policies.start(policyIds);
+
+                const policiesToResolve = await policies.getNewPolicies();
 
                 const choiceProvider = providersMap[choice.provider];
 
                 // If no policies to resolve and auth provider does not require signin
                 // confirmation, then just auto-signin.
                 if (
-                    policiesToResolve.missing.length === 0 &&
-                                policiesToResolve.outdated.length === 0 &&
-                                !choiceProvider.confirmSignin
+                    policiesToResolve.length === 0 && !choiceProvider.confirmSignin
                 ) {
                     await this.doSignIn(choice, stateParams.nextrequest);
                     return;
                 }
 
                 // TODO: create the clock
-
-
 
                 this.setState({
                     status: 'SUCCESS',

@@ -67,7 +67,8 @@ define([
                     id: policy.id,
                     title: policy.title,
                     version: latestVersion.version,
-                    date: latestVersion.date,
+                    begin: latestVersion.begin,
+                    end: latestVersion.end || null,
                     file: latestVersion.file
                 };
             });

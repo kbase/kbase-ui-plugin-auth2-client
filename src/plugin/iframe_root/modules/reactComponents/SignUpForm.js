@@ -1,14 +1,12 @@
 define([
     'preact',
     'htm',
-    '../lib/dataSource',
+    'lib/dataSource',
     './TypeaheadInput',
     './UseAgreements',
-    'reactComponents/Panel',
     'reactComponents/Well',
-    'kb_common_ts/Auth2Error',
     'kb_common_ts/Auth2',
-    'yaml!data/referralSources.yaml',
+    'json!data/referralSources.json',
 
     // For effect
     'css!./SignUpForm.css'
@@ -18,9 +16,7 @@ define([
     DataSource,
     TypeaheadInput,
     UseAgreements,
-    Panel,
     Well,
-    Auth2Error,
     auth2,
     referralSources
 ) => {
@@ -39,12 +35,12 @@ define([
                         type: 'json'
                     },
                     nationalLabs: {
-                        file: 'nationalLabs.yaml',
-                        type: 'yaml'
+                        file: 'nationalLabs.json',
+                        type: 'json'
                     },
                     otherLabs: {
-                        file: 'otherLabs.yaml',
-                        type: 'yaml'
+                        file: 'otherLabs.json',
+                        type: 'json'
                     },
 
                     // A computed data source.
@@ -788,7 +784,7 @@ define([
         }
 
         arePoliciesResolved(agreements) {
-            const missing = this.props.policiesToResolve.missing.filter((missingPolicy) => {
+            const missing = this.props.policiesToResolve.filter((missingPolicy) => {
                 // Filter out the policy if it is agreed to.
                 return !agreements.find(({id, version}) => {
                     return id === missingPolicy.id &&
@@ -796,19 +792,19 @@ define([
                 });
             });
 
-            const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
-                // Filter out the policy if it is agreed to.
-                return !agreements.find(({id, version}) => {
-                    return id === policy.id &&
-                           version === policy.version;
-                });
-            });
+            // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
+            //     // Filter out the policy if it is agreed to.
+            //     return !agreements.find(({id, version}) => {
+            //         return id === policy.id &&
+            //                version === policy.version;
+            //     });
+            // });
 
-            return missing.length === 0 && outdated.length === 0;
+            return missing.length === 0;
         }
 
         getResolvedPolicies(agreements) {
-            const missing = this.props.policiesToResolve.missing.filter((missingPolicy) => {
+            const missing = this.props.policiesToResolve.filter((missingPolicy) => {
                 // Filter out the policy if it is agreed to.
                 return !agreements.find(({id, version}) => {
                     return id === missingPolicy.id &&
@@ -816,15 +812,15 @@ define([
                 });
             });
 
-            const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
-                // Filter out the policy if it is agreed to.
-                return !agreements.find(({id, version}) => {
-                    return id === policy.id &&
-                           version === policy.version;
-                });
-            });
+            // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
+            //     // Filter out the policy if it is agreed to.
+            //     return !agreements.find(({id, version}) => {
+            //         return id === policy.id &&
+            //                version === policy.version;
+            //     });
+            // });
 
-            return missing.length === 0 && outdated.length === 0;
+            return missing.length === 0 ;
         }
 
         onAgree(agreements) {

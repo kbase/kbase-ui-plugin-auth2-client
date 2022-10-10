@@ -1,0 +1,102 @@
+.UseAgreements {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.UseAgreements .-agreements {
+    padding: 4px;
+}
+
+.UseAgreements .-grid {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.UseAgreements .-grid .-row {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+}
+
+.UseAgreements .-grid .-row>.-col {
+    flex: 1 1 0;
+}
+
+.UseAgreements .-grid .-row>.-col1 {
+    flex: 0 0 16em;
+    overflow-y: auto;
+}
+
+.UseAgreements .-grid .-row>.-col2 {
+    flex: 1 1 0;
+    margin-left: 1em;
+    overflow-y: auto;
+}
+
+/* .UseAgreements .agreement-expired {
+    background-color: rgba(255, 2, 2, 0.2);
+}
+
+.UseAgreements .agreement-new {
+    background-color: rgb(255, 247, 2);
+} */
+
+
+.UseAgreements .active {
+    background-color: rgba(200, 200, 200, 0.1);
+}
+
+.UseAgreements .agreement .-title {
+    border-bottom: 1px solid silver;
+    text-align: center;
+    padding: 0.5em;
+}
+
+.Well.-primary {
+    border-color: #337ab7;
+}
+
+.Well.-info {
+    border-color: #31708f;
+}
+
+.Well.-warning {
+    border-color: #8a6d3b;
+}
+
+.Well.-danger {
+    border-color: #a94442;
+}
+
+.Well.-success {
+    border-color: rgb(60, 118, 61);
+}
+
+.UseAgreements .agreement.-new .-title {
+    background-color: rgb(252, 248, 227);
+}
+
+.UseAgreements .agreement.-expired .-title {
+    background-color: rgb(242, 222, 222);
+}
+
+.UseAgreements .agreement.-current .-title {
+    background-color: rgb(217, 237, 247);
+}
+
+.UseAgreements .agreement .-body {
+    padding: 0.5em;
+}
+
+.UseAgreements .agreement {
+    margin-bottom: 0.5em;
+}
+
+.UseAgreements .agreement .-policyTitle {
+    font-weight: bold;
+}

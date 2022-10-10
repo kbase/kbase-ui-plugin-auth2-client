@@ -6,7 +6,7 @@ define([
     './LinkedAccounts/LinkedAccountsController',
     './DeveloperTokens/DeveloperTokensController',
     './LoginTokens/LoginTokensController',
-    './UseAgreements/UseAgreementsController',
+    './UseAgreements/Controller',
     './ServiceTokens/ServiceTokensController',
 
     'bootstrap',

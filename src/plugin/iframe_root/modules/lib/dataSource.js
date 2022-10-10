@@ -7,7 +7,7 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], (Promise, yaml, HttpC
 
         function load(file) {
             const client = new HttpClient.HttpClient();
-            const url = `${window.location.origin  }/${  sourcesPath  }${file}`;
+            const url = `${window.location.origin}${sourcesPath}${file}`;
             return client
                 .request({
                     method: 'GET',
@@ -15,7 +15,7 @@ define(['bluebird', 'js-yaml', 'kb_common_ts/HttpClient'], (Promise, yaml, HttpC
                 })
                 .then((result) => {
                     if (result.status !== 200) {
-                        throw new Error(`Cannot load data file: ${  result.status}`);
+                        throw new Error(`Cannot load data file: ${result.status}`);
                     }
                     return result.response;
                 });

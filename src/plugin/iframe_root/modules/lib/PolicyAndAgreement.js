@@ -1,15 +1,15 @@
 define([
     'bluebird',
     'marked',
-    'kb_common_ts/HttpClient',
     'lib/utils',
-    'kb_common_ts/Auth2'
+    'kb_common_ts/Auth2',
+    'lib/Features'
 ], (
     Promise,
     marked,
-    M_HttpClient,
     Utils,
-    auth2
+    auth2,
+    Features
 ) => {
     class PolicyAndAgreement {
         constructor({runtime}) {
@@ -26,38 +26,55 @@ define([
             this.currentUserToken = runtime.service('session').getAuthToken();
         }
 
-        getPolicyFile({id, version}) {
-            const http = new M_HttpClient.HttpClient();
+        async getPolicyFile({id, version}) {
             const policyVersion = this.getPolicyVersion(id, version);
             const url = [window.location.origin + this.runtime.pluginResourcePath, 'agreements', policyVersion.file].join('/');
-            return http
-                .request({
-                    method: 'GET',
-                    url
-                })
-                .then((result) => {
-                    if (result.status === 200) {
-                        try {
-                            return marked(result.response);
-                        } catch (ex) {
-                            throw new Error(`Error formatting agreement file: ${ex.message}`);
-                        }
-                    } else {
-                        console.error('ERROR', result);
-                        throw new Error(`Error fetching agreement: ${result.status}`);
-                    }
-                });
+            const response = await (async () => {
+                try {
+                    return await fetch(url);
+                } catch (ex) {
+                    console.error('ERROR', ex);
+                    throw new Error(`Error fetching agreement: ${ex.message}`);
+                }
+            })();
+
+            if (response.status !== 200) {
+                console.error('ERROR', response);
+                throw new Error(`Error fetching agreement: ${response.status}`);
+            }
+
+            try {
+                return marked(await response.text());
+            } catch (ex) {
+                throw new Error(`Error formatting agreement file: ${ex.message}`);
+            }
         }
 
         async loadPolicies() {
-            const url = [window.location.origin + this.runtime.pluginResourcePath, 'agreements', 'policies.json'].join('/');
+            const policiesFile = (() => {
+                if (Features.isEnabled('ce-new-policy')) {
+                    return 'policies-next.json';
+                }
+                return 'policies.json';
+            })();
+            const url = [window.location.origin + this.runtime.pluginResourcePath, 'agreements', policiesFile].join('/');
 
             const response = await fetch(url);
-            if (response.status === 200) {
-                return JSON.parse(await response.text());
+            if (response.status !== 200) {
+                throw new Error(`Error fetching index: ${response.status}`);
             }
-
-            throw new Error(`Error fetching index: ${response.status}`);
+            const policies = JSON.parse(await response.text());
+            return policies.map(({id, title, versions}) => {
+                return {
+                    id, title, versions: versions.map(({version, file, begin, end}) => {
+                        return {
+                            version, file,
+                            begin: new Date(begin),
+                            end: end ? new Date(end) : null
+                        };
+                    })
+                };
+            });
         }
 
         getLatestPolicies() {
@@ -68,12 +85,37 @@ define([
                         return version.version;
                     })
                 );
-                const {version, date, file} = versions.filter((version) => {
+                const {version, begin, end, file} = versions.filter((version) => {
                     return version.version === latestVersionId;
                 })[0];
 
                 return {
-                    id, title, version, date, file
+                    id, title, version, begin, end, file
+                };
+            });
+        }
+
+        /**
+         * Returns all policies.
+         * The policy versions are modified to add a flag indicating whether
+         * the policy is covered by an agreement (isAgreedTo).
+         *
+         * @returns
+         */
+        getPolicies() {
+            return this.policies.map(({id, title, versions}) => {
+                const latestVersionId = Math.max.apply(
+                    null,
+                    versions.map((version) => {
+                        return version.version;
+                    })
+                );
+                const {version, begin, end, file} = versions.filter((version) => {
+                    return version.version === latestVersionId;
+                })[0];
+
+                return {
+                    id, title, version, begin, end, file
                 };
             });
         }
@@ -115,25 +157,28 @@ define([
             return this.useAgreements;
         }
 
-        async start() {
+        async start(policyIds) {
             const policies = await this.loadPolicies();
 
             this.policies = policies;
 
-            const {policyids} = await this.auth2Client.getMe(this.currentUserToken);
+            if (!policyIds) {
+                const me = await this.auth2Client.getMe(this.currentUserToken);
+                policyIds = me.policyids;
+            }
 
-            const agreements = this.parsePolicyAgreements(policyids);
+            const agreements = this.parsePolicyAgreements(policyIds);
+            this.agreements = agreements;
 
             // Now add the policy information to the use agreements
             // TODO: ideally the auth service knows about policies themselves!
             const useAgreements = agreements.map(({date: agreedAt, id, version}) => {
-
                 try {
                     const {title} = this.getPolicy(id);
-                    const {date: publishedAt} = this.getPolicyVersion(id, version);
+                    const {begin: publishedAt, end: expiredAt} = this.getPolicyVersion(id, version);
                     return {
                         agreedAt, id, version,
-                        title, publishedAt
+                        title, publishedAt, expiredAt
                     };
                 } catch (ex) {
                     console.error('Error fetching policy or version, skipped', ex);
@@ -143,6 +188,59 @@ define([
                 .filter((useAgreement) => {return !!useAgreement;});
 
             this.useAgreements = useAgreements;
+
+            const now = Date.now();
+
+            const policyAgreements = policies.reduce((policyAgreements, {id, title, versions}) => {
+                versions.forEach(({version, begin: publishedAt, end: expiredAt}) => {
+                    const agreedAt = agreements
+                        .map(({id: idAgreed, version: versionAgreed, date: agreedAt}) => {
+                            if (idAgreed === id && versionAgreed === version) {
+                                return agreedAt;
+                            }
+                        })
+                        .filter((agreedAt) => {
+                            return !!agreedAt;
+                        })[0] || null;
+
+                    const [status, statusSort] = (() => {
+                        if (expiredAt && expiredAt.getTime() < now) {
+                            // We don't care whether it was agreed to or not.
+                            return ['expired', 3];
+                        }
+                        if (agreedAt) {
+                            return ['current', 2];
+                        }
+                        return ['new', 1];
+                    })();
+
+                    policyAgreements.push({
+                        id, version, title, publishedAt, expiredAt, agreedAt, status, statusSort
+                    });
+                });
+                return policyAgreements;
+            }, []);
+            this.policyAgreements = policyAgreements;
+        }
+
+        /**
+         * Returns all policies which are "new" -- the user has never agreed to.
+         * As a convenience, fetches and includes the policy document itself.
+         *
+         * TODO: Perhaps the policy document should always be included in the policy.
+         *
+         * @returns
+         */
+        async getNewPolicies() {
+            const policiesToResolve = this.policyAgreements.filter(({status}) => {
+                return status === 'new';
+            });
+
+            return Promise.all(policiesToResolve.map(async (policyAgreement) => {
+                const policyDoc = await this.getPolicyFile(policyAgreement);
+                policyAgreement.policyContent = policyDoc;
+                return policyAgreement;
+            }));
         }
 
         stop() {
