@@ -15,7 +15,7 @@ define([
             this.configDb = new props.Props({data: config});
 
             this.pluginPath = '/modules/plugins/auth2-client/iframe_root';
-            this.pluginResourcePath = `${this.pluginPath  }/resources`;
+            this.pluginResourcePath = `${this.pluginPath}/resources`;
 
             this.messenger = new Messenger();
 

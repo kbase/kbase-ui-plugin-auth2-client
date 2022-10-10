@@ -2,15 +2,12 @@ define([
     'preact',
     'htm',
     'lib/provider',
-    './SignInControls',
-    'kb_common/html',
     'kb_common_ts/Auth2Error',
     'kb_common_ts/Auth2',
     './SignUpView',
     './ErrorAlert',
     './Loading',
-    '../lib/policies',
-    'lib/format',
+    'lib/PolicyAndAgreement',
 
     // For effect
     'css!./SignUp.css'
@@ -18,15 +15,12 @@ define([
     preact,
     htm,
     provider,
-    SignInControls,
-    htmlUtils,
     Auth2Error,
     auth2,
     SignUpView,
     ErrorAlert,
     Loading,
-    Policies,
-    format
+    PolicyAndAgreement
 ) => {
     const {Component} = preact;
     const html = htm.bind(preact.h);
@@ -120,20 +114,46 @@ define([
                 baseUrl: this.props.runtime.config('services.auth.url')
             });
             const choice = await auth2Client.getLoginChoice();
-            const policies = Policies.make({
+            const policies = new PolicyAndAgreement({
                 runtime: this.props.runtime
             });
-            await policies.start();
-            const policiesToResolve = await (async () => {
+
+            const policyIds = await (async () => {
                 if (choice.login && choice.login.length === 1) {
-                    return policies.evaluatePolicies(choice.login[0].policyids);
+                    return choice.login[0].policyids;
+                    // await policies.start(choice.login[0].policyids);
+                    // return policies.useAgreements;
                 } else if (choice.create && choice.create.length === 1) {
                     // just pass empty policy ids, since this user has none yet.
-                    return policies.evaluatePolicies([]);
+                    return [];
+                    // await policies.start([]);
+                    // return policies.useAgreements;
                 }
                 // should never get here.
                 throw new Error('Neither login nor signup available for this sign-up account');
             })();
+
+            await policies.start(policyIds);
+
+            // const useAgreements = await (async () => {
+            //     if (choice.login && choice.login.length === 1) {
+            //         await policies.start(choice.login[0].policyids);
+            //         return policies.useAgreements;
+            //     } else if (choice.create && choice.create.length === 1) {
+            //         // just pass empty policy ids, since this user has none yet.
+            //         await policies.start([]);
+            //         return policies.useAgreements;
+            //     }
+            //     // should never get here.
+            //     throw new Error('Neither login nor signup available for this sign-up account');
+            // })();
+            // const policiesToResolve = useAgreements.filter(({status}) => {
+            //     status === 'new';
+            // })
+            //     .map(({id, version, version, }) => {
+            //         return {id, version};
+            //     });
+            const policiesToResolve = await policies.getNewPolicies();
             return {
                 choice,
                 policiesToResolve

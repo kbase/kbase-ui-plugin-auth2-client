@@ -21,11 +21,26 @@ module.exports = function (grunt) {
                 src: 'node_modules/htm/dist/htm.umd.js',
                 dest: './src/plugin/iframe_root/modules/vendor/htm'
             },
+            'js-cookie': {
+                expand: true,
+                flatten: true,
+                src: 'node_modules/js-cookie/dist/js.cookie.js',
+                dest: './src/plugin/iframe_root/modules/vendor/js-cookie'
+            },
             preact: {
                 expand: true,
                 flatten: true,
                 src: 'node_modules/preact/dist/preact.umd.js',
                 dest: './src/plugin/iframe_root/modules/vendor/preact'
+            },
+            requirejsJson: {
+                expand: true,
+                flatten: false,
+                cwd: 'node_modules/requirejs-json',
+                src: [
+                    'json.js'
+                ],
+                dest: './src/plugin/iframe_root/modules/vendor/requirejs-json'
             }
         },
         clean: {

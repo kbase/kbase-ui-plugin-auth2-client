@@ -1,6 +1,7 @@
 define([
     'preact',
     'htm',
+    'md5',
     'lib/provider',
     './TextSpan',
     'kb_common/html',
@@ -11,7 +12,6 @@ define([
     './SignInOops',
     './ContinueHeader',
     'kb_service/client/userProfile',
-    'kb_common_ts/Auth2Session',
 
     // For effect
     'bootstrap',
@@ -19,6 +19,7 @@ define([
 ], (
     preact,
     htm,
+    md5,
     provider,
     TextSpan,
     htmlUtils,
@@ -28,8 +29,7 @@ define([
     SignUpForm,
     SignInOops,
     ContinueHeader,
-    UserProfileService,
-    MAuth2Session
+    UserProfileService
 ) => {
     const {Component} = preact;
     const html = htm.bind(preact.h);
@@ -39,16 +39,16 @@ define([
             style = {verticalAlign: 'middle'};
         klasses.push(`fa-${  arg.name}`);
         if (arg.rotate) {
-            klasses.push(`fa-rotate-${  String(arg.rotate)}`);
+            klasses.push(`fa-rotate-${String(arg.rotate)}`);
         }
         if (arg.flip) {
-            klasses.push(`fa-flip-${  arg.flip}`);
+            klasses.push(`fa-flip-${arg.flip}`);
         }
         if (arg.size) {
             if (typeof arg.size === 'number') {
-                klasses.push(`fa-${  String(arg.size)  }x`);
+                klasses.push(`fa-${String(arg.size)  }x`);
             } else {
-                klasses.push(`fa-${  arg.size}`);
+                klasses.push(`fa-${arg.size}`);
             }
         }
         if (arg.classes) {
@@ -76,7 +76,7 @@ define([
             collapseClasses = ['panel-collapse collapse'],
             toggleClasses = [],
             style = args.style || {};
-        let icon, classes = ['panel', `panel-${  type}`];
+        let icon, classes = ['panel', `panel-${type}`];
         if (args.hidden) {
             classes.push('hidden');
         }
@@ -96,7 +96,7 @@ define([
                 <div className="panel-title">
                     <span className=${toggleClasses.join(' ')}
                         data-toggle="collapse"
-                        data-target=${`#${  collapseId}`}
+                        data-target=${`#${collapseId}`}
                         style=${{cursor: 'pointer'}}>
                         ${args.title} ${icon}
                     </span>
@@ -483,13 +483,16 @@ define([
                         created: new Date().toISOString()
                     },
                     // was globus info, no longer used
-                    account: {},
                     preferences: {},
-                    // when auto-creating a profile, there is nothing to put here het.
+                    // when auto-creating a profile, there is nothing to put here yet.
                     userdata: {
-                        // title: role(),
                         organization,
-                        department
+                        department,
+                        avatarOption: 'gravatar',
+                        gravatarDefault: 'identicon'
+                    },
+                    synced: {
+                        gravatarHash: this.gravatarHash(accountInfo.email)
                     },
                     surveydata: {
                         referralSources: {
@@ -512,6 +515,10 @@ define([
                     throw ex;
                 }
             }
+        }
+
+        gravatarHash(email) {
+            return md5.hash(email.trim().toLowerCase());
         }
 
         createAccount({username, realname, email}, agreements) {

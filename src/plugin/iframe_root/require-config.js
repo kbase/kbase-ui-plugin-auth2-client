@@ -40,6 +40,7 @@
             font_awesome: 'vendor/font-awesome/css/font-awesome',
             jquery: 'vendor/jquery/jquery',
             'js-yaml': 'vendor/js-yaml/js-yaml',
+            json: 'vendor/requirejs-json/json',
             kb_common: 'vendor/kbase-common-js',
             kb_common_ts: 'vendor/kbase-common-ts',
             kb_lib: 'vendor/kbase-common-es6',
@@ -50,6 +51,7 @@
             md5: 'vendor/spark-md5/spark-md5',
             preact: 'vendor/preact/preact.umd',
             htm: 'vendor/htm/htm.umd',
+            'js-cookie': 'vendor/js-cookie/js.cookie',
             text: 'vendor/requirejs-text/text',
             yaml: 'vendor/requirejs-yaml/yaml',
             uuid: 'vendor/pure-uuid/uuid'

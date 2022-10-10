@@ -57,9 +57,7 @@ define([
         async searchDataSource(value) {
             const dataSource = this.props.dataSource;
             const totalCount = await dataSource.totalCount();
-
             const result = await dataSource.search(value);
-
             const searchCount= result.length;
 
             if (result.length > MAX_RESULT_SIZE) {
@@ -211,7 +209,7 @@ define([
                         ) to display -- please enter more in order to narrow your results.
                     </div>
                 `;
-            } else if (this.state.value.searchedValues.length > 0 && this.state.inputValue.length > 0 && this.state.inputValue.length < 2) {
+            } else if (this.state.value.searchedValues.length > 0 && this.state.inputValue.length > 0 && this.state.inputValue.length < MIN_QUERY_LENGTH) {
                 return html`
                     <div className="text-info -message">
                         Please enter two or more letters above to search for your research or educational organization.

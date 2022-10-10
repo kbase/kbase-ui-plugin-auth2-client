@@ -18,8 +18,10 @@
     "dependencies": {
         "dompurify": "2.3.10",
         "htm": "3.1.1",
+        "js-cookie": "3.0.1",
         "pure-uuid": "1.6.2",
-        "preact": "10.10.0"
+        "preact": "10.10.0",
+        "requirejs-json": "0.0.3"
     },
     "devDependencies": {
         "bluebird": "3.7.2",

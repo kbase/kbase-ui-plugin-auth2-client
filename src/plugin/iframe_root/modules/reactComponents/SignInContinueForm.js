@@ -61,7 +61,7 @@ define([
         }
 
         onAgree(agreements) {
-            const missing = this.props.policiesToResolve.missing.filter((missingPolicy) => {
+            const stillNeedResolving = this.props.policiesToResolve.filter((missingPolicy) => {
                 // Filter out the policy if it is agreed to.
                 return !agreements.find(({id, version}) => {
                     return id === missingPolicy.id &&
@@ -69,16 +69,16 @@ define([
                 });
             });
 
-            const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
-                // Filter out the policy if it is agreed to.
-                return !agreements.find(({id, version}) => {
-                    return id === policy.id &&
-                           version === policy.version;
-                });
-            });
+            // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
+            //     // Filter out the policy if it is agreed to.
+            //     return !agreements.find(({id, version}) => {
+            //         return id === policy.id &&
+            //                version === policy.version;
+            //     });
+            // });
 
             this.setState({
-                canSignIn: missing.length === 0 && outdated.length === 0,
+                canSignIn: stillNeedResolving.length === 0,
                 agreements
             });
         }
@@ -124,7 +124,7 @@ define([
         getAgreements() {
             const agreementsToSubmit = [];
             const agreements = this.state.agreements;
-            this.props.policiesToResolve.missing.forEach((policy) => {
+            this.props.policiesToResolve.forEach((policy) => {
                 const agreed = agreements.find(({id, version}) => {
                     return id === policy.id &&
                            version === policy.version;
@@ -138,19 +138,19 @@ define([
                 });
             });
             // outdated policies.
-            this.props.policiesToResolve.outdated.forEach((policy) => {
-                const agreed = agreements.find(({id, version}) => {
-                    return id === policy.id &&
-                           version === policy.version;
-                });
-                if (!agreed) {
-                    throw new Error('Cannot submit with missing policies not agreed to');
-                }
-                agreementsToSubmit.push({
-                    id: policy.id,
-                    version: policy.version
-                });
-            });
+            // this.props.policiesToResolve.outdated.forEach((policy) => {
+            //     const agreed = agreements.find(({id, version}) => {
+            //         return id === policy.id &&
+            //                version === policy.version;
+            //     });
+            //     if (!agreed) {
+            //         throw new Error('Cannot submit with missing policies not agreed to');
+            //     }
+            //     agreementsToSubmit.push({
+            //         id: policy.id,
+            //         version: policy.version
+            //     });
+            // });
             return agreementsToSubmit;
         }
 
