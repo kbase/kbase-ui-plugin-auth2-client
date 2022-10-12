@@ -2,12 +2,14 @@ define([
     'preact',
     'htm',
     'lib/format',
+    'reactComponents/policy/Controller',
 
     'bootstrap'
 ], (
     preact,
     htm,
     {standardDate},
+    Policy
 ) => {
 
     const {h, Component} = preact;
@@ -70,6 +72,7 @@ define([
                 </div>
             `;
         }
+
         renderSelectedPolicy() {
             if (!this.props.selectedPolicy) {
                 return html`
@@ -78,11 +81,13 @@ define([
                 </div>
             `;
             }
-            const {id, version} = this.props.selectedPolicy.ref;
+            const {id, version} = this.props.selectedPolicy.useAgreement;
+            const key = `${id}.${version}`;
             return html`
-                <div  role="tabpanel" aria-labeledby=${`${id}.${version}`} dangerouslySetInnerHTML=${{__html: this.props.selectedPolicy.document}} />
+                <${Policy} runtime=${this.props.runtime} policy=${this.props.selectedPolicy.useAgreement} key=${key} />
             `;
         }
+
         render() {
             return html`
                 <div className="-grid">

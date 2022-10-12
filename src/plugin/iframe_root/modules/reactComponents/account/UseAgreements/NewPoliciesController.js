@@ -102,10 +102,10 @@ define([
                         return null;
                     }
                     const {id, versions: [{version}]} = newPolicies[0];
-                    const document = await this.policyAndAgreement.getPolicyFile({id, version});
+                    // const document = await this.policyAndAgreement.getPolicyFile({id, version});
                     return {
                         ref: {id, version},
-                        document
+                        // document
                     };
                 })();
 
@@ -129,14 +129,14 @@ define([
         }
 
         async selectPolicyVersion(id, version) {
-            const document = await this.policyAndAgreement.getPolicyFile({id, version});
+            // const document = await this.policyAndAgreement.getPolicyFile({id, version});
             this.setState({
                 ...this.state,
                 value: {
                     ...this.state.value,
                     selectedPolicy: {
                         ref: {id, version},
-                        document
+                        // document
                     }
                 }
             });

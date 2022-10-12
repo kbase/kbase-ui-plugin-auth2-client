@@ -66,9 +66,9 @@ define([
             const policies = JSON.parse(await response.text());
             return policies.map(({id, title, versions}) => {
                 return {
-                    id, title, versions: versions.map(({version, file, begin, end}) => {
+                    id, title, versions: versions.map(({version, file, url, begin, end}) => {
                         return {
-                            version, file,
+                            version, file, url,
                             begin: new Date(begin),
                             end: end ? new Date(end) : null
                         };
@@ -192,7 +192,7 @@ define([
             const now = Date.now();
 
             const policyAgreements = policies.reduce((policyAgreements, {id, title, versions}) => {
-                versions.forEach(({version, begin: publishedAt, end: expiredAt}) => {
+                versions.forEach(({version, begin: publishedAt, end: expiredAt, url, file}) => {
                     const agreedAt = agreements
                         .map(({id: idAgreed, version: versionAgreed, date: agreedAt}) => {
                             if (idAgreed === id && versionAgreed === version) {
@@ -215,7 +215,7 @@ define([
                     })();
 
                     policyAgreements.push({
-                        id, version, title, publishedAt, expiredAt, agreedAt, status, statusSort
+                        id, version, title, publishedAt, expiredAt, agreedAt, status, statusSort, url, file
                     });
                 });
                 return policyAgreements;
@@ -237,10 +237,13 @@ define([
             });
 
             return Promise.all(policiesToResolve.map(async (policyAgreement) => {
-                const policyDoc = await this.getPolicyFile(policyAgreement);
-                policyAgreement.policyContent = policyDoc;
+                if (policyAgreement.file) {
+                    const policyDoc = await this.getPolicyFile(policyAgreement);
+                    policyAgreement.policyContent = policyDoc;
+                }
                 return policyAgreement;
             }));
+            // return policiesToResolve;
         }
 
         stop() {

@@ -28,7 +28,7 @@ define([
                         }
                     } else {
                         console.error('ERROR', result);
-                        throw new Error(`Error fetching agreement: ${  result.status}`);
+                        throw new Error(`Error fetching agreement: ${result.status}`);
                     }
                 });
         }
@@ -74,10 +74,13 @@ define([
             });
             return Promise.all(
                 latest.map((policy) => {
-                    return getPolicyFile(policy).then((contents) => {
-                        policy.fileContent = contents;
-                        return policy;
-                    });
+                    if (policy.file) {
+                        return getPolicyFile(policy)
+                            .then((contents) => {
+                                policy.fileContent = contents;
+                                return policy;
+                            });
+                    }
                 })
             );
         }
