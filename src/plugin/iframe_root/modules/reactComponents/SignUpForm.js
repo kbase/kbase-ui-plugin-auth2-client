@@ -111,7 +111,7 @@ define([
                         }
                     }
                 },
-                policiesResolved: this.arePoliciesResolved([]),
+                policiesResolved: false,
                 agreements: []
             };
 
@@ -803,31 +803,40 @@ define([
             return missing.length === 0;
         }
 
-        getResolvedPolicies(agreements) {
-            const missing = this.props.policiesToResolve.filter((missingPolicy) => {
-                // Filter out the policy if it is agreed to.
-                return !agreements.find(({id, version}) => {
-                    return id === missingPolicy.id &&
-                           version === missingPolicy.version;
+        // getResolvedPolicies(agreements) {
+        //     const missing = this.props.policiesToResolve.filter((missingPolicy) => {
+        //         // Filter out the policy if it is agreed to.
+        //         return !agreements.find(({id, version}) => {
+        //             return id === missingPolicy.id &&
+        //                    version === missingPolicy.version;
+        //         });
+        //     });
+
+        //     // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
+        //     //     // Filter out the policy if it is agreed to.
+        //     //     return !agreements.find(({id, version}) => {
+        //     //         return id === policy.id &&
+        //     //                version === policy.version;
+        //     //     });
+        //     // });
+
+        //     return missing.length === 0 ;
+        // }
+
+        onAgreed(allAgreedTo) {
+            if (allAgreedTo) {
+                this.setState({
+                    policiesResolved: allAgreedTo,
+                    agreements:  this.props.policiesToResolve.map(({id, version}) => {
+                        return {id, version};
+                    })
                 });
-            });
-
-            // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
-            //     // Filter out the policy if it is agreed to.
-            //     return !agreements.find(({id, version}) => {
-            //         return id === policy.id &&
-            //                version === policy.version;
-            //     });
-            // });
-
-            return missing.length === 0 ;
-        }
-
-        onAgree(agreements) {
-            this.setState({
-                policiesResolved: this.arePoliciesResolved(agreements),
-                agreements
-            });
+            } else {
+                this.setState({
+                    policiesResolved: allAgreedTo,
+                    agreements:  []
+                });
+            }
         }
 
         renderSignupForm() {
@@ -855,7 +864,7 @@ define([
                             <hr />
                             ${this.renderHearAboutField()}
                             <hr />
-                            <${UseAgreements} policiesToResolve=${this.props.policiesToResolve} onAgree=${this.onAgree.bind(this)}/>
+                            <${UseAgreements} policiesToResolve=${this.props.policiesToResolve} onAgreed=${this.onAgreed.bind(this)}/>
                             <hr />
                             ${this.renderFormButtons()}
                         </form>

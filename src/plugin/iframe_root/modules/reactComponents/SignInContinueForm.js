@@ -26,9 +26,9 @@ define([
     const {h, Component} = preact;
     const html = htm.bind(h);
 
-    function spanText(text, isBold=false) {
+    function spanText(text, {isBold=true, style={}} = {}) {
         return html`
-            <span style=${{fontWeight: isBold ? 'bold' : 'normal', margin: '0 0.25em'}}>
+            <span style=${{fontWeight: isBold ? 'bold' : 'normal', margin: '0 0.25em', ...style}}>
                 ${text}
             </span>
         `;
@@ -53,35 +53,51 @@ define([
             });
 
             this.state = {
-                canSignIn: false,
+                canSignIn: this.props.policiesToResolve.length === 0,
                 agreements: []
             };
 
-            this.onAgree([]);
+            // this.onAgreed(false);
         }
 
-        onAgree(agreements) {
-            const stillNeedResolving = this.props.policiesToResolve.filter((missingPolicy) => {
-                // Filter out the policy if it is agreed to.
-                return !agreements.find(({id, version}) => {
-                    return id === missingPolicy.id &&
-                           version === missingPolicy.version;
+        onAgreed(allAgreedTo) {
+            if (allAgreedTo) {
+                this.setState({
+                    canSignIn: allAgreedTo,
+                    agreements:  this.props.policiesToResolve.map(({id, version}) => {
+                        return {id, version};
+                    })
                 });
-            });
-
-            // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
-            //     // Filter out the policy if it is agreed to.
-            //     return !agreements.find(({id, version}) => {
-            //         return id === policy.id &&
-            //                version === policy.version;
-            //     });
-            // });
-
-            this.setState({
-                canSignIn: stillNeedResolving.length === 0,
-                agreements
-            });
+            } else {
+                this.setState({
+                    canSignIn: allAgreedTo,
+                    agreements:  []
+                });
+            }
         }
+
+        // onAgree(agreements) {
+        //     const stillNeedResolving = this.props.policiesToResolve.filter((missingPolicy) => {
+        //         // Filter out the policy if it is agreed to.
+        //         return !agreements.find(({id, version}) => {
+        //             return id === missingPolicy.id &&
+        //                    version === missingPolicy.version;
+        //         });
+        //     });
+
+        //     // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
+        //     //     // Filter out the policy if it is agreed to.
+        //     //     return !agreements.find(({id, version}) => {
+        //     //         return id === policy.id &&
+        //     //                version === policy.version;
+        //     //     });
+        //     // });
+
+        //     this.setState({
+        //         canSignIn: stillNeedResolving.length === 0,
+        //         agreements
+        //     });
+        // }
 
         renderSignInControl() {
             return html`
@@ -95,7 +111,7 @@ define([
                     type="primary">
 
                     <${UseAgreements} policiesToResolve=${this.props.policiesToResolve} 
-                        onAgree=${this.onAgree.bind(this)}/>
+                        onAgreed=${this.onAgreed.bind(this)}/>
                     <div>
                         <div style=${{
         margin: '4px',
@@ -249,11 +265,11 @@ define([
                     <p>
                         You are ready to sign into
                         KBase account
-                        ${spanText(this.props.choice.login[0].user, true)},
+                        ${spanText(this.props.choice.login[0].user, {style: {marginRight: '0'}})},
                         via the linked 
-                        ${spanText(this.renderProviderLabel(this.props.choice.provider), true)}
+                        ${spanText(this.renderProviderLabel(this.props.choice.provider))}
                         account
-                        ${spanText(providerUserName(this.props.choice, 'login'), true)}
+                        ${spanText(providerUserName(this.props.choice, 'login'), {style: {marginRight: '0'}})}.
                     </p>
                    
                     <${SignInOops} runtime=${this.props.runtime} choice=${this.props.choice} source=${this.props.source} />

@@ -76,8 +76,8 @@ define([
                     return status === 'expired';
                 }).length;
                 const firstAgreement = useAgreements[0];
-                const {id, version} = firstAgreement;
-                const document = await this.policyAndAgreement.getPolicyFile({id, version});
+                // const {id, version} = firstAgreement;
+                // const document = await this.policyAndAgreement.getPolicyFile({id, version});
 
                 this.setState({
                     status: 'SUCCESS',
@@ -86,7 +86,7 @@ define([
                         expiredCount,
                         selectedPolicy: {
                             useAgreement: firstAgreement,
-                            document
+                            // document
                         }
                     }
                 });
@@ -102,7 +102,7 @@ define([
         }
 
         async selectPolicyVersion(selectedId, selectedVersion) {
-            const document = await this.policyAndAgreement.getPolicyFile({id: selectedId, version: selectedVersion});
+            // const document = await this.policyAndAgreement.getPolicyFile({id: selectedId, version: selectedVersion});
             const useAgreement = this.state.value.useAgreements.filter(({id, version}) => {
                 return id === selectedId && version === selectedVersion;
             })[0];
@@ -112,7 +112,7 @@ define([
                     ...this.state.value,
                     selectedPolicy: {
                         useAgreement,
-                        document
+                        // document
                     }
                 }
             });

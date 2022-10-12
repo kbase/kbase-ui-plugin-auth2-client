@@ -3,7 +3,7 @@ define([
     'htm',
     'reactComponents/Tabs',
     'reactComponents/RotatedTable',
-    'reactComponents/Alert',
+    'reactComponents/policy/Controller',
     'lib/format',
     './NewPoliciesController',
 
@@ -14,7 +14,7 @@ define([
     htm,
     Tabs,
     RotatedTable,
-    Alert,
+    Policy,
     {standardDate},
     NewPolicies
 ) => {
@@ -103,12 +103,15 @@ define([
             `;
             }
             const {id, version} = this.props.selectedPolicy.useAgreement;
+            const key = `${id}.${version}`;
             return html`
                 <div>
                     ${this.renderAlert()}
-                    <div role="tabpanel" aria-labeledby=${`${id}.${version}`} dangerouslySetInnerHTML=${{__html: this.props.selectedPolicy.document}} />
+                    <${Policy} runtime=${this.props.runtime} policy=${this.props.selectedPolicy.useAgreement} key=${key} />
+                    
                 </div>
             `;
+            // <div role="tabpanel" aria-labeledby=${`${id}.${version}`} dangerouslySetInnerHTML=${{__html: this.props.selectedPolicy.document}} />
         }
 
         renderNewPolicies() {

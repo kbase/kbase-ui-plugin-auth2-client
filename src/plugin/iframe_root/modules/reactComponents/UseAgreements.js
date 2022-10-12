@@ -17,40 +17,42 @@ define([
             super(props);
 
             this.state = {
-                agreedTo: []
+                policyResolution: this.props.policiesToResolve.map((policy) => {
+                    return {
+                        policy,
+                        isViewed: !!policy.policyContent,
+                        isAgreedTo: false
+                    };
+                })
             };
         }
 
-        togglePolicyAgreement(policyRef) {
-            const agreedTo = (() => {
-                if (this.state.agreedTo.find(({id, version}) => {
-                    return id === policyRef.id && version === policyRef.version;
-                })) {
-                    return this.state.agreedTo.filter(({id, version}) => {
-                        return !(id === policyRef.id && version === policyRef.version);
-                    });
-                }
-                return this.state.agreedTo.concat([policyRef]);
-
-            })();
+        onViewed(index) {
+            const policyResolution = this.state.policyResolution.slice();
+            const policy = policyResolution[index];
+            if (policy.isViewed) {
+                return;
+            }
+            policy.isViewed = true;
             this.setState({
-                agreedTo
-            });
-            this.props.onAgree(agreedTo.map(({id, version}) => {
-                return {id, version};
-            }));
-        }
-
-        isAgreedTo(policy) {
-            return !!this.state.agreedTo.find(({id, version}) => {
-                return id === policy.id && version === policy.version;
+                policyResolution
             });
         }
 
-
-        getAgreement(policyRef) {
-            return this.state.agreedTo.find(({id, version}) => {
-                return id === policyRef.id && version === policyRef.version;
+        toggleIsAgreedTo(index) {
+            const policyResolution = this.state.policyResolution.slice();
+            const policy = policyResolution[index];
+            policy.isAgreedTo = !policy.isAgreedTo;
+            this.setState({
+                policyResolution
+            }, () => {
+                if (this.state.policyResolution.every(({isAgreedTo}) => {
+                    return isAgreedTo;
+                })) {
+                    this.props.onAgreed(true);
+                } else {
+                    this.props.onAgreed(false);
+                }
             });
         }
 
@@ -58,28 +60,51 @@ define([
             if (this.props.policiesToResolve.length === 0) {
                 return;
             }
-            const missingAgreements = this.props.policiesToResolve.map(({id, version, title, publishedAt, policyContent}) => {
+            const missingAgreements = this.state.policyResolution.map(({policy: {id, version, title, publishedAt, url, policyContent}, isViewed, isAgreedTo}, index) => {
                 const agreementViewer = (() => {
-                    if (this.isAgreedTo({id, version})) {
+                    if (isAgreedTo) {
                         return;
                     }
-                    return html`
-                        <div name="agreement-viewer" 
-                            style=${{
-                        height: '400px',
+                    if (policyContent) {
+                        return html`
+                            <div name="agreement-viewer" 
+                                style=${{
+                        maxHeight: '400px',
                         overflowY: 'scroll',
                         border: '1px silver solid',
                         padding: '4px',
                         backgroundColor: '#EEE'
                     }}
-                                className="policy-markdown"
-                                dangerouslySetInnerHTML=${{__html: policyContent}}>
-                        </div>
-                    `;
+                                    className="policy-markdown"
+                                    dangerouslySetInnerHTML=${{__html: policyContent}}>
+                            </div>
+                        `;
+                    }
+                    return html`
+                            <div name="agreement-viewer" 
+                                style=${{
+                        maxHeight: '400px',
+                        overflowY: 'scroll',
+                        border: '1px silver solid',
+                        padding: '4px',
+                        backgroundColor: '#EEE'
+                    }}
+                                    className="policy-markdown">
+                                <h1>${title}</h1>
+                                <p>
+                                    Please open and review the <a href="${url}" target="_blank" onClick=${() => {
+                        this.onViewed(index);
+                    }}>KBase Terms and Conditions</a>. 
+                                </p>
+                                <p>
+                                    The document will open in a separate browser window.
+                                </p>
+                            </div>
+                        `;
                 })();
 
                 const agreementMessage = (() => {
-                    if (!this.isAgreedTo({id, version})) {
+                    if (!isAgreedTo) {
                         return;
                     }
                     return html`
@@ -94,12 +119,64 @@ define([
                     `;
                 })();
 
+                const agreementLabel = (() => {
+                    if (isViewed) {
+                        if (isAgreedTo) {
+                            return html`
+                            <div style=${{cursor: 'pointer'}} 
+                                onClick=${() => {this.toggleIsAgreedTo(index);}}
+                                className="text-success"
+                                style="font-weight: bold; cursor: pointer;">
+                                I have read and agree to this policy
+                            </div>
+                        `;
+                        }
+                        return html`
+                                <div style=${{cursor: 'pointer'}} 
+                                    onClick=${() => {this.toggleIsAgreedTo(index);}}
+                                    className="text-danger"
+                                    style="font-weight: bold; cursor: pointer;"
+                                    >
+                                    I have read and agree to this policy
+                                </div>
+                            `;
+                    }
+                    return html`
+                        <div style="cursor: not-allowed;" title=${`The ${title} must be opened before you can agree to it`}>I have read and agree to this policy</div>
+                    `;
+                })();
+
+                const mustViewMessage = (() => {
+                    if (policyContent) {
+                        return;
+                    }
+                    if (isViewed) {
+                        if (isAgreedTo) {
+                            return html`
+                                <p>
+                                    You have agreed to this policy.
+                                </p>
+                            `;
+                        }
+                        return html`
+                            <p>
+                                You have opened the policy document and may now agree to it.
+                            </p>
+                        `;
+                    }
+                    return html`
+                        <p className="text-danger" style="font-weight: bold;">
+                            You must open the <i>${title}</i> before you may agree to it.
+                        </p>
+                    `;
+                })();
+
                 return html `
                     <div style=${{
         marginTop: '10px',
         padding: '6px',
         // TODO: this property does note exist yet.
-        border: this.isAgreedTo({id, version}) ? '2px #3c763d solid' : '2px #a94442 solid'
+        border: isAgreedTo ? '2px #3c763d solid' : '2px #a94442 solid'
     }}>
 
                         <div className="row">
@@ -118,15 +195,30 @@ define([
     }).format(new Date(publishedAt))}</div>
                                 </div>
                                 <div style=${{marginTop: '10px'}}>
-                                    <label style=${{cursor: 'pointer'}} className=${!this.isAgreedTo({id, version}) ? 'text-danger' : ''}>
-                                        <input 
-                                            type="checkbox" 
-                                            style=${{marginRight: '0.25em'}}
-                                            checked=${this.isAgreedTo({id, version})}
-                                            name="agreed" 
-                                            onClick=${() => {this.togglePolicyAgreement({id, version});}} />
-                                        I have read and agree to this policy
-                                    </label>
+                                    <div style="display: flex; flex-direction: column;">
+                                        <div style="display:flex; flex-direction: row">
+                                            <div style="flex: 0 0 1em;">
+                                                 <input 
+                                                    type="checkbox" 
+                                                    style=${{marginRight: '0.25em'}}
+                                                    checked=${isAgreedTo}
+                                                    disabled=${!policyContent && !isViewed}
+                                                    title=${policyContent || isViewed ? '' : `The ${title} must be opened before you can agree to it`}
+                                                    name="agreed" 
+                                                    onClick=${() => {this.toggleIsAgreedTo(index);}} />
+                                            </div>
+                                            <div style="flex: 1 1 0">
+                                               ${agreementLabel}
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; flex-direction: row">
+                                            <div style="flex: 0 0 1em;">
+                                            </div>
+                                            <div style="flex: 1 1 0">
+                                                ${mustViewMessage}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="col-md-8">
@@ -139,135 +231,20 @@ define([
                     </div>
                 `;
             });
+
             return html`
                 <div>
-                    <h3>KBase Use Policies</h3>
+                    <h3 style="margin-top: 0; padding-top: 0">KBase Use Policies</h3>
                     <p>
-                        The following KBase account policies have not yet been agreed to by this account.
+                        The following KBase account ${this.props.policiesToResolve.length === 1 ? 'policy has' : 'policies have'} not yet been agreed to by this account.
                     </p>
                     <p>
-                        You may log into this account after you have agreed to these policies by checking the box next to each.
+                        You may log into this account after you have agreed to ${this.props.policiesToResolve.length === 1 ? 'this policy' : 'these policies'} by checking the box next to ${this.props.policiesToResolve.length === 1 ? 'it' : 'each'}.
                     </p>
                     ${missingAgreements}
                 </div>
             `;
         }
-
-        //     renderOutdatedAgreements() {
-        //         if (this.props.policiesToResolve.outdated.length === 0) {
-        //             return;
-        //         }
-        //         const outdatedAgreements = this.props.policiesToResolve.outdated.map(({id, version, policy}) => {
-        //             const agreementViewer = (() => {
-        //                 if (this.isAgreedTo({id, version})) {
-        //                     return;
-        //                 }
-        //                 return html`
-        //                     <div name="agreement-viewer"
-        //                         style=${{
-        //                     height: '400px',
-        //                     overflowY: 'scroll',
-        //                     border: '1px silver solid',
-        //                     padding: '4px',
-        //                     backgroundColor: '#EEE'
-        //                 }}
-        //                             className="policy-markdown"
-        //                             dangerouslySetInnerHTML=${{__html: policy.fileContent}}>
-        //                     </div>
-        //                 `;
-        //             })();
-
-        //             const agreementMessage = (() => {
-        //                 if (!this.isAgreedTo({id, version})) {
-        //                     return;
-        //                 }
-        //                 return html`
-        //                     <div className="alert alert-info -agreementMessage">
-        //                         <p>
-        //                             You have agreed to this policy.
-        //                         </p>
-        //                         <p>
-        //                             To show the agreement again, uncheck the agreement.
-        //                         </p>
-        //                     </div>
-        //                 `;
-        //             })();
-
-        //             // const agreedAt = (() => {
-        //             //     if (!this.isAgreedTo({id, version})) {
-        //             //         return;
-        //             //     }
-        //             //     const {agreedAt} = this.getAgreement({id, version});
-        //             //     return html`
-        //             //         <div className="-agreementMessage">
-        //             //            Agreed to on: <span>${Intl.DateTimeFormat('en-US', {
-        //             //         dateStyle: 'short',
-        //             //         timeStyle: 'short',
-        //             //         hour12: true
-        //             //     }).format(new Date(agreedAt))}</span>
-        //             //         </div>
-        //             //     `;
-        //             // })();
-
-        //             return html `
-        //                 <div style=${{
-        //     marginTop: '10px',
-        //     padding: '6px',
-        //     // TODO: this property does note exist yet.
-        //     border: this.isAgreedTo({id, version}) ? '2px #3c763d solid' : '2px #a94442 solid'
-        // }}>
-
-        //                     <div className="row">
-        //                         <div className="col-md-4">
-        //                             <div style=${{fontWeight: 'bold'}}>
-        //                                 ${policy.title}
-        //                             </div>
-        //                             <div>
-        //                                 Version: <span>${policy.version}</span>
-        //                             </div>
-        //                             <div>
-        //                                 Published on: <span>${Intl.DateTimeFormat('en-US', {
-        //     dateStyle: 'short',
-        //     timeStyle: 'short',
-        //     hour12: true
-        // }).format(new Date(policy.begin))}</div>
-        //                             </div>
-        //                             <div style=${{marginTop: '10px'}}>
-        //                                 <label style=${{cursor: 'pointer'}} className=${!this.isAgreedTo({id, version}) ? 'text-danger' : ''}>
-        //                                     <input
-        //                                         type="checkbox"
-        //                                         style=${{marginRight: '0.25em'}}
-        //                                         checked=${this.isAgreedTo({id, version})}
-        //                                         name="agreed"
-        //                                         onClick=${() => {this.togglePolicyAgreement(policy);}} />
-        //                                     I have read and agree to this policy
-        //                                 </label>
-        //                             </div>
-        //                         </div>
-        //                         <div className="col-md-8">
-        //                             <div>
-        //                                 ${agreementViewer}
-        //                                 ${agreementMessage}
-        //                             </div>
-        //                         </div>
-        //                     </div>
-        //                 </div>
-        //             `;
-        //         });
-        //         return html`
-        //             <div>
-        //                 <h3>KBase Use Policies</h3>
-        //                 <p>
-        //                     The following KBase account policies have been updated since you last agreed to them.
-        //                 </p>
-        //                 <p>
-        //                     You may log into this account after you have agreed to these policies by checking the box next to each.
-        //                 </p>
-        //                 ${outdatedAgreements}
-        //             </div>
-        //         `;
-        //     }
-
 
         render() {
             if (this.props.policiesToResolve.length === 0) {
