@@ -56,8 +56,6 @@ define([
                 canSignIn: this.props.policiesToResolve.length === 0,
                 agreements: []
             };
-
-            // this.onAgreed(false);
         }
 
         onAgreed(allAgreedTo) {
@@ -76,28 +74,16 @@ define([
             }
         }
 
-        // onAgree(agreements) {
-        //     const stillNeedResolving = this.props.policiesToResolve.filter((missingPolicy) => {
-        //         // Filter out the policy if it is agreed to.
-        //         return !agreements.find(({id, version}) => {
-        //             return id === missingPolicy.id &&
-        //                    version === missingPolicy.version;
-        //         });
-        //     });
-
-        //     // const outdated = this.props.policiesToResolve.outdated.filter((policy) => {
-        //     //     // Filter out the policy if it is agreed to.
-        //     //     return !agreements.find(({id, version}) => {
-        //     //         return id === policy.id &&
-        //     //                version === policy.version;
-        //     //     });
-        //     // });
-
-        //     this.setState({
-        //         canSignIn: stillNeedResolving.length === 0,
-        //         agreements
-        //     });
-        // }
+        renderNextRequestMessage() {
+            if (!this.props.nextRequest) {
+                return;
+            }
+            return html`
+                <p>
+                    After signing in you will returned to the <b>${this.props.nextRequest.path.join('/')}</b> page.
+                </p>
+            `;
+        }
 
         renderSignInControl() {
             return html`
@@ -117,6 +103,8 @@ define([
         margin: '4px',
         padding: '4px'
     }}>
+                            ${this.renderNextRequestMessage()}
+
                             <form onSubmit=${this.doSigninSubmit.bind(this)}>
                                 <div>
                                     <button className="btn btn-primary"
@@ -153,20 +141,6 @@ define([
                     version: policy.version
                 });
             });
-            // outdated policies.
-            // this.props.policiesToResolve.outdated.forEach((policy) => {
-            //     const agreed = agreements.find(({id, version}) => {
-            //         return id === policy.id &&
-            //                version === policy.version;
-            //     });
-            //     if (!agreed) {
-            //         throw new Error('Cannot submit with missing policies not agreed to');
-            //     }
-            //     agreementsToSubmit.push({
-            //         id: policy.id,
-            //         version: policy.version
-            //     });
-            // });
             return agreementsToSubmit;
         }
 

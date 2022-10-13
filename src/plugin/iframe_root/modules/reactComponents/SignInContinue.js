@@ -154,7 +154,6 @@ define([
         }
 
         async startItUp() {
-
             try {
                 this.setState({
                     status: 'PENDING'
@@ -240,7 +239,7 @@ define([
                 this.setState({
                     status: 'SUCCESS',
                     value: {
-                        nextRequest: stateParams.nextRequest,
+                        nextRequest: stateParams.nextrequest,
                         choice,
                         policiesToResolve,
                         serverTimeOffset

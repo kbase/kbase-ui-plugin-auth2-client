@@ -37,7 +37,7 @@ define([
             }
             return null;
         }
-
+        // ?source=authorization&nextrequest=%7B%22realPath%22%3A%22%2F%22%2C%22path%22%3A%5B%22feeds%22%5D%2C%22original%22%3A%22feeds%22%2C%22query%22%3A%7B%7D%7D#login
         async startItUp() {
             try {
                 this.setState({
