@@ -31,6 +31,7 @@
     global.require = {
         baseUrl,
         urlArgs: `cb=${buildKey}`,
+        waitTimeout: 60,
         paths: {
             bluebird: 'vendor/bluebird/bluebird',
             bootstrap: 'vendor/bootstrap/bootstrap',
