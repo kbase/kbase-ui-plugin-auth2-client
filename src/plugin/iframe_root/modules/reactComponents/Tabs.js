@@ -29,7 +29,7 @@ define([
         renderTabs() {
             return this.props.tabs.map((tab) => {
                 const {id, title} = tab;
-                const className = ['-tab'];
+                const className = ['Tabs-tab'];
                 if (this.state.selectedTab === id) {
                     className.push('-active');
                 } else {
@@ -64,7 +64,7 @@ define([
             })[0];
 
             return html`
-                <div className="-body" role="tabpanel" aria-labeledby=${selectedTab.id} style=${this.props.bodyStyle || {}}>
+                <div className="Tabs-body" role="tabpanel" aria-labeledby=${selectedTab.id} style=${this.props.bodyStyle || {}}>
                     ${this.renderTabContent(selectedTab)}
                 </div>
             `;
@@ -87,7 +87,7 @@ define([
         render() {
             return html`
                 <div className='Tabs'>
-                    <div className="-tabs" role="tablist">
+                    <div className="Tabs-tabs" role="tablist">
                         ${this.renderTabs()}
                     </div>
                     ${this.renderTabBody()}
