@@ -1,18 +1,20 @@
 define([
     'preact',
     'htm',
+    'reactComponents/CountdownAlarmClock',
+    'lib/format',
 
     'bootstrap'
 ], (
     preact,
-    htm
+    htm,
+    CountdownAlarmClock,
+    {niceDuration}
 ) => {
-
     const {h, Component} = preact;
     const html = htm.bind(h);
 
     class TokenCopy extends Component {
-
         render() {
             if (!this.props.newToken) {
                 return;
@@ -50,6 +52,9 @@ define([
                         Please copy it to a secure location and remove this message.
                     </p>
                     <p>
+                        This message will self-destruct in <b><${CountdownAlarmClock} expiresIn=${300000} onExpired=${this.props.onDone} render=${(timeLeft) => {return niceDuration(timeLeft);}} /></b>.
+                    </p>
+                    <p>
                         New Token <span style=${{
         fontWeight: 'bold',
         fontSize: '120%',
@@ -67,7 +72,6 @@ define([
                 </div>
             `;
         }
-
     }
 
     return TokenCopy;

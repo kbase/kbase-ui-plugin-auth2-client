@@ -1,24 +1,25 @@
 define([], () => {
     class CountdownClock {
-        constructor(config) {
+        constructor({expiresAt, expiresIn, tick, onTick, onExpired}) {
             this.targetTime = null;
             // Either countdown until a specific time ...
-            if (config.until) {
-                this.targetTime = config.until;
+            if (expiresAt) {
+                this.targetTime = expiresAt;
                 // ... or for a quantity of time.
-            } else if (config.for) {
-                this.targetTime = new Date().getTime() + config.for;
+            } else if (expiresIn) {
+                this.targetTime = new Date().getTime() + expiresIn;
+            } else {console.error;
+                throw new Error('Either "expiresAt" or "expiresIn" must be provided');
             }
-            this.tickInterval = config.tick || 1000;
-            this.onTick = config.onTick;
-            this.onExpired = config.onExpired;
+            this.tickInterval = tick || 1000;
+            this.onTick = onTick;
+            this.onExpired = onExpired;
             this.timer = null;
         }
 
         tick() {
             const now = new Date().getTime();
             const remaining = this.targetTime - now;
-
             try {
                 this.onTick(remaining);
             } catch (ex) {

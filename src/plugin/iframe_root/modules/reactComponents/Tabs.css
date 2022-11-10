@@ -5,14 +5,14 @@
     min-height: 0;
 }
 
-.Tabs > .-tabs {
+.Tabs-tabs {
     flex: 0 0 auto;
     display: flex;
     flex-direction: row;
     border-bottom: 1px solid silver;
 }
 
-.Tabs > .-tabs > .-tab {
+.Tabs-tab {
     flex: 0 0 auto;
     padding: 8px;
     margin: 0 4px -1px 0;
@@ -25,7 +25,7 @@
     position: relative;
 }
 
-.Tabs > .-tabs > .-tab > .-bottom-mask-container {
+.Tabs-tab-bottom-mask-container {
     position: absolute;
     left: 0;
     right: 0;
@@ -33,7 +33,7 @@
     overflow: visible;
 }
 
-.Tabs > .-tabs > .-tab.-active > .-bottom-mask-container > .-bottom-mask {
+.Tabs-tab.-active>.-bottom-mask-container>.-bottom-mask {
     position: absolute;
     bottom: -1px;
     left: 0;
@@ -42,7 +42,7 @@
     background-color: white;
 }
 
-.Tabs > .-tabs > .-tab > .-bottom-mask-container > .-bottom-mask {
+.Tabs-tab>.-bottom-mask-container>.-bottom-mask {
     position: absolute;
     bottom: -1px;
     left: 0;
@@ -51,28 +51,27 @@
     background-color: transparent;
 }
 
-.Tabs > .-tabs > .-tab.-active {
+.Tabs-tab.-active {
     color: #555;
     background-color: transparent;
     border-radius: 4px 4px 0 0;
 }
 
-.Tabs > .-tabs > .-tab.-inactive {
+.Tabs-tab.-inactive {
     background-color: rgba(200, 200, 200, 0.2);
     border: 1px solid transparent;
     color: #337ab7;
 }
 
-.Tabs > .-tabs > .-tab.-inactive:hover {
+.Tabs-tab.-inactive:hover {
     background-color: transparent;
 }
 
-.Tabs > .-body {
+.Tabs-body {
     flex: 1 1 0;
     overflow-y: auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    /* border: 1px solid silver; */
     border-top: none;
 }

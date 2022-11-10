@@ -1,17 +1,14 @@
 define([
     'preact',
-    'htm',
     'lib/CountdownClock',
 
     'bootstrap',
 ], (
     preact,
-    htm,
     CountdownClock
 ) => {
 
-    const {h, Component} = preact;
-    const html = htm.bind(h);
+    const {Component} = preact;
 
     class CountdownAlarmClock extends Component {
         constructor(props) {
@@ -26,7 +23,7 @@ define([
         componentDidMount() {
             this.clock = new CountdownClock({
                 tick: 1000,
-                until: this.props.until,
+                expiresIn: this.props.expiresIn,
                 onTick: this.onTick.bind(this),
                 onExpired: this.onExpired.bind(this)
             });
@@ -48,6 +45,7 @@ define([
         }
 
         onExpired() {
+            this.props.onExpired();
             this.setState({
                 status: 'DONE'
             });
@@ -56,7 +54,7 @@ define([
         render() {
             switch (this.state.status) {
             case 'NONE':
-                return html`<div>NONE</div>`;
+                return;
             case 'RUNNING':
                 return this.props.render(this.state.remaining);
             case 'DONE':
