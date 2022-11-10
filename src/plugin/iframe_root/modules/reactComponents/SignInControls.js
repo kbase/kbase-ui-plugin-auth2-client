@@ -22,6 +22,15 @@ define([
             if (!this.props.authRequired) {
                 return;
             }
+            const path = html`
+                <span style=${{
+        fontWeight: 'bold'
+    }}
+                    data-k-b-testhook-field="requested-path">
+                    ${' '}
+                    ${this.props.nextRequest.path.join('/')}
+                </span>
+            `;
             return html`
                 <div className="alert alert-danger"
                     role="alert"
@@ -37,19 +46,11 @@ define([
                         <span className="fa fa-sign-in" /> Sign In Required
                     </div>
                     <p>
-                        Sign In is required to access the path: 
-                        <span style=${{
-        fontWeight: 'bold'
-    }}
-                            data-k-b-testhook-field="requested-path">
-                            ${' '}
-                            ${this.props.nextRequest.path.join('/')}
-                        </span>
+                        Sign In is required to access ${path}.
                     </p>
                     <p>
-                        After signing in your browser will be redirected to the requested path.
+                        After signing in your browser will be redirected to ${path}.
                     </p>
-                
                 </div>
             `;
         }
