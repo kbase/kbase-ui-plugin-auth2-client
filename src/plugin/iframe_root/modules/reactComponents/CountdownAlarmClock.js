@@ -24,6 +24,7 @@ define([
             this.clock = new CountdownClock({
                 tick: 1000,
                 expiresIn: this.props.expiresIn,
+                expiresAt: this.props.expiresAt,
                 onTick: this.onTick.bind(this),
                 onExpired: this.onExpired.bind(this)
             });
