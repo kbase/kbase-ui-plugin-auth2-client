@@ -20,19 +20,13 @@ define([
 
     class ContinueHeader extends Component {
         render() {
-            const title = this.props.name;
             if (this.props.choice === null) {
                 return;
             }
             const render = (remainingTime) => {
                 if (remainingTime > 0) {
                     return html`<div style=${{textAlign: 'right'}}>
-                        <div style=${{
-        display: 'inline-block',
-        padding: '6px',
-        backgroundColor: '#999',
-        color: '#FFF'
-    }}>
+                        <div class="alert alert-warning"}>
                             <div>
                                 You have 
                                 <${TextSpan}>${format.niceDuration(remainingTime)}</span>
@@ -52,7 +46,7 @@ define([
                     </div>
                     <div className="-col2">
                         <${CountdownAlarmClock} 
-                            until=${this.props.choice.expires + this.props.serverTimeOffset}
+                            expiresAt=${this.props.choice.expires + this.props.serverTimeOffset}
                             render=${render} />
                     </div>
                 </div>
