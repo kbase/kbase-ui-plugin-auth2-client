@@ -28,8 +28,9 @@ define([
     const {h, Component} = preact;
     const html = htm.bind(h);
 
-    class ServiceTokens extends Component {
+    const TOKEN_VIEWER_EXPIRES_IN = 300000;
 
+    class ServiceTokens extends Component {
         renderAddToken() {
             return html`
                 <div>
@@ -56,6 +57,14 @@ define([
 
             const onDone = () => {
                 this.props.clearNewToken();
+                this.props.runtime.send('notification', 'notify', {
+                    type: 'warning',
+                    id: 'devtoken',
+                    icon: 'ban',
+                    message: 'The Service Token session has been canceled',
+                    description: 'The Service Token session has been canceled',
+                    autodismiss: 10000
+                });
             };
 
             return html`
@@ -63,64 +72,8 @@ define([
                     onCopied=${onCopied}
                     onCopyError=${onCopyError}
                     onDone=${onDone}
+                    expiresIn=${TOKEN_VIEWER_EXPIRES_IN}
                 />
-            `;
-        }
-
-        renderNewTokenx() {
-            if (!this.props.newToken) {
-                return;
-            }
-
-            let clipboardButton = null;
-            if (navigator && navigator.clipboard) {
-                const copyNewToken = async () => {
-                    try {
-                        await navigator.clipboard.writeText(this.props.newToken.token);
-                        this.props.runtime.notifySuccess('Copied token to clipboard', 3000);
-                    } catch (ex) {
-                        console.error(ex);
-                        this.props.runtime.notifyError(
-                            `Error copying token to clipboard: ${ex.message}`
-                        );
-                    }
-                };
-                clipboardButton = html`
-                    <button type="button"
-                        class="btn btn-primary"
-                        onClick=${copyNewToken.bind(this)}>
-                        Copy to Clipboard
-                    </button>
-                `;
-            }
-            return html`
-                <div className="well"
-                    style=${{
-        marginTop: '10px'
-    }}
-                >
-                    <p>
-                        New <b>${this.props.newToken.type}</b> token successfully created
-                    </p>
-                    <p>
-                        Please copy it to a secure location and remove this message.
-                    </p>
-                    <p>
-                        New Token <span style=${{
-        fontWeight: 'bold',
-        fontSize: '120%',
-        fontFamily: 'monospace'
-    }}>${this.props.newToken.token}</span>
-                    </p>
-                    <div>
-                        ${clipboardButton}
-                        <button type="button"
-                            class="btn btn-danger"
-                            onClick=${this.props.clearNewToken}>
-                            Done
-                        </button>
-                    </div>
-                </div>
             `;
         }
 

@@ -8,15 +8,19 @@ define([
     htm
 ) => {
 
-    const {h, Component} = preact;
+    const {h, Component, createRef} = preact;
     const html = htm.bind(h);
 
     class AddTokenForm extends Component {
         constructor(props) {
             super(props);
+            this.ref = createRef();
             this.state = {
                 tokenName: null
             };
+        }
+        componentDidMount() {
+            this.ref.current.focus();
         }
         onSubmit(e) {
             e.preventDefault();
@@ -40,11 +44,13 @@ define([
                             Token name
                         </label>
                         <input name="token-name"
+                            ref=${this.ref}
                             onInput=${this.onTokenNameChange.bind(this)}
                             value=${this.state.tokenName}
                             className="form-control" />
                         ${' '}
                         <button className="btn btn-primary"
+                            disabled=${!this.state.tokenName}
                             type="submit">
                             Create Token
                         </button>

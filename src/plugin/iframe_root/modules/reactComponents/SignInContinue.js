@@ -246,11 +246,23 @@ define([
                     }
                 });
             } catch (ex) {
-                console.error(ex);
+                console.error('Error starting up sign-in session', ex);
                 if (ex.code && ex.code === '10010') {
                     const message = html`
                         <p>A sign-in session was not found. This may be due to the expiration of the sign-in or sign-up session, 
                         which is valid for 30 minutes. Or it may be because you have visited this path from your browser history.</p>
+                        <p>If you wish to sign-in or sign-up, please  ${this.renderSignInButton('visit the sign in page')}.</p>
+                    `;
+                    this.setState({
+                        status: 'ERROR',
+                        error: {
+                            title: 'Sign-In Session Expired',
+                            message
+                        }
+                    });
+                } else if (ex.code && ex.code === '10020') {
+                    const message = html`
+                        <p>The sign in session has expired. A sign in session is valid for 30 minutes.</p>
                         <p>If you wish to sign-in or sign-up, please  ${this.renderSignInButton('visit the sign in page')}.</p>
                     `;
                     this.setState({
@@ -289,7 +301,7 @@ define([
             `;
         }
 
-        async cancelLogin(message) {
+        async cancelSignIn(cancelMessage) {
             const auth2Client = new auth2.Auth2({
                 baseUrl: this.props.runtime.config('services.auth.url')
             });
@@ -297,23 +309,54 @@ define([
             try {
                 await auth2Client.loginCancel();
                 this.props.runtime.send('notification', 'notify', {
-                    type: 'info',
+                    type: 'error',
                     id: 'signin',
                     icon: 'ban',
-                    message: message || 'The Sign In session has been canceled',
-                    description: message || 'The Sign In session has been canceled',
-                    autodismiss: 3000
+                    message: cancelMessage || 'The Sign In session has been canceled',
+                    description: cancelMessage || 'The Sign In session has been canceled',
+                    autodismiss: 30000
                 });
-                this.props.runtime.send('app', 'navigate', {
-                    path: 'login'
+                const message = html`
+                        <p>The sign in session has been canceled. A sign in session is valid for 30 minutes.</p>
+                        <p>If you wish to sign-in or sign-up, please  ${this.renderSignInButton('visit the sign in page')}.</p>
+                    `;
+                this.setState({
+                    status: 'ERROR',
+                    error: {
+                        title: 'Sign-In Session Expired',
+                        message
+                    }
                 });
             } catch (ex) {
-                if (ex instanceof Auth2Error.AuthError) {
-                    console.error(ex);
-                    // TODO: do something
-                } else {
-                    console.error(ex);
-                }
+                // const errorMessage = (() => {
+                //     if (ex instanceof Auth2Error.AuthError) {
+                //         console.error(ex);
+                //         // TODO: do something
+                //     } else {
+                //         console.error(ex);
+                //     }
+                // })();
+                console.error('Error canceling sign in session', ex);
+                this.props.runtime.send('notification', 'notify', {
+                    type: 'error',
+                    id: 'signin',
+                    icon: 'ban',
+                    message: cancelMessage || 'The Sign In session has been canceled',
+                    description: cancelMessage || 'The Sign In session has been canceled',
+                    autodismiss: 30000
+                });
+                const message = html`
+                        <p>The sign in session has canceled. A sign in session is valid for 30 minutes.</p>
+                        <p>If you wish to sign-in or sign-up, please  ${this.renderSignInButton('visit the sign in page')}.</p>
+                        <p>An error was also encountered canceling this session: ${ex.message}</p>
+                    `;
+                this.setState({
+                    status: 'ERROR',
+                    error: {
+                        title: 'Sign-In Session Expired',
+                        message
+                    }
+                });
             }
         }
 
@@ -337,7 +380,7 @@ define([
                         onDone=${this.onDone.bind(this)}
                         serverTimeOffset=${this.state.value.serverTimeOffset}
                         source: 'signin',
-                        cancelLogin=${this.cancelLogin.bind(this)}
+                        cancelSignIn=${this.cancelSignIn.bind(this)}
                     />
                 `;
             }
