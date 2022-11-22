@@ -26,7 +26,7 @@ define([
             const render = (remainingTime) => {
                 if (remainingTime > 0) {
                     return html`<div style=${{textAlign: 'right'}}>
-                        <div class="alert alert-warning"}>
+                        <div class="alert alert-warning">
                             <div>
                                 You have 
                                 <${TextSpan}>${format.niceDuration(remainingTime)}</span>
