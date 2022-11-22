@@ -18,7 +18,6 @@ define([
     ContinueHeader,
     provider
 ) => {
-
     const {h, Component, Fragment} = preact;
     const html = htm.bind(h);
 
@@ -30,7 +29,6 @@ define([
     }
 
     class SignInContinueView extends Component {
-
         constructor(props) {
             super(props);
             this.providers = new provider.Providers({runtime: props.runtime}).get();
@@ -136,9 +134,6 @@ define([
         }
 
         renderSignUpStep() {
-            // if (this.state.signupState === 'incomplete') {
-
-            // }
             return html`
                 <div>
                     <h3>First Sign In?</h3>
@@ -164,6 +159,7 @@ define([
                 </div>
             `;
         }
+
         renderSignInStep() {
             return html`
                 <${SignInContinueForm}
@@ -191,7 +187,6 @@ define([
                 </div>
             `;
         }
-
 
         renderHeader() {
             return html`

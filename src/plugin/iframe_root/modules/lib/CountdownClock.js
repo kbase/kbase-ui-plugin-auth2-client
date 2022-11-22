@@ -15,11 +15,19 @@ define([], () => {
             this.onTick = onTick;
             this.onExpired = onExpired;
             this.timer = null;
+            this.status = 'NONE';
+        }
+
+        remaining() {
+            const now = new Date().getTime();
+            return this.targetTime - now;
         }
 
         tick() {
-            const now = new Date().getTime();
-            const remaining = this.targetTime - now;
+            if (this.status !== 'RUNNING') {
+                return;
+            }
+            const remaining = this.remaining();
             try {
                 this.onTick(remaining);
             } catch (ex) {
@@ -42,10 +50,12 @@ define([], () => {
         }
 
         start() {
+            this.status = 'RUNNING';
             this.tick();
         }
 
         stop() {
+            this.status = 'STOPPED';
             if (this.timer) {
                 window.clearTimeout(this.timer);
                 this.timer = null;

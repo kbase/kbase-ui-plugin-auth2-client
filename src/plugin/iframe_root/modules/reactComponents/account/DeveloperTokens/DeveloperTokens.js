@@ -27,6 +27,8 @@ define([
     const {h, Component} = preact;
     const html = htm.bind(h);
 
+    const TOKEN_VIEWER_EXPIRES_IN = 300000;
+
     class DeveloperTokens extends Component {
         renderAddToken() {
             return html`
@@ -53,6 +55,15 @@ define([
 
             const onDone = () => {
                 this.props.clearNewToken();
+
+                this.props.runtime.send('notification', 'notify', {
+                    type: 'warning',
+                    id: 'devtoken',
+                    icon: 'ban',
+                    message: 'The Developer Token session has been canceled',
+                    description: 'The Developer Token session has been canceled',
+                    autodismiss: 10000
+                });
             };
 
             return html`
@@ -60,6 +71,7 @@ define([
                     onCopied=${onCopied}
                     onCopyError=${onCopyError}
                     onDone=${onDone}
+                    expiresIn=${TOKEN_VIEWER_EXPIRES_IN}
                 />
             `;
         }

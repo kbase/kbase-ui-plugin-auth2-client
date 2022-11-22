@@ -14,6 +14,8 @@ define([
     const {h, Component} = preact;
     const html = htm.bind(h);
 
+    const DEFAULT_EXPIRES_IN = 300000;
+
     class TokenCopy extends Component {
         render() {
             if (!this.props.newToken) {
@@ -52,7 +54,7 @@ define([
                         Please copy it to a secure location and remove this message.
                     </p>
                     <p>
-                        This message will self-destruct in <b><${CountdownAlarmClock} expiresIn=${300000} onExpired=${this.props.onDone} render=${(timeLeft) => {return niceDuration(timeLeft);}} /></b>.
+                        This message will self-destruct in <b><${CountdownAlarmClock} expiresIn=${this.props.expiresIn || DEFAULT_EXPIRES_IN} onExpired=${this.props.onDone} render=${(timeLeft) => {return niceDuration(timeLeft);}} /></b>.
                     </p>
                     <p>
                         New Token <span style=${{

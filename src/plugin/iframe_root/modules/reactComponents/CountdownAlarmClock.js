@@ -14,13 +14,6 @@ define([
         constructor(props) {
             super(props);
             this.clock = null;
-            this.state = {
-                // NONE, RUNNING, DONE
-                status: 'NONE'
-            };
-        }
-
-        componentDidMount() {
             this.clock = new CountdownClock({
                 tick: 1000,
                 expiresIn: this.props.expiresIn,
@@ -28,6 +21,14 @@ define([
                 onTick: this.onTick.bind(this),
                 onExpired: this.onExpired.bind(this)
             });
+            this.state = {
+                // NONE, RUNNING, DONE
+                status: 'NONE',
+                remaining: this.clock.remaining()
+            };
+        }
+
+        componentDidMount() {
             this.clock.start();
         }
 
@@ -55,7 +56,6 @@ define([
         render() {
             switch (this.state.status) {
             case 'NONE':
-                return;
             case 'RUNNING':
                 return this.props.render(this.state.remaining);
             case 'DONE':

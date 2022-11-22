@@ -36,8 +36,6 @@ define([
                     
                     </div>`;
                 }
-                this.props.cancelChoiceSession();
-                return html``;
             };
 
             return html`
@@ -47,7 +45,9 @@ define([
                     <div className="-col2">
                         <${CountdownAlarmClock} 
                             expiresAt=${this.props.choice.expires + this.props.serverTimeOffset}
-                            render=${render} />
+                            render=${render} 
+                            onExpired=${this.props.cancelChoiceSession}
+                            />
                     </div>
                 </div>
             `;
