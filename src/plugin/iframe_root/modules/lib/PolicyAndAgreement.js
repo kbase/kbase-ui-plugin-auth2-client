@@ -203,6 +203,11 @@ define([
                             return !!agreedAt;
                         })[0] || null;
 
+                    const previouslyAgreedTo = agreements
+                        .some(({id: idAgreed, version: versionAgreed}) => {
+                            return (id == idAgreed && version == versionAgreed + 1);
+                        });
+
                     const [status, statusSort] = (() => {
                         if (expiredAt && expiredAt.getTime() < now) {
                             // We don't care whether it was agreed to or not.
@@ -211,7 +216,7 @@ define([
                         if (agreedAt) {
                             return ['current', 2];
                         }
-                        return ['new', 1];
+                        return [previouslyAgreedTo ? 'updated' : 'new', 1];
                     })();
 
                     policyAgreements.push({
@@ -233,7 +238,7 @@ define([
          */
         async getNewPolicies() {
             const policiesToResolve = this.policyAgreements.filter(({status}) => {
-                return status === 'new';
+                return ['new', 'updated'].includes(status);
             });
 
             return Promise.all(policiesToResolve.map(async (policyAgreement) => {
