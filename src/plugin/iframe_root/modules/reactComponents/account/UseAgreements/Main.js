@@ -44,11 +44,14 @@ define([
                 })();
 
                 const statusTitle = (() => {
-                    if (status === 'expired') {
+                    switch (status) {
+                    case 'expired':
                         return html`<span><span className="fa fa-ban" /> Expired</span>`;
-                    }
-                    if (status === 'new') {
+                    case 'new':
                         return html`<span><span className="fa fa-star-o" /> New</span>`;
+                    case 'updated':
+                        return html`<span><span className="fa fa-star-o" /> Updated</span>`;
+
                     }
                     return html`<span><span className="fa fa-check" /> Current</span>`;
                 })();
@@ -141,6 +144,10 @@ define([
             case 'new':
                 return html`<div className="alert alert-warning">
                     This policy is new for you. The next time you sign in to KBase, you will be required to agree to it.
+                </div>`;
+            case 'updated':
+                return html`<div className="alert alert-warning">
+                    This policy is has been updated. The next time you sign in to KBase, you will be required to agree to it.
                 </div>`;
             case 'current':
                 return html`<div className="alert alert-info">

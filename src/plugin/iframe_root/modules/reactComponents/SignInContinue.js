@@ -314,7 +314,7 @@ define([
                     icon: 'ban',
                     message: cancelMessage || 'The Sign In session has been canceled',
                     description: cancelMessage || 'The Sign In session has been canceled',
-                    autodismiss: 30000
+                    autodismiss: 10000
                 });
                 const message = html`
                         <p>The sign in session has been canceled. A sign in session is valid for 30 minutes.</p>
@@ -343,7 +343,7 @@ define([
                     icon: 'ban',
                     message: cancelMessage || 'The Sign In session has been canceled',
                     description: cancelMessage || 'The Sign In session has been canceled',
-                    autodismiss: 30000
+                    autodismiss: 10000
                 });
                 const message = html`
                         <p>The sign in session has canceled. A sign in session is valid for 30 minutes.</p>

@@ -106,7 +106,7 @@ define([
                             ${this.renderNextRequestMessage()}
 
                             <form onSubmit=${this.doSigninSubmit.bind(this)}>
-                                <div>
+                                <div style="margin-top: 15px">
                                     <button className="btn btn-primary"
                                         type="submit"
                                         disabled=${!this.state.canSignIn}>
