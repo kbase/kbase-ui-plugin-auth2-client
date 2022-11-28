@@ -153,21 +153,27 @@ define([
                     if (isViewed) {
                         if (isAgreedTo) {
                             return html`
-                                <p>
-                                    You have agreed to this policy.
-                                </p>
+                                <div className="alert alert-success">
+                                    <p>
+                                        You have agreed to this policy.
+                                    </p>
+                                </div>
                             `;
                         }
                         return html`
-                            <p>
-                                You have opened the policy document and may now agree to it.
-                            </p>
+                            <div className="alert alert-warning">
+                                <p>
+                                    You have opened the policy document and should now agree to it.
+                                </p>
+                            </div>
                         `;
                     }
                     return html`
-                        <p className="text-danger" style="font-weight: bold;">
-                            You must open the <i>${title}</i> before you may agree to it.
-                        </p>
+                        <div className="alert alert-danger">
+                            <p className="xtext-danger" style="font-weight: bold;">
+                                You must open the <i>${title}</i> before you may agree to it.
+                            </p>
+                        </div>
                     `;
                 })();
 
@@ -232,11 +238,22 @@ define([
                 `;
             });
 
+            const phrase = (() => {
+                if (this.props.policiesToResolve.length === 1) {
+                    switch (this.props.policiesToResolve[0].status) {
+                    case 'new':
+                        return 'not yet been agreed to by this account';
+                    case 'updated':
+                        return 'been updated';
+                    }
+                }
+            })();
+
             return html`
                 <div>
                     <h3 style="margin-top: 0; padding-top: 0">KBase Use Policies</h3>
                     <p>
-                        The following KBase account ${this.props.policiesToResolve.length === 1 ? 'policy has' : 'policies have'} not yet been agreed to by this account.
+                        The following KBase use ${this.props.policiesToResolve.length === 1 ? 'policy has' : 'policies have'} ${phrase}.
                     </p>
                     <p>
                         You may log into this account after you have agreed to ${this.props.policiesToResolve.length === 1 ? 'this policy' : 'these policies'} by checking the box next to ${this.props.policiesToResolve.length === 1 ? 'it' : 'each'}.

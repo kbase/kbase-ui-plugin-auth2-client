@@ -568,7 +568,7 @@ define([
                     icon: 'ban',
                     message: message || 'The Sign Up session has been canceled',
                     description: message || 'The Sign Up session has been canceled',
-                    autodismiss: 3000
+                    autodismiss: 10000
                 });
                 this.props.runtime.send('app', 'navigate', {
                     path: 'login'
