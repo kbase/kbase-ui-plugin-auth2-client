@@ -54,13 +54,25 @@ define([
             `;
         }
 
-        async searchDataSource(value) {
-            const dataSource = this.props.dataSource;
-            const totalCount = await dataSource.totalCount();
-            const result = await dataSource.search(value);
-            const searchCount= result.length;
+        searchData(searchTerm) {
+            const data = this.props.data;
+            const totalCount = data.length;
 
-            if (result.length > MAX_RESULT_SIZE) {
+            if (searchTerm.length < MIN_QUERY_LENGTH) {
+                return {
+                    status: 'ERROR',
+                    message: `Please enter ${MIN_QUERY_LENGTH} or more letters`
+                };
+            }
+
+            searchTerm = searchTerm.toLowerCase();
+            const searchedValues = data.filter((item) => {
+                // Just do a substring search.
+                return item.search.includes(searchTerm);
+            });
+            const searchCount= searchedValues.length;
+
+            if (searchedValues.length > MAX_RESULT_SIZE) {
                 return {
                     status: 'SUCCESS',
                     value: {
@@ -69,13 +81,13 @@ define([
                         tooManyResults: true
                     }
                 };
-            } else if (result.length === 0) {
+            } else if (searchedValues.length === 0) {
                 return {
                     status: 'SUCCESS',
                     value: {
                         totalCount,
                         searchCount,
-                        searchedValues: result
+                        searchedValues
                     }
                 };
             }
@@ -85,13 +97,13 @@ define([
                 value: {
                     totalCount,
                     searchCount,
-                    searchedValues: result
+                    searchedValues
                 }
             };
         }
 
-        async inputUpdated(value) {
-            const resultState = await this.searchDataSource(value);
+        inputUpdated(value) {
+            const resultState = this.searchData(value);
             this.setState({
                 ...resultState,
                 inputValue: value,
@@ -100,7 +112,7 @@ define([
             });
         }
 
-        async onInput(e) {
+        onInput(e) {
             const value = e.target.value;
             this.inputUpdated(value);
             this.props.onSelect(value);
@@ -114,12 +126,11 @@ define([
             }
         }
 
-        async doToggleSearch(e) {
+        doToggleSearch(e) {
             e.stopPropagation();
             this.inputRef.current.focus();
             if (this.state.status !== 'SUCCESS') {
-                const dataSource = this.props.dataSource;
-                const totalCount = await dataSource.totalCount();
+                const totalCount = this.data.length;
                 this.setState({
                     status: 'SUCCESS',
                     value: {
@@ -138,14 +149,8 @@ define([
         }
 
         renderSearchButton() {
-            const iconClass = (() => {
-                if (this.state.status === 'PENDING') {
-                    return 'fa-spinner fa-pulse fa-fw';
-                }
-                return 'fa-search';
-            })();
             return html`
-                <span className=${`input-group-addon fa ${iconClass} -search-button`} 
+                <span className="input-group-addon fa fa-search -search-button" 
                     onClick=${this.doToggleSearch.bind(this)}/>
             `;
         }
@@ -201,6 +206,7 @@ define([
         }
 
         renderDropdownItems() {
+           
             if (this.state.value.tooManyResults) {
                 return html`
                     <div className="text-warning -message" >
@@ -251,6 +257,19 @@ define([
         renderDropdown() {
             if (!this.state.userOpenedSearch) {
                 return;
+            }
+            if (this.state.status === 'ERROR') {
+                return html`
+                    <div className="text-error -message" >
+                        ${this.state.message}
+                    </div>
+                `;
+            } else if (this.state.status === 'WARNING') {
+                return html`
+                    <div className="text-warning -message" >
+                        ${this.state.message}
+                    </div>
+                `;
             }
             const foundMessage = (() => {
                 if (!this.state.inputValue) {
