@@ -1,7 +1,6 @@
 define([
     'preact',
     'htm',
-    'lib/dataSource',
     './TypeaheadInput',
     './UseAgreements',
     'reactComponents/Well',
@@ -13,7 +12,6 @@ define([
 ], (
     preact,
     htm,
-    DataSource,
     TypeaheadInput,
     UseAgreements,
     Well,
@@ -26,51 +24,8 @@ define([
         constructor(props) {
             super(props);
 
-            this.dataSource = DataSource({
-                path: `${this.props.runtime.pluginResourcePath}/dataSources/`,
-                sources: {
-                    // Raw data source
-                    institutions: {
-                        file: 'institutions.json',
-                        type: 'json'
-                    },
-                    nationalLabs: {
-                        file: 'nationalLabs.json',
-                        type: 'json'
-                    },
-                    otherLabs: {
-                        file: 'otherLabs.json',
-                        type: 'json'
-                    },
-
-                    // A computed data source.
-                    organizations: {
-                        sources: {
-                            institutions: {
-                                translate: false
-                            },
-                            nationalLabs: {
-                                translate(item) {
-                                    return {
-                                        value: item.name,
-                                        label: `${item.name} (${item.initials})`
-                                    };
-                                }
-                            },
-                            otherLabs: {
-                                translate(item) {
-                                    return {
-                                        value: item.name,
-                                        label: `${item.name} (${item.initials})`
-                                    };
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
             this.state = {
+                ready: false,
                 form: {
                     fields: {
                         realname: {
@@ -137,7 +92,44 @@ define([
             );
         }
 
+        async loadOrganizations() {
+            const fetchJSON = async (name) => {
+                const path = `${this.props.runtime.pluginResourcePath}/dataSources/`;
+                const response = await fetch(`${path}/${name}.json`);
+                if (response.status !== 200) {
+                    throw new Error('Cannot load data source: ' + name);
+                }
+                return response.json();
+
+            }
+
+            const [institutions, nationalLabs, otherLabs] = await Promise.all([
+                fetchJSON('institutions'),
+                fetchJSON('nationalLabs'),
+                fetchJSON('otherLabs')
+            ]);
+            const all = [].concat(
+                institutions,
+                nationalLabs.map(({name, initials}) => {
+                    return {
+                        label: `${name} (${initials})`,
+                        value: name
+                    };
+                }),
+                otherLabs.map(({name, initials}) => {
+                    return {
+                        label: `${name} (${initials})`,
+                        value: name
+                    };
+                })
+            );
+            return all.map(({label, value}) => {
+                return {label, value, search: label.toLowerCase()};
+            });
+        }
+
         async initialize() {
+            const organizations = await this.loadOrganizations();
             const fields = {
                 realname: await this.evaluateField('realname'),
                 email: await this.evaluateField('email'),
@@ -151,7 +143,9 @@ define([
                 form: {
                     ...this.state.form,
                     fields
-                }
+                },
+                organizations,
+                ready: true
             });
         }
 
@@ -594,7 +588,9 @@ define([
                 <${TypeaheadInput} 
                     value=${fieldState.value}
                     onSelect=${(org) => {this.updateField(fieldName, org);}}
-                    dataSource=${this.dataSource.getFilter('organizations')} />
+                    data=${this.state.organizations}
+                />
+
             `;
             const field = this.renderField(fieldName, control);
             const info = '';
@@ -645,12 +641,6 @@ define([
             const fieldName = 'hearAbout';
             const fieldState = this.state.form.fields[fieldName];
             const fieldDefinition = this.getFieldDefinition(fieldName);
-            // const control = html`
-            //     <${TypeaheadInput}
-            //         value=${fieldState.value}
-            //         onSelect=${(org) => {this.updateField(fieldName, org);}}
-            //         dataSource=${this.dataSource.getFilter(fieldName)} />
-            // `;
             const onChange = (e) => {
                 const values = fieldState.value;
                 let newValues;
@@ -871,7 +861,6 @@ define([
                     </div>
                 `;
         }
-
 
         renderSignupPanel() {
             if (!['incomplete', 'complete'].includes(this.props.signupState.status)) {
