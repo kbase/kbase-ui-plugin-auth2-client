@@ -20,6 +20,27 @@ define([
 ) => {
     const {Component} = preact;
     const html = htm.bind(preact.h);
+
+    class FieldEvaluator {
+        constructor({process, updater}) {
+            this.process = process;
+            this.updater = updater;
+            this.canceled = false;
+        }
+
+        async run() {
+            const result = await this.process();
+            if (this.canceled) {
+                return;
+            }
+            return this.updater(result);
+        }
+
+        cancel() {
+            this.canceled = true;
+        }
+    }
+
     class SignUpForm extends Component {
         constructor(props) {
             super(props);
@@ -70,6 +91,8 @@ define([
                 agreements: []
             };
 
+            this.updateQueues = {};
+
             this.initialize();
         }
 
@@ -97,11 +120,10 @@ define([
                 const path = `${this.props.runtime.pluginResourcePath}/dataSources/`;
                 const response = await fetch(`${path}/${name}.json`);
                 if (response.status !== 200) {
-                    throw new Error('Cannot load data source: ' + name);
+                    throw new Error(`Cannot load data source: ${  name}`);
                 }
                 return response.json();
-
-            }
+            };
 
             const [institutions, nationalLabs, otherLabs] = await Promise.all([
                 fetchJSON('institutions'),
@@ -459,9 +481,32 @@ define([
             };
         }
 
+        cancelUpdateQueue(fieldName) {
+            if (!(fieldName in this.updateQueues)) {
+                this.updateQueues[fieldName] = [];
+            }
+
+            for (const item of this.updateQueues[fieldName]) {
+                item.cancel();
+            }
+            this.updateQueues[fieldName] = [];
+        }
+
         async updateField(fieldName, value) {
-            const fieldState = await this.evaluateField(fieldName, value);
-            this.setFieldState(fieldName, fieldState);
+            this.cancelUpdateQueue(fieldName);
+            const evaluator = new FieldEvaluator({
+                process: async () => {
+                    return this.evaluateField(fieldName, value);
+                },
+                updater: (fieldState) => {
+                    this.setFieldState(fieldName, fieldState);
+                    // remove from queues
+                    this.cancelUpdateQueue(fieldName);
+                }
+            });
+
+            this.updateQueues[fieldName].push(evaluator);
+            evaluator.run();
         }
 
         renderRealnameField() {

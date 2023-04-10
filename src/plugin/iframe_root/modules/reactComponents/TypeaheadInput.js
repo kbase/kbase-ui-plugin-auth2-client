@@ -210,7 +210,6 @@ define([
         }
 
         renderDropdownItems() {
-           
             if (this.state.value.tooManyResults) {
                 return html`
                     <div className="text-warning -message" >
