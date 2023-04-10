@@ -110,11 +110,15 @@ define([
                 userHasModified: true,
                 userOpenedSearch: true
             });
+            return resultState;
         }
 
         onInput(e) {
             const value = e.target.value;
-            this.inputUpdated(value);
+            const result = this.inputUpdated(value);
+            if (result.status === 'ERROR') {
+                return;
+            }
             this.props.onSelect(value);
         }
 
