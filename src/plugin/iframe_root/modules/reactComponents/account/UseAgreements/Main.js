@@ -108,10 +108,9 @@ define([
             const {id, version} = this.props.selectedPolicy.useAgreement;
             const key = `${id}.${version}`;
             return html`
-                <div>
+                <div role="tabpanel" aria-labeledby="${key}">
                     ${this.renderAlert()}
                     <${Policy} runtime=${this.props.runtime} policy=${this.props.selectedPolicy.useAgreement} key=${key} />
-                    
                 </div>
             `;
             // <div role="tabpanel" aria-labeledby=${`${id}.${version}`} dangerouslySetInnerHTML=${{__html: this.props.selectedPolicy.document}} />
