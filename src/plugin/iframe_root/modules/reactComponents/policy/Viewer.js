@@ -17,29 +17,15 @@ define([
             const {content, policy: {title, url}} = this.props;
             if (content) {
                 return html`
-                            <div name="agreement-viewer" 
-                                style=${{
-        maxHeight: '400px',
-        overflowY: 'scroll',
-        border: '1px silver solid',
-        padding: '4px',
-        backgroundColor: '#EEE'
-    }}
-                                    className="policy-markdown"
-                                    dangerouslySetInnerHTML=${{__html: content}}>
-                            </div>
-                        `;
+                    <div name="agreement-viewer" 
+                            className="policy-markdown agreement-viewer"
+                            dangerouslySetInnerHTML=${{__html: content}}>
+                    </div>
+                `;
             }
             return html`
                 <div name="agreement-viewer" 
-                    style=${{
-        maxHeight: '400px',
-        overflowY: 'scroll',
-        border: '1px silver solid',
-        padding: '4px',
-        backgroundColor: '#EEE'
-    }}
-                        className="policy-markdown">
+                        className="policy-markdown agreement-viewer">
                     <h1>${title}</h1>
                     <p>
                         Please open and review the <a href="${url}" target="_blank"}}>KBase Terms and Conditions</a>. 
