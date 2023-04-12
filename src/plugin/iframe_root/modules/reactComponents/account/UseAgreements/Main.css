@@ -35,7 +35,8 @@
 .UseAgreements .-grid .-row>.-col2 {
     flex: 1 1 0;
     margin-left: 1em;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 /* .UseAgreements .agreement-expired {

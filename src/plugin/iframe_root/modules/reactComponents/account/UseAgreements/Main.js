@@ -107,8 +107,9 @@ define([
             }
             const {id, version} = this.props.selectedPolicy.useAgreement;
             const key = `${id}.${version}`;
+            // We are "faking" a tab panel here, as this was refactored from a bootstrap tabset.
             return html`
-                <div role="tabpanel" aria-labeledby="${key}">
+                <div role="tabpanel" aria-labeledby="${key}" style=${{flex: '1 1 0', display: 'flex', flexDirection: 'column'}}>
                     ${this.renderAlert()}
                     <${Policy} runtime=${this.props.runtime} policy=${this.props.selectedPolicy.useAgreement} key=${key} />
                 </div>
