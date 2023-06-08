@@ -5,6 +5,7 @@ define([
     './CollapsiblePanel',
     './TextSpan',
     './ContinueHeader',
+    './Alert',
     '../lib/provider',
 
     'bootstrap',
@@ -16,6 +17,7 @@ define([
     CollapsiblePanel,
     TextSpan,
     ContinueHeader,
+    Alert,
     provider
 ) => {
     const {h, Component, Fragment} = preact;
@@ -147,11 +149,13 @@ define([
                     <p>There is no KBase account associated with it.</p>
                     <p>
                         If you wish to create a new KBase account, you may 
-                        <${TextSpan}>
-                            <a href="/#signup">
-                                <${TextSpan}><span className="fa fa-user-plus" /></>
-                                Sign Up now using this <${TextSpan} bold=${true}>${this.props.choice.provider}</> account
-                            </a>.
+                        <${Alert} variant="info" type="inline" style=${{marginLeft: '0.5rem'}}>
+                            <${TextSpan}>
+                                <a href="/#signup">
+                                    <${TextSpan}><span className="fa fa-user-plus" /></>
+                                    Sign Up now using this <${TextSpan} bold=${true}>${this.props.choice.provider}</> account
+                                </a>.
+                            </>
                         </>
                     </p>
 

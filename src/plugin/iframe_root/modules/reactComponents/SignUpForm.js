@@ -174,10 +174,16 @@ define([
         requiredIcon(fieldName) {
             const fieldState = this.state.form.fields[fieldName];
             const classes = (() => {
-                if (fieldState.status !== 'VALID') {
+                switch (fieldState.status) {
+                case 'VALID':
+                    return  'glyphicon-ok text-success';
+                case 'LOCAL_VALID':
+                    return 'glyphicon-asterisk text-danger';
+                case 'REMOTE_VALIDATING':
+                    return 'glyphicon-asterisk text-danger';
+                case 'INVALID':
                     return 'glyphicon-asterisk text-danger';
                 }
-                return  'glyphicon-ok text-success';
             })();
 
             return html`
@@ -189,26 +195,17 @@ define([
 
         getFieldBorderClass(fieldName) {
             const fieldState = this.state.form.fields[fieldName];
-            if (fieldState.status !== 'VALID') {
+            switch (fieldState.status) {
+            case 'VALID':
+                return  '';
+            case 'LOCAL_VALID':
+                return 'has-error';
+            case 'REMOTE_VALIDATING':
+                return 'has-error';
+            case 'INVALID':
                 return 'has-error';
             }
             return '';
-
-            // if (fieldState.isValidating) {
-            //     // return '1px solid yellow';
-            //     return 'bs-border-warning';
-            // }
-            // if (fieldState.isModified) {
-            // if (fieldState.status === 'VALID') {
-            //     // return '1px solid transparent';
-            //     return 'bs-border-invisible';
-            // }
-            // // return '1px solid red';
-            // return 'bs-border-danger';
-
-            // }
-            // // return '1px solid transparent';
-            // return 'bs-border-invisible';
         }
 
         renderFormRow(field, info) {
@@ -348,6 +345,9 @@ define([
                                 };
                             }
                         },
+                    ],
+                    remoteRuleMessage: 'Username is valid, check if available with KBase',
+                    remoteRules: [
                         {
                             validate: async (value) => {
                                 const auth2Client = new auth2.Auth2({
@@ -474,6 +474,42 @@ define([
                 }
             }
 
+            if ('remoteRules' in fieldDefinition) {
+                return {
+                    value,
+                    isModified: true,
+                    status: 'LOCAL_VALID',
+                    validationMessage: fieldDefinition.remoteRuleMessage
+                };
+            }
+            return {
+                value,
+                isModified: true,
+                status: 'VALID'
+            };
+        }
+
+        async evaluateRemoteRules(fieldName) {
+            if (!('remoteRules' in fieldDefinition)) {
+                return;
+            }
+            // Apply remote rules.
+            const fieldState = this.getFieldState(fieldName);
+            const fieldDefinition = this.getFieldDefinition(fieldName);
+
+            const value = fieldState.value;
+
+            for (const rule of fieldDefinition.remoteRules) {
+                const {isValid, message} = await rule.validate(value);
+                if (!isValid) {
+                    return {
+                        value,
+                        isModified: true,
+                        status: 'INVALID',
+                        validationMessage: message
+                    };
+                }
+            }
             return {
                 value,
                 isModified: true,
@@ -511,6 +547,17 @@ define([
 
         renderRealnameField() {
             const fieldState = this.state.form.fields.realname;
+            const messageClass = (() => {
+                switch (fieldState.status) {
+                case 'VALID':
+                    return 'success';
+                case 'LOCAL_VALID':
+                    return 'success';
+                case 'INVALID':
+                    return 'danger';
+                }
+
+            })();
             const field = html`
                 <div className=${`form-group ${this.getFieldBorderClass('realname')}`} style=${{padding: '2px'}}>
                     <label for="signup_realname">
@@ -524,7 +571,7 @@ define([
                         value=${fieldState.value}
                         onInput=${(e) => {return this.updateField('realname', e.target.value);}}
                     />
-                    <div className="text-danger"
+                    <div className="text-${messageClass}"
                         style=${{padding: '4px'}}>
                         ${fieldState.validationMessage}
                     </div>
@@ -604,7 +651,7 @@ define([
         }
 
         renderUsernameField() {
-            const field = this.renderInputField('username');
+            const field = this.renderLookupInputField('username');
             const info = html`
                 <div>
                     <div>
@@ -646,13 +693,25 @@ define([
         renderField(fieldName, control) {
             const fieldDefinition = this.getFieldDefinition(fieldName);
             const fieldState = this.state.form.fields[fieldName];
+            const messageClassName = (() => {
+                switch (fieldState.status) {
+                case 'VALID':
+                    return 'text-success';
+                case 'LOCAL_VALID':
+                    return 'text-warning';
+                case 'REMOTE_VALIDATING':
+                    return 'text-warning';
+                case 'INVALID':
+                    return 'text-danger';
+                }
+            })();
             return html`
                 <div className=${`form-group ${this.getFieldBorderClass(fieldName)}`} style=${{padding: '2px'}}>
                     <label for=${`signup_${fieldName}`}>
                         ${fieldDefinition.label} ${this.requiredIcon(fieldName)}
                     </label>
                     ${control}
-                    <div className="text-danger"
+                    <div className=${messageClassName}
                         style=${{padding: '4px'}}>
                         ${fieldState.validationMessage}
                     </div>
@@ -671,6 +730,94 @@ define([
                     value=${fieldState.value}
                     onInput=${(e) => {this.updateField(fieldName, e.target.value);}}
                 />
+            `;
+            return this.renderField(fieldName, control);
+        }
+
+        renderLookupInputField(fieldName) {
+            const fieldState = this.state.form.fields[fieldName];
+            const onLookup = async () => {
+                const validate = async (value) => {
+                    const auth2Client = new auth2.Auth2({
+                        baseUrl: this.props.runtime.config('services.auth.url')
+                    });
+                    try {
+                        const {availablename} = await auth2Client.loginUsernameSuggest(value);
+                        if (availablename === value) {
+                            return {
+                                isValid: true
+                            };
+                        }
+                        return {
+                            isValid: false,
+                            message: `This username is not available: a suggested available username is ${availablename}`
+                        };
+                    } catch (ex) {
+                        console.error('error looking up username in auth', ex);
+                    }
+                };
+
+                const value = this.state.form.fields[fieldName].value;
+                this.setFieldState(fieldName, {
+                    value, isModified: true, status: 'REMOTE_VALIDATING',
+                    validationMessage: html`Checking if username is available at KBase... <span className="fa fa-spinner fa-pulse " /> `
+                });
+                const {isValid, message} = await validate(value);
+                const fieldState = (() => {
+                    if (isValid) {
+                        return {
+                            value,
+                            isModified: true,
+                            status: 'VALID',
+                            validationMessage: 'This username is available'
+                        };
+                    }
+                    return {
+                        value,
+                        isModified: true,
+                        status: 'INVALID',
+                        validationMessage: message
+                    };
+                })();
+                this.setFieldState(fieldName, fieldState);
+            };
+            // const buttonMessage = (() => {
+            //     switch (fieldState.status) {
+            //     case 'REQUIRED_MISSING':
+            //         return 'Check Username with KBase';
+            //     case 'VALID':
+            //         return 'Username available';
+            //     case 'LOCAL_VALID':
+            //         return 'Check Username with KBase';
+            //     case 'REMOTE_VALIDATING':
+            //         return 'Checking for availability...';
+            //     case 'INVALID':
+            //         return 'Check Username with KBase';
+            //     }
+            //     return fieldState.status;
+            // })();
+
+
+            const control = html`
+                <div style=${{display: 'flex', flexDirection: 'row'}}>
+                    <input type="text" 
+                        style=${{flex: '1 1 0'}}
+                        className="form-control" 
+                        id=${`signup_${fieldName}`}
+                        name=${fieldName}
+                        autocomplete="off"
+                        value=${fieldState.value}
+                        onInput=${(e) => {this.updateField(fieldName, e.target.value);}}
+                    />
+                    <button type="button"
+                        style=${{flex: '0 0 auto'}}
+                        className="btn btn-primary"
+                        disabled=${fieldState.status !== 'LOCAL_VALID'}
+                        onClick=${onLookup}
+                    >
+                        Check for Availability
+                    </button>
+                </div>
             `;
             return this.renderField(fieldName, control);
         }

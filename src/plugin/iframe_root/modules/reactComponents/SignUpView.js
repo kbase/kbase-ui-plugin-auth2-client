@@ -11,6 +11,7 @@ define([
     './SignUpForm',
     './SignInOops',
     './ContinueHeader',
+    './Alert',
     'kb_service/client/userProfile',
 
     // For effect
@@ -29,6 +30,7 @@ define([
     SignUpForm,
     SignInOops,
     ContinueHeader,
+    Alert,
     UserProfileService
 ) => {
     const {Component} = preact;
@@ -439,7 +441,15 @@ define([
                     </p>
                     
                     <p style=${{maxWidth: '60em'}}>
-                        You may continue to <a href="/#auth2/login/continue?override-source=signin" target="_parent"><span className="fa fa-sign-in" /> Sign In</a> or <a href="#" onClick=${this.onCancelSignUp.bind(this)}><span className="fa fa-ban" /> cancel and try again</a>.
+                        You may continue to 
+                        <${Alert} variant="info" type="inline" style=${{margin: '0 0.5rem'}}>
+                        <a href="/#auth2/login/continue?override-source=signin" target="_parent"><span className="fa fa-sign-in" /> Sign In</a> 
+                        </>
+                        or 
+                        <${Alert} variant="info" type="inline" style=${{marginLeft: '0.5rem'}}>
+                        <a href="#" onClick=${this.onCancelSignUp.bind(this)}><span className="fa fa-ban" /> cancel and try again</a>
+                        </>
+                        .
                     </p>
                 </div>
             `;
