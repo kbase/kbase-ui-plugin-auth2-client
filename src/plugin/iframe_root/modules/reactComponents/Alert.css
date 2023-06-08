@@ -15,3 +15,9 @@
 .Alert-title .fa {
     margin-right: 4px;
 }
+
+.Alert-inline {
+    display: inline;
+    padding: 3px;
+    margin: 0;
+}

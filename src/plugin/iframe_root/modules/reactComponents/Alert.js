@@ -14,19 +14,21 @@ define([
 
     class Alert extends Component {
         renderIcon() {
-            switch (this.props.type) {
-            case 'error':
-                return 'fa-exclamation-triangle';
-            case 'warning':
-                return 'fa-exclamation-triangle';
-            case 'info':
-                return 'fa-info';
-            case 'success':
-                return 'fa-check';
+            if (this.props.showIcon) {
+                switch (this.props.variant) {
+                case 'error':
+                    return 'fa-exclamation-triangle';
+                case 'warning':
+                    return 'fa-exclamation-triangle';
+                case 'info':
+                    return 'fa-info';
+                case 'success':
+                    return 'fa-check';
+                }
             }
         }
         renderAlertTypeClass() {
-            switch (this.props.type) {
+            switch (this.props.variant) {
             case 'error':
                 return 'danger';
             case 'warning':
@@ -37,8 +39,14 @@ define([
                 return 'success';
             }
         }
-        defaultTitle() {
+        renderAlertCustomClass() {
             switch (this.props.type) {
+            case 'inline':
+                return 'Alert-inline';
+            }
+        }
+        defaultTitle() {
+            switch (this.props.variant) {
             case 'error':
                 return 'Error!';
             case 'warning':
@@ -50,13 +58,15 @@ define([
             }
         }
         renderTitle() {
-            const title = this.props.title || this.defaultTitle();
-            return html`
-                <div className="Alert-title">
-                    <span className=${`fa ${this.renderIcon()}`} />
-                    ${title}
-                </div>
-            `;
+            if (this.props.showTitle) {
+                const title = this.props.title || this.defaultTitle();
+                return html`
+                    <div className="Alert-title">
+                        <span className=${`fa ${this.renderIcon()}`} />
+                        ${title}
+                    </div>
+                `;
+            }
         }
         render() {
             const content = (() => {
@@ -67,7 +77,7 @@ define([
             })();
             return html`
                 <div
-                    className=${`alert alert-${this.renderAlertTypeClass()} Alert`}
+                    className=${`alert alert-${this.renderAlertTypeClass()} ${this.renderAlertCustomClass()} Alert`}
                     style=${this.props.style}
                 >
                     ${this.renderTitle()}
