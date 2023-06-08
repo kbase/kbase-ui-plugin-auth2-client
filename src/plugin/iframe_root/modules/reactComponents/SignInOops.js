@@ -3,6 +3,7 @@ define([
     'htm',
     'reactComponents/CollapsiblePanel',
     'reactComponents/Well',
+    'reactComponents/Alert',
     'lib/provider',
 
     'bootstrap'
@@ -11,6 +12,7 @@ define([
     htm,
     CollapsiblePanel,
     Well,
+    Alert,
     provider,
 ) => {
 
@@ -78,7 +80,7 @@ define([
                     <${Well} type="warning">
                         ${explanation}
                         <div style=${{marginBottom: '5px'}}>
-                            
+                            <${Alert} variant="info" type="inline">
                             <a href=${provider.logoutUrl} 
                                 target="_blank">
                                 <span className="fa fa-external-link"
@@ -90,13 +92,18 @@ define([
                                     ${provider.label}
                                 </span>
                             </a>
+                            </>
                         </div>
                         <p>
                             After signing out from  <span className="-textSpan">
                                 ${provider.label}
-                            </span> you will need to <a href="/#login" target="_parent" className="-textSpan">
-                                <span className="fa fa-sign-in -textSpan" /> Sign in to KBase
-                            </a> again.
+                            </span> you will need to  
+                            <${Alert} variant="info" type="inline" style=${{margin: '0 0.3rem'}}>
+                                <a href="/#login" target="_parent" className="-textSpan">
+                                    <span className="fa fa-sign-in -textSpan" /> Sign in to KBase
+                                </a>
+                            </>
+                            again.
                         </p>
                     </div> 
                 </>
