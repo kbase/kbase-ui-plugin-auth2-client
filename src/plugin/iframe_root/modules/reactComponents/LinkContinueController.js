@@ -250,7 +250,7 @@ define([
             }
             case 'HALTED':
                 return html`
-                    <${Alert} type="warning" title=${this.state.title} message=${this.state.message} />
+                    <${Alert} variant="warning" title=${this.state.title} showIcon=${true} showTitle=${true} message=${this.state.message} />
                 `;
             case 'ERROR':
                 return html`
