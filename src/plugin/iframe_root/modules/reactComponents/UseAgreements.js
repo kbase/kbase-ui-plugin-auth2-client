@@ -239,7 +239,7 @@ define([
             });
 
             const phrase = (() => {
-                if (this.props.policiesToResolve.length === 1) {
+                if (this.props.policiesToResolve.length >= 1) {
                     switch (this.props.policiesToResolve[0].status) {
                     case 'new':
                         return 'not yet been agreed to by this account';
