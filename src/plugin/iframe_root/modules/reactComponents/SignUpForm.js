@@ -4,7 +4,6 @@ define([
     './TypeaheadInput',
     './UseAgreements',
     'reactComponents/Well',
-    'reactComponents/Alert',
     'kb_common_ts/Auth2',
     'json!data/referralSources.json',
 
@@ -16,7 +15,6 @@ define([
     TypeaheadInput,
     UseAgreements,
     Well,
-    Alert,
     auth2,
     referralSources
 ) => {
