@@ -4,6 +4,7 @@ define([
     './TypeaheadInput',
     './UseAgreements',
     'reactComponents/Well',
+    'reactComponents/Alert',
     'kb_common_ts/Auth2',
     'json!data/referralSources.json',
 
@@ -15,6 +16,7 @@ define([
     TypeaheadInput,
     UseAgreements,
     Well,
+    Alert,
     auth2,
     referralSources
 ) => {
@@ -113,6 +115,10 @@ define([
                 department.status === 'VALID' &&
                 hearAbout.status === 'VALID'
             );
+        }
+
+        canSubmitForm() {
+            return this.formIsValid() && this.state.policiesResolved;
         }
 
         async loadOrganizations() {
@@ -308,7 +314,7 @@ define([
                         },
                         {
                             validate: async (value) => {
-                                if (/^[0-9]+/.test(value)) {
+                                if (/^\d+/.test(value)) {
                                     return {
                                         isValid: false,
                                         message: 'A username may not begin with a number'
@@ -947,8 +953,19 @@ define([
             this.props.onCancelSignUp();
         }
 
+        renderFormMessage() {
+            if (!this.canSubmitForm()) {
+                return html`
+                    <div className="alert alert-warning" style=${{marginBottom: '1rem'}}><b>Reminder -</b> All fields must be completed in order to create a KBase account</>
+                `;
+            }
+            return html`
+                <div className="alert alert-success" style=${{marginBottom: '1rem'}}><b>Ready -</b> All fields are complete, you may now create your account</>
+            `;
+        }
+
         renderFormButtons() {
-            const disabled = !(this.formIsValid() && this.state.policiesResolved);
+            const disabled = !(this.canSubmitForm());
             return html`
                 <div className="btn-toolbar" style=${{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
                     <button className="btn btn-primary" 
@@ -1029,7 +1046,7 @@ define([
                                 <p>
                                 Some field values have been pre-populated from your 
                                 <span style=${{padding: '0 0.25em', fontWeight: 'bold'}}>${this.props.choice.provider}</span>
-                                account
+                                account. <b>All fields are required.</b>
                                 </p>
                             </div>
                         </div>
@@ -1048,6 +1065,7 @@ define([
                             <hr />
                             <${UseAgreements} policiesToResolve=${this.props.policiesToResolve} onAgreed=${this.onAgreed.bind(this)}/>
                             <hr />
+                            ${this.renderFormMessage()}
                             ${this.renderFormButtons()}
                         </form>
                     </div>
@@ -1064,15 +1082,6 @@ define([
                     ${this.renderSignupForm()}
                 </>
             `;
-
-            // return html`
-            //     <${Panel}
-            //         type="default"
-            //         classes=${['kb-panel-light']}
-            //         title="Sign up for KBase">
-            //         ${this.renderSignupForm()}
-            //     </>
-            // `;
         }
 
         render() {
