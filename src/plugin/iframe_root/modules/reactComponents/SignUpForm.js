@@ -21,6 +21,8 @@ define([
     const {Component} = preact;
     const html = htm.bind(preact.h);
 
+    const EMAIL_REGEXP = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     class FieldEvaluator {
         constructor({process, updater}) {
             this.process = process;
@@ -179,14 +181,16 @@ define([
             const fieldState = this.state.form.fields[fieldName];
             const classes = (() => {
                 switch (fieldState.status) {
+                case 'REQUIRED_MISSING':
+                    return 'glyphicon-asterisk text-danger';
                 case 'VALID':
                     return  'glyphicon-ok text-success';
                 case 'LOCAL_VALID':
-                    return 'glyphicon-asterisk text-danger';
+                    return 'glyphicon-asterisk text-warning';
                 case 'REMOTE_VALIDATING':
-                    return 'glyphicon-asterisk text-danger';
+                    return 'glyphicon-asterisk text-warning';
                 case 'INVALID':
-                    return 'glyphicon-asterisk text-danger';
+                    return 'glyphicon-remove text-danger';
                 }
             })();
 
@@ -289,7 +293,19 @@ define([
                     isRequired: true,
                     minLength: 2,
                     maxLength: 100,
-                    rules: []
+                    rules: [{
+                        validate: async (value) => {
+                            if (EMAIL_REGEXP.test(value)) {
+                                return {
+                                    isValid: true
+                                };
+                            }
+                            return {
+                                isValid: false,
+                                message: 'Not a valid email address'
+                            };
+                        }
+                    }]
                 },
                 username: {
                     label: 'KBase Username',
@@ -428,7 +444,6 @@ define([
             // Apply rules.
             // Realname is required, has no character limit afaik, but let us impose
             // a default of 100 characters.
-
             const fieldState = this.getFieldState(fieldName);
             const fieldDefinition = this.getFieldDefinition(fieldName);
 
