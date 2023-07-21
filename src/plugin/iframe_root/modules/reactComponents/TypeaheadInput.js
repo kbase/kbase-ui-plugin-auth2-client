@@ -115,18 +115,13 @@ define([
 
         onInput(e) {
             const value = e.target.value;
-            const result = this.inputUpdated(value);
-            // if (result.status === 'ERROR') {
-            //     return;
-            // }
+            this.inputUpdated(value);
             this.props.onSelect(value);
         }
 
         onKeyDown(event) {
-            if (event.key === 'Tab') {
-                this.tabbing = true;
-            } else {
-                this.tabbing = false;
+            if (event.key === 'Tab' || event.key === 'Escape' || event.key === 'Enter') {
+                this.closeDropdown();
             }
         }
 
@@ -134,7 +129,7 @@ define([
             e.stopPropagation();
             this.inputRef.current.focus();
             if (this.state.status !== 'SUCCESS') {
-                const totalCount = this.data.length;
+                const totalCount = this.props.data.length;
                 this.setState({
                     status: 'SUCCESS',
                     value: {
@@ -173,19 +168,6 @@ define([
             this.props.onSelect(this.state.inputValue);
         }
 
-        onKeyPress(e) {
-            if (e.key === 'Enter' || e.key === 'Escape') {
-                e.preventDefault();
-                this.closeDropdown();
-            }
-        }
-
-        onBlur() {
-            if (this.tabbing) {
-                this.closeDropdown();
-            }
-        }
-
         renderCancelSearchButton() {
             if (!this.state.userOpenedSearch) {
                 return;
@@ -200,18 +182,18 @@ define([
         doSelectValue(value) {
             this.setState({
                 ...this.state,
-                value: {
-                    value
-                },
+                // value,
                 inputValue: value,
                 userOpenedSearch: false
             });
             this.props.onSelect(value);
+            this.inputRef.current.focus();
         }
 
         leaveAsIs(ev) {
             ev.preventDefault();
             ev.stopPropagation();
+            this.inputRef.current.focus();
             this.closeDropdown();
         }
 
@@ -249,16 +231,10 @@ define([
 
             return this.state.value.searchedValues.map(({label}) => {
                 return html`
-                <div className="-row" 
-                style=${{
-        padding: '4px',
-        cursor: 'pointer'
-
-    }}
-                onClick=${() => {this.doSelectValue(label);}}
-                > 
-                            ${label}
-                        </div>
+                <div className="-row -dropdown-item" 
+                    onClick=${() => {this.doSelectValue(label);}}> 
+                    ${label}
+                </div>
                 `;
             });
         }
@@ -325,9 +301,7 @@ define([
                             value=${this.state.inputValue}
                             placeholder=${this.props.placeholder}
                             onInput=${this.onInput.bind(this)}
-                            onKeyPress=${this.onKeyPress.bind(this)}
                             onKeyDown=${this.onKeyDown.bind(this)}
-                            onBlur=${this.onBlur.bind(this)}
                         />
                         ${this.renderCancelSearchButton()}
                         ${this.renderSearchButton()}
