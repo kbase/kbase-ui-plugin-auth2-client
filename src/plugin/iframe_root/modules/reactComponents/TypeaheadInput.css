@@ -45,6 +45,20 @@
     overflow: auto
 }
 
+.TypeaheadInput .-dropdown-wrapper > .-dropdown-items .-dropdown-item {
+    padding: 4px;
+    cursor: pointer;
+}
+
+.TypeaheadInput .-dropdown-wrapper > .-dropdown-items .-dropdown-item:hover {
+    background-color: rgba(200, 200, 200, 0.2);
+}
+
+.TypeaheadInput .-dropdown-wrapper > .-dropdown-items .-dropdown-item:active {
+    background-color: rgba(200, 200, 200, 0.5);
+}
+
+
 .TypeaheadInput .-search-button {
     cursor: pointer;
 }
