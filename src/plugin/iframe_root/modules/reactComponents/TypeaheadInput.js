@@ -116,9 +116,9 @@ define([
         onInput(e) {
             const value = e.target.value;
             const result = this.inputUpdated(value);
-            if (result.status === 'ERROR') {
-                return;
-            }
+            // if (result.status === 'ERROR') {
+            //     return;
+            // }
             this.props.onSelect(value);
         }
 
@@ -209,6 +209,12 @@ define([
             this.props.onSelect(value);
         }
 
+        leaveAsIs(ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            this.closeDropdown();
+        }
+
         renderDropdownItems() {
             if (this.state.value.tooManyResults) {
                 return html`
@@ -235,7 +241,7 @@ define([
                 return html`
                     <div className="text-info -message">
                         Nothing matched your search.<br />
-                        You may leave it as is to use this value in your profile,
+                        You may <button className="btn btn-default btn-xs" onClick=${this.leaveAsIs.bind(this)}>leave it as is</button> to use this value in your profile,
                         or try different text to match your organization.
                     </div>
                 `;
@@ -263,16 +269,26 @@ define([
             }
             if (this.state.status === 'ERROR') {
                 return html`
-                    <div className="text-error -message" >
+                    <div className="-dropdown-wrapper">
+                        <div className="-dropdown text-danger">
                         ${this.state.message}
+                        </div>
+                        <div className="-dropdown-items">
+                            
+                        </div>
                     </div>
                 `;
             } else if (this.state.status === 'WARNING') {
                 return html`
-                    <div className="text-warning -message" >
+                <div className="-dropdown-wrapper">
+                    <div className="-dropdown text-warning">
                         ${this.state.message}
                     </div>
-                `;
+                    <div className="-dropdown-items">
+                       
+                    </div>
+                </div>
+            `;
             }
             const foundMessage = (() => {
                 if (!this.state.inputValue) {
