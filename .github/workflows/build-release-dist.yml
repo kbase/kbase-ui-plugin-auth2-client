@@ -1,15 +1,13 @@
 name: Plugin build and create dist upon release
 on:
   release:
-    branches: 
-      -master
     types: [published]
 jobs:
   build-dist:
     runs-on: ubuntu-latest
     steps:
       - name: Check out GitHub Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       #
       # Build the plugin
