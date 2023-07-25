@@ -697,7 +697,6 @@ define([
             const fieldState = this.state.form.fields[fieldName];
             const control = html`
                 <${TypeaheadInput} 
-                    value=${fieldState.value}
                     onSelect=${(org) => {this.updateField(fieldName, org);}}
                     data=${this.state.organizations}
                 />
