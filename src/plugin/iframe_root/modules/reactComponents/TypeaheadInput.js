@@ -401,7 +401,6 @@ define([
                             className="form-control"
                             autocomplete="off"
                             value=${this.state.inputValue}
-                            placeholder=${this.props.placeholder}
                             onInput=${this.onInput.bind(this)}
                             onKeyDown=${this.onKeyDown.bind(this)}
                         />
