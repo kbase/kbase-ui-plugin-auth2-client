@@ -6,6 +6,7 @@ define([
   'reactComponents/Well',
   'kb_common_ts/Auth2',
   'json!data/referralSources.json',
+  'json!data/organizations.json',
 
   // For effect
   'css!./SignUpForm.css',
@@ -17,6 +18,7 @@ define([
     Well,
     auth2,
     referralSources,
+    organizations,
 ) => {
   const {Component} = preact;
   const html = htm.bind(preact.h);
@@ -42,8 +44,8 @@ define([
      * doc here
      * @return {*}
      */
-    async run() {
-      const result = await this.process();
+    run() {
+      const result = this.process();
       if (this.canceled) {
         return;
       }
@@ -149,55 +151,15 @@ define([
 
     /**
      * doc here
-     * @return {*}
      */
-    async loadOrganizations() {
-      const fetchJSON = async (name) => {
-        const path = `${this.props.runtime.pluginResourcePath}/dataSources/`;
-        const response = await fetch(`${path}/${name}.json`);
-        if (response.status !== 200) {
-          throw new Error(`Cannot load data source: ${ name}`);
-        }
-        return response.json();
-      };
-
-      const [institutions, nationalLabs, otherLabs] = await Promise.all([
-        fetchJSON('institutions'),
-        fetchJSON('nationalLabs'),
-        fetchJSON('otherLabs'),
-      ]);
-      const all = [].concat(
-          institutions,
-          nationalLabs.map(({name, initials}) => {
-            return {
-              label: `${name} (${initials})`,
-              value: name,
-            };
-          }),
-          otherLabs.map(({name, initials}) => {
-            return {
-              label: `${name} (${initials})`,
-              value: name,
-            };
-          }),
-      );
-      return all.map(({label, value}) => {
-        return {label, value, search: label.toLowerCase()};
-      });
-    }
-
-    /**
-     * doc here
-     */
-    async initialize() {
-      const organizations = await this.loadOrganizations();
+    initialize() {
       const fields = {
-        realname: await this.evaluateField('realname'),
-        email: await this.evaluateField('email'),
-        username: await this.evaluateField('username'),
-        organization: await this.evaluateField('organization'),
-        department: await this.evaluateField('department'),
-        hearAbout: await this.evaluateField('hearAbout'),
+        realname: this.evaluateField('realname'),
+        email: this.evaluateField('email'),
+        username: this.evaluateField('username'),
+        organization: this.evaluateField('organization'),
+        department: this.evaluateField('department'),
+        hearAbout: this.evaluateField('hearAbout'),
       };
       this.setState({
         ...this.state,
@@ -326,7 +288,7 @@ define([
           maxLength: 100,
           rules: [
             {
-              validate: async (value) => {
+              validate: (value) => {
                 if (/^\s+/.test(value)) {
                   return {
                     isValid: false,
@@ -339,7 +301,7 @@ define([
               },
             },
             {
-              validate: async (value) => {
+              validate: (value) => {
                 if (/\s+$/.test(value)) {
                   return {
                     isValid: false,
@@ -359,7 +321,7 @@ define([
           minLength: 2,
           maxLength: 100,
           rules: [{
-            validate: async (value) => {
+            validate: (value) => {
               if (EMAIL_REGEXP.test(value)) {
                 return {
                   isValid: true,
@@ -379,7 +341,7 @@ define([
           maxLength: 100,
           rules: [
             {
-              validate: async (value) => {
+              validate: (value) => {
                 if (/^[a-z0-9_]+$/.test(value)) {
                   return {
                     isValid: true,
@@ -392,7 +354,7 @@ define([
               },
             },
             {
-              validate: async (value) => {
+              validate: (value) => {
                 if (/^\d+/.test(value)) {
                   return {
                     isValid: false,
@@ -405,7 +367,7 @@ define([
               },
             },
             {
-              validate: async (value) => {
+              validate: (value) => {
                 if (/^_+/.test(value)) {
                   return {
                     isValid: false,
@@ -418,7 +380,7 @@ define([
               },
             },
             {
-              validate: async (value) => {
+              validate: (value) => {
                 if (/\s/.test(value)) {
                   return {
                     isValid: false,
@@ -432,29 +394,7 @@ define([
             },
           ],
           remoteRuleMessage: 'Username is valid, check if available with KBase',
-          remoteRules: [
-            {
-              validate: async (value) => {
-                const auth2Client = new auth2.Auth2({
-                  baseUrl: this.props.runtime.config('services.auth.url'),
-                });
-                try {
-                  const {availablename} = await auth2Client.loginUsernameSuggest(value);
-                  if (availablename === value) {
-                    return {
-                      isValid: true,
-                    };
-                  }
-                  return {
-                    isValid: false,
-                    message: `This username is not available: a suggested available username is ${availablename}`,
-                  };
-                } catch (ex) {
-                  console.error('error looking up username in auth', ex);
-                }
-              },
-            },
-          ],
+          remoteRules: true,
         },
         organization: {
           label: 'Organization',
@@ -517,7 +457,7 @@ define([
      * @param {*} value
      * @return {*}
      */
-    async evaluateField(fieldName, value) {
+    evaluateField(fieldName, value) {
       // Apply rules.
       // Realname is required, has no character limit afaik, but let us impose
       // a default of 100 characters.
@@ -558,7 +498,7 @@ define([
 
       if ('rules' in fieldDefinition) {
         for (const rule of fieldDefinition.rules) {
-          const {isValid, message} = await rule.validate(value);
+          const {isValid, message} = rule.validate(value);
           if (!isValid) {
             return {
               value,
@@ -588,39 +528,6 @@ define([
     /**
      * doc here
      * @param {*} fieldName
-     * @return {*}
-     */
-    async evaluateRemoteRules(fieldName) {
-      if (!('remoteRules' in fieldDefinition)) {
-        return;
-      }
-      // Apply remote rules.
-      const fieldState = this.getFieldState(fieldName);
-      const fieldDefinition = this.getFieldDefinition(fieldName);
-
-      const value = fieldState.value;
-
-      for (const rule of fieldDefinition.remoteRules) {
-        const {isValid, message} = await rule.validate(value);
-        if (!isValid) {
-          return {
-            value,
-            isModified: true,
-            status: 'INVALID',
-            validationMessage: message,
-          };
-        }
-      }
-      return {
-        value,
-        isModified: true,
-        status: 'VALID',
-      };
-    }
-
-    /**
-     * doc here
-     * @param {*} fieldName
      */
     cancelUpdateQueue(fieldName) {
       if (!(fieldName in this.updateQueues)) {
@@ -638,10 +545,10 @@ define([
      * @param {*} fieldName
      * @param {*} value
      */
-    async updateField(fieldName, value) {
+    updateField(fieldName, value) {
       this.cancelUpdateQueue(fieldName);
       const evaluator = new FieldEvaluator({
-        process: async () => {
+        process: () => {
           return this.evaluateField(fieldName, value);
         },
         updater: (fieldState) => {
