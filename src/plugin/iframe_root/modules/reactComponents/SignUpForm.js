@@ -95,7 +95,7 @@ define([
             },
             email: {
               status: 'INITIAL',
-              value: this.props.choice.create[0].provemail,
+              value: this.props.choice.create[0].provemail || '',
               isModified: false,
             },
             username: {
