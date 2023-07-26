@@ -18,13 +18,26 @@ define([
     Well,
     auth2,
     referralSources,
-    organizations,
+    organizationsData,
 ) => {
   const {Component} = preact;
   const html = htm.bind(preact.h);
 
   // eslint-disable-next-line max-len
   const EMAIL_REGEXP = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const organizations = organizationsData.map(({label, abbreviation}) => {
+    if (abbreviation) {
+      return {
+        label: `${label} (${abbreviation})`,
+        search: `${label} ${abbreviation}`.toLowerCase(),
+      };
+    }
+    return {
+      label,
+      search: label.toLowerCase(),
+    };
+  });
 
   /**
    * doc here
