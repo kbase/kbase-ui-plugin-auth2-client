@@ -1026,15 +1026,6 @@ define([
 
     /**
      * doc here
-     * @param {*} e
-     */
-    onCancelSignUp(e) {
-      e.preventDefault();
-      this.props.onCancelSignUp();
-    }
-
-    /**
-     * doc here
      * @return {*}
      */
     renderFormMessage() {
@@ -1063,7 +1054,7 @@ define([
                   Create KBase Account
               </button>
               <button className="btn btn-danger"
-                  onClick=${this.onCancelSignUp.bind(this)}>
+                  onClick=${this.props.onCancelSignUp}>
                   Cancel Sign Up
               </button>
           </div>
